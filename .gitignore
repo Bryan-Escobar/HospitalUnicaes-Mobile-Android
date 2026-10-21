@@ -1,0 +1,46 @@
+# Gradle
+.gradle/
+build/
+!gradle/wrapper/gradle-wrapper.jar
+
+# Kotlin
+.kotlin/
+
+# Configuración local (ruta del SDK, claves)
+local.properties
+
+# Android Studio / IntelliJ
+*.iml
+.idea/
+!.idea/codeStyles/
+!.idea/runConfigurations/
+captures/
+.navigation/
+
+# Builds nativos (NDK)
+.externalNativeBuild/
+.cxx/
+
+# Archivos generados
+*.apk
+*.aab
+*.ap_
+*.dex
+*.class
+output.json
+output-metadata.json
+
+# Firma de la app (no subir keystores)
+*.jks
+*.keystore
+
+# Google Services (descomentar si contiene datos sensibles)
+# google-services.json
+
+# Logs
+*.log
+
+# Sistema operativo
+.DS_Store
+Thumbs.db
+desktop.ini
