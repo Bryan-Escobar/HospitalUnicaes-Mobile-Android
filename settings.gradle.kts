@@ -22,5 +22,5 @@ dependencyResolutionManagement {
     }
 }
 
-rootProject.name = "DAMA_HospitalUnicaes"
+rootProject.name = "HospitalUnicaes"
 include(":app")
