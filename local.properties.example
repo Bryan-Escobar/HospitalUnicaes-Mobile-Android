@@ -1,0 +1,12 @@
+# Copia este archivo como local.properties (no se sube al repo) y llena los valores.
+# Android Studio agrega sdk.dir automáticamente.
+
+# Ambiente dev (variante devDebug). En el emulador, 10.0.2.2 apunta al localhost de tu PC.
+dev.apiBaseUrl=http://10.0.2.2:3000/api/
+dev.supabaseUrl=https://<proyecto>.supabase.co
+dev.supabaseKey=<publishable o anon key>
+
+# Ambiente prod (API desplegada en Dokploy)
+prod.apiBaseUrl=https://<dominio-de-la-api>/api/
+prod.supabaseUrl=https://<proyecto>.supabase.co
+prod.supabaseKey=<publishable o anon key>
