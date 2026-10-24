@@ -3,36 +3,33 @@ package sv.edu.unicaes.hospital.ui.components
 import androidx.annotation.DrawableRes
 import androidx.annotation.StringRes
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Icon
-import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.adaptive.navigationsuite.NavigationSuiteScaffold
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableIntStateOf
-import androidx.compose.runtime.saveable.rememberSaveable
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.navigation.NavGraph.Companion.findStartDestination
+import androidx.navigation.NavHostController
 
 data class Pestana(
     @param:StringRes val titulo: Int,
     @param:DrawableRes val icono: Int,
+    val ruta: Any,
 )
 
 /**
- * Barra inferior (o riel en pantallas grandes) con las pestañas de un rol.
- * Cada pestaña tendrá luego su propio grafo de navegación.
+ * Barra inferior (o riel en pantallas grandes) con las pestañas de un rol. La pestaña elegida
+ * se guarda aparte de la pila para que siga marcada al abrir pantallas de detalle.
  */
 @Composable
 fun HomeConPestanas(
     pestanas: List<Pestana>,
-    contenido: @Composable (pestana: Pestana, modifier: Modifier) -> Unit,
+    seleccionada: Int,
+    onSeleccion: (Int) -> Unit,
+    contenido: @Composable (modifier: Modifier) -> Unit,
 ) {
-    var seleccionada by rememberSaveable { mutableIntStateOf(0) }
-
     NavigationSuiteScaffold(
         navigationSuiteItems = {
             pestanas.forEachIndexed { indice, pestana ->
@@ -40,13 +37,20 @@ fun HomeConPestanas(
                     icon = { Icon(painterResource(pestana.icono), contentDescription = null) },
                     label = { Text(stringResource(pestana.titulo)) },
                     selected = indice == seleccionada,
-                    onClick = { seleccionada = indice },
+                    onClick = { onSeleccion(indice) },
                 )
             }
         },
     ) {
-        Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
-            contenido(pestanas[seleccionada], Modifier.padding(innerPadding))
-        }
+        contenido(Modifier.fillMaxSize())
+    }
+}
+
+/** Cambia de pestaña conservando el estado de cada una (patrón de Navigation Compose). */
+fun NavHostController.irAPestana(ruta: Any) {
+    navigate(ruta) {
+        popUpTo(graph.findStartDestination().id) { saveState = true }
+        launchSingleTop = true
+        restoreState = true
     }
 }

@@ -8,6 +8,7 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
+import sv.edu.unicaes.hospital.BuildConfig
 import sv.edu.unicaes.hospital.core.AppError
 import sv.edu.unicaes.hospital.core.Resultado
 import sv.edu.unicaes.hospital.data.repository.AuthRepository
@@ -21,6 +22,9 @@ import javax.inject.Inject
 
 sealed interface SplashUiState {
     data object Cargando : SplashUiState
+
+    /** Variante dev sin GET /auth/me: el rol se elige a mano para revisar la interfaz. */
+    data object ElegirRol : SplashUiState
 
     data class Error(
         val error: AppError,
@@ -51,6 +55,10 @@ class SplashViewModel
                 val sesion = authRepository.estadoSesion.first { it != EstadoSesion.CARGANDO }
                 if (sesion == EstadoSesion.INACTIVA) {
                     _uiState.value = SplashUiState.Listo(LoginRuta)
+                    return@launch
+                }
+                if (!BuildConfig.ROL_DESDE_API) {
+                    _uiState.value = SplashUiState.ElegirRol
                     return@launch
                 }
                 _uiState.value =

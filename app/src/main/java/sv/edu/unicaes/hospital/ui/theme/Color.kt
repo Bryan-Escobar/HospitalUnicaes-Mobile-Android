@@ -8,6 +8,7 @@ import androidx.compose.ui.graphics.Color
 // Primario · teal clínico
 val Primario50 = Color(0xFFECFEFF) // fondos
 val Primario100 = Color(0xFFCFFAFE) // selección
+val Primario200 = Color(0xFFA5F3FC) // borde "En vivo", cama elegida
 val Primario700 = Color(0xFF0E7490) // acción (5,4:1)
 val Primario800 = Color(0xFF155E75) // presionado
 val Primario900 = Color(0xFF164E63) // texto sobre 50
@@ -26,6 +27,9 @@ val Texto1 = Color(0xFF0F172A)
 // Error y acción destructiva
 val Error = Color(0xFFB91C1C)
 val ErrorFondo = Color(0xFFFEF2F2)
+val ErrorBorde = Color(0xFFFCA5A5)
+val ErrorTextoBanner = Color(0xFF7F1D1D)
+val Neutro700 = Color(0xFF334155) // etiquetas, snackbar
 
 // Semánticos de estado (texto / fondo). Siempre acompañados de texto e icono.
 val AmbarTexto = Color(0xFF92400E)
@@ -39,3 +43,10 @@ val RojoFondo = Color(0xFFFEE2E2)
 val GrisTexto = Color(0xFF374151)
 val GrisFondo = Color(0xFFE5E7EB)
 val CamaOcupada = Color(0xFF334155)
+
+// Bordes de los badges de estado
+val AmbarBorde = Color(0xFFFCD34D)
+val AzulBorde = Color(0xFF93C5FD)
+val VerdeBorde = Color(0xFF86EFAC)
+val RojoBorde = Color(0xFFFCA5A5)
+val GrisBorde = Color(0xFFD1D5DB)
