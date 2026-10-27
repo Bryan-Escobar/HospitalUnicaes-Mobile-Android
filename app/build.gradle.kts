@@ -48,8 +48,6 @@ android {
             buildConfigField("String", "API_BASE_URL", "\"${localProperty("dev.apiBaseUrl")}\"")
             buildConfigField("String", "SUPABASE_URL", "\"${localProperty("dev.supabaseUrl")}\"")
             buildConfigField("String", "SUPABASE_KEY", "\"${localProperty("dev.supabaseKey")}\"")
-            // Mientras no exista GET /auth/me (HUNI-38), dev no consulta el rol y deja elegirlo tras el login.
-            buildConfigField("boolean", "ROL_DESDE_API", "false")
         }
         create("prod") {
             dimension = "ambiente"
@@ -57,7 +55,6 @@ android {
             buildConfigField("String", "API_BASE_URL", "\"${localProperty("prod.apiBaseUrl")}\"")
             buildConfigField("String", "SUPABASE_URL", "\"${localProperty("prod.supabaseUrl")}\"")
             buildConfigField("String", "SUPABASE_KEY", "\"${localProperty("prod.supabaseKey")}\"")
-            buildConfigField("boolean", "ROL_DESDE_API", "true")
         }
     }
 
@@ -119,6 +116,9 @@ dependencies {
     implementation(libs.supabase.auth)
     implementation(libs.supabase.realtime)
     implementation(libs.ktor.client.okhttp)
+
+    // Sesión de Supabase persistida en DataStore
+    implementation(libs.androidx.datastore.preferences)
 
     testImplementation(libs.junit)
     testImplementation(libs.kotlinx.coroutines.test)

@@ -12,6 +12,12 @@ sealed interface AppError {
 
     data object CredencialesInvalidas : AppError
 
+    /** 403 CUENTA_INACTIVA: la administración desactivó la cuenta. */
+    data object CuentaInactiva : AppError
+
+    /** 403 PERFIL_INCOMPLETO: la cuenta no tiene registro de personal ni de paciente. */
+    data object PerfilIncompleto : AppError
+
     /** 401: token ausente o vencido. */
     data object NoAutorizado : AppError
 
@@ -48,6 +54,14 @@ fun AppError.mensaje(): Int =
 
         AppError.NoAutorizado -> {
             R.string.error_sesion_expirada
+        }
+
+        AppError.CuentaInactiva -> {
+            R.string.error_cuenta_inactiva
+        }
+
+        AppError.PerfilIncompleto -> {
+            R.string.error_perfil_incompleto
         }
 
         AppError.SinPermiso -> {

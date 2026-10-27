@@ -1,22 +1,17 @@
 package sv.edu.unicaes.hospital.ui.splash
 
 import android.app.Activity
-import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeDrawingPadding
 import androidx.compose.foundation.layout.width
-import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.LinearProgressIndicator
-import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
@@ -32,7 +27,6 @@ import androidx.compose.ui.semantics.LiveRegionMode
 import androidx.compose.ui.semantics.liveRegion
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.TextStyle
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -43,8 +37,6 @@ import sv.edu.unicaes.hospital.R
 import sv.edu.unicaes.hospital.ui.components.EstadoError
 import sv.edu.unicaes.hospital.ui.components.MarcaHospital
 import sv.edu.unicaes.hospital.ui.components.TamanoMarca
-import sv.edu.unicaes.hospital.ui.navigation.DoctorRuta
-import sv.edu.unicaes.hospital.ui.navigation.RecepcionRuta
 import sv.edu.unicaes.hospital.ui.theme.Espacio
 import sv.edu.unicaes.hospital.ui.theme.HospitalUnicaesTheme
 import sv.edu.unicaes.hospital.ui.theme.MarcaDorado
@@ -61,10 +53,6 @@ fun SplashScreen(
     when (val estado = uiState) {
         SplashUiState.Cargando -> {
             SplashMarca { Restaurando() }
-        }
-
-        SplashUiState.ElegirRol -> {
-            SplashMarca { ElegirRolDemo(onDestino = onDestino) }
         }
 
         is SplashUiState.Error -> {
@@ -123,38 +111,6 @@ private fun Restaurando() {
     )
 }
 
-/** Selector de rol de la demo (HUNI-38), sobre el mismo fondo de marca. */
-@Composable
-private fun ElegirRolDemo(onDestino: (Any) -> Unit) {
-    Column(
-        modifier = Modifier.width(260.dp),
-        verticalArrangement = Arrangement.spacedBy(Espacio.sm),
-        horizontalAlignment = Alignment.CenterHorizontally,
-    ) {
-        Text(
-            text = stringResource(R.string.demo_titulo),
-            style = TextStyle(fontSize = 14.sp, lineHeight = 20.sp),
-            color = MarcaRosado,
-            textAlign = TextAlign.Center,
-        )
-        BotonDemo(stringResource(R.string.demo_recepcion)) { onDestino(RecepcionRuta) }
-        BotonDemo(stringResource(R.string.demo_doctor)) { onDestino(DoctorRuta) }
-    }
-}
-
-@Composable
-private fun BotonDemo(
-    texto: String,
-    onClick: () -> Unit,
-) {
-    OutlinedButton(
-        onClick = onClick,
-        border = BorderStroke(1.dp, MarcaDorado),
-        colors = ButtonDefaults.outlinedButtonColors(contentColor = Color.White),
-        modifier = Modifier.fillMaxWidth().heightIn(min = Espacio.tactilMinimo),
-    ) { Text(texto) }
-}
-
 /** El fondo granate necesita iconos blancos en la barra de estado; se restauran al salir. */
 @Composable
 private fun IconosClarosEnBarraDeEstado() {
@@ -172,10 +128,4 @@ private fun IconosClarosEnBarraDeEstado() {
 @Composable
 private fun SplashPreview() {
     HospitalUnicaesTheme { SplashMarca { Restaurando() } }
-}
-
-@Preview(showBackground = true, widthDp = 412, heightDp = 915)
-@Composable
-private fun SplashDemoPreview() {
-    HospitalUnicaesTheme { SplashMarca { ElegirRolDemo(onDestino = {}) } }
 }

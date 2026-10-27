@@ -52,6 +52,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.autofill.ContentType
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.SolidColor
@@ -59,6 +60,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.contentType
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.TextStyle
@@ -586,6 +588,8 @@ fun CampoTexto(
     visualTransformation: VisualTransformation = VisualTransformation.None,
     keyboardOptions: KeyboardOptions = KeyboardOptions.Default,
     keyboardActions: KeyboardActions = KeyboardActions.Default,
+    /** Tipo para el autocompletado del sistema (correos y contraseñas guardados). */
+    tipoContenido: ContentType? = null,
     final: (@Composable () -> Unit)? = null,
 ) {
     val interaccion = remember { MutableInteractionSource() }
@@ -610,7 +614,11 @@ fun CampoTexto(
         BasicTextField(
             value = valor,
             onValueChange = onValor,
-            modifier = Modifier.fillMaxWidth().semantics { contentDescription = etiqueta ?: placeholder.orEmpty() },
+            modifier =
+                Modifier.fillMaxWidth().semantics {
+                    contentDescription = etiqueta ?: placeholder.orEmpty()
+                    tipoContenido?.let { contentType = it }
+                },
             readOnly = soloLectura,
             textStyle = estiloCampo.copy(color = MaterialTheme.colorScheme.onSurface),
             singleLine = singleLine,

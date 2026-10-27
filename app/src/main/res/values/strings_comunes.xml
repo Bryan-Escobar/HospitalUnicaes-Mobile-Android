@@ -81,11 +81,6 @@
     <string name="perfil_cerrar_titulo">¿Cerrar sesión?</string>
     <string name="perfil_cerrar_texto">Tendrás que ingresar de nuevo con tu correo y contraseña.</string>
 
-    <!-- Acceso de demostración (solo variante dev) -->
-    <string name="demo_titulo">Modo demo (solo dev): elige con qué rol ver la interfaz</string>
-    <string name="demo_recepcion">Entrar como Recepción</string>
-    <string name="demo_doctor">Entrar como Doctor</string>
-
     <!-- Turnos -->
     <string name="turnos_nuevo">Nuevo turno</string>
     <string name="turnos_error">No se pudieron cargar los turnos.</string>

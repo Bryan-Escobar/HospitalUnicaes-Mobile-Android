@@ -11,14 +11,17 @@ import kotlinx.coroutines.launch
 import sv.edu.unicaes.hospital.core.AppError
 import sv.edu.unicaes.hospital.core.Resultado
 import sv.edu.unicaes.hospital.data.repository.AuthRepository
+import sv.edu.unicaes.hospital.ui.navigation.destinoPara
 import javax.inject.Inject
 
 data class LoginUiState(
     val correo: String = "",
+    val sugerenciasCorreo: List<String> = emptyList(),
     val contrasena: String = "",
     val cargando: Boolean = false,
     val error: AppError? = null,
-    val ingresado: Boolean = false,
+    /** Inicio del rol, resuelto con GET /auth/me tras ingresar. */
+    val destino: Any? = null,
 ) {
     val puedeIngresar: Boolean get() = correo.isNotBlank() && contrasena.isNotBlank() && !cargando
 }
@@ -32,7 +35,8 @@ class LoginViewModel
         private val _uiState = MutableStateFlow(LoginUiState())
         val uiState: StateFlow<LoginUiState> = _uiState.asStateFlow()
 
-        fun onCorreoChange(valor: String) = _uiState.update { it.copy(correo = valor, error = null) }
+        fun onCorreoChange(valor: String) =
+            _uiState.update { it.copy(correo = valor, sugerenciasCorreo = sugerenciasCorreo(valor), error = null) }
 
         fun onContrasenaChange(valor: String) = _uiState.update { it.copy(contrasena = valor, error = null) }
 
@@ -41,9 +45,21 @@ class LoginViewModel
             if (!estado.puedeIngresar) return
             _uiState.update { it.copy(cargando = true, error = null) }
             viewModelScope.launch {
-                when (val resultado = authRepository.iniciarSesion(estado.correo.trim(), estado.contrasena)) {
-                    is Resultado.Exito -> _uiState.update { it.copy(cargando = false, ingresado = true) }
-                    is Resultado.Fallo -> _uiState.update { it.copy(cargando = false, error = resultado.error) }
+                val sesion = authRepository.iniciarSesion(estado.correo.trim(), estado.contrasena)
+                if (sesion is Resultado.Fallo) {
+                    _uiState.update { it.copy(cargando = false, error = sesion.error) }
+                    return@launch
+                }
+                when (val usuario = authRepository.usuarioActual()) {
+                    is Resultado.Exito -> {
+                        _uiState.update { it.copy(cargando = false, destino = destinoPara(usuario.datos.rol)) }
+                    }
+
+                    is Resultado.Fallo -> {
+                        // Sin perfil válido no se deja una sesión a medias (cuenta inactiva, sin red…).
+                        authRepository.cerrarSesion()
+                        _uiState.update { it.copy(cargando = false, error = usuario.error) }
+                    }
                 }
             }
         }
