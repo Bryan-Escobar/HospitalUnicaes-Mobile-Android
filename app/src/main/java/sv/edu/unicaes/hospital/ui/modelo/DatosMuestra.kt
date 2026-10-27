@@ -313,14 +313,6 @@ object DatosMuestra {
     /** Conteos por pestaña de la cola: Pendiente 7 · En Proceso 4. */
     val conteoLaboratorio = mapOf(EstadoLaboratorio.PENDIENTE to 7, EstadoLaboratorio.EN_PROCESO to 4)
 
-    val perfilRecepcion =
-        PerfilUi(
-            nombre = "Karla Flores",
-            rolYTipo = "Recepcionista/Asistente · Asistente",
-            correo = "karla.flores@hospital.edu",
-            telefono = "7000-3333",
-        )
-
     // Doctor ---------------------------------------------------------------------------------
 
     val turnoDoctor =

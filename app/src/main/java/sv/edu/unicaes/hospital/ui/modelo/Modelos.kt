@@ -207,6 +207,6 @@ data class ExpedienteUi(
 data class PerfilUi(
     val nombre: String,
     val rolYTipo: String,
-    val correo: String,
-    val telefono: String,
+    val correo: String?,
+    val telefono: String?,
 )

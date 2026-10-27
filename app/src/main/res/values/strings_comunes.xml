@@ -78,6 +78,12 @@
 
     <!-- Perfil -->
     <string name="perfil_rol_tipo">Rol y tipo</string>
+    <string name="perfil_sin_registrar">Sin registrar</string>
+    <string name="perfil_error">No se pudo cargar tu perfil.</string>
+    <string name="rol_recepcion">Recepcionista/Asistente</string>
+    <string name="rol_doctor">Doctor</string>
+    <string name="rol_administrador">Administrador</string>
+    <string name="rol_paciente">Paciente</string>
     <string name="perfil_cerrar_titulo">¿Cerrar sesión?</string>
     <string name="perfil_cerrar_texto">Tendrás que ingresar de nuevo con tu correo y contraseña.</string>
 

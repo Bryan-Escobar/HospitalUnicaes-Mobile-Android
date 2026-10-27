@@ -139,7 +139,7 @@ private fun DoctorNavHost(
             )
         }
         composable<PerfilDoctorRuta> {
-            PerfilScreen(perfil = DatosMuestra.perfilDoctor, onCerrarSesion = onCerrarSesion)
+            PerfilScreen(onCerrarSesion = onCerrarSesion)
         }
     }
 }

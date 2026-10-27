@@ -208,7 +208,7 @@ private fun RecepcionNavHost(
             TurnosPersonalScreen(estado = UiState.Exito(DatosMuestra.turnosPersonal), onVolver = volver)
         }
         composable<PerfilRecepcionRuta> {
-            PerfilScreen(perfil = DatosMuestra.perfilRecepcion, onCerrarSesion = onCerrarSesion, onVolver = volver)
+            PerfilScreen(onCerrarSesion = onCerrarSesion, onVolver = volver)
         }
     }
 }

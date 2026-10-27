@@ -18,6 +18,7 @@ data class UsuarioDto(
     val email: String? = null,
     val nombres: String,
     val apellidos: String,
+    val telefono: String? = null,
     val rol: String,
     val personal: PersonalResumenDto? = null,
 )
@@ -26,7 +27,13 @@ data class UsuarioDto(
 data class PersonalResumenDto(
     val id: String,
     @SerialName("codigo_empleado") val codigoEmpleado: String,
+    val tipo: TipoPersonalDto,
     val especialidad: String? = null,
+)
+
+@Serializable
+data class TipoPersonalDto(
+    val nombre: String,
 )
 
 fun UsuarioDto.aDominio(): Usuario =
@@ -35,4 +42,7 @@ fun UsuarioDto.aDominio(): Usuario =
         correo = email,
         nombre = "$nombres $apellidos".trim(),
         rol = Rol.desdeApi(rol),
+        telefono = telefono,
+        tipoPersonal = personal?.tipo?.nombre,
+        especialidad = personal?.especialidad,
     )
