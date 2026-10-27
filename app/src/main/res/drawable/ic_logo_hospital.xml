@@ -1,0 +1,17 @@
+<!-- Logo HospitalUnicaes (diseño · AND-00/AND-01): cuadrado vino-700, aro oro-400 y cruz blanca. -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="96dp"
+    android:height="96dp"
+    android:viewportWidth="96"
+    android:viewportHeight="96">
+    <path
+        android:fillColor="#FF862524"
+        android:pathData="M27,0H69A27,27 0,0 1,96 27V69A27,27 0,0 1,69 96H27A27,27 0,0 1,0 69V27A27,27 0,0 1,27 0Z" />
+    <path
+        android:strokeColor="#FFE8B840"
+        android:strokeWidth="4.32"
+        android:pathData="M12.48,48A35.52,35.52 0,1 1,83.52 48A35.52,35.52 0,1 1,12.48 48Z" />
+    <path
+        android:fillColor="#FFFFFFFF"
+        android:pathData="M42.4,30H53.6V42.4H66V53.6H53.6V66H42.4V53.6H30V42.4H42.4Z" />
+</vector>

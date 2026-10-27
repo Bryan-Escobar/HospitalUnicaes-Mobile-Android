@@ -25,18 +25,11 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.ExtendedFloatingActionButton
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.PrimaryTabRow
-import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.SegmentedButton
-import androidx.compose.material3.SegmentedButtonDefaults
-import androidx.compose.material3.SingleChoiceSegmentedButtonRow
 import androidx.compose.material3.Surface
-import androidx.compose.material3.Tab
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
@@ -48,19 +41,28 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.text.SpanStyle
+import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.tooling.preview.PreviewParameter
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import sv.edu.unicaes.hospital.R
 import sv.edu.unicaes.hospital.core.UiState
 import sv.edu.unicaes.hospital.domain.model.TipoHabitacion
+import sv.edu.unicaes.hospital.ui.components.AccionTexto
 import sv.edu.unicaes.hospital.ui.components.Avatar
 import sv.edu.unicaes.hospital.ui.components.Banner
+import sv.edu.unicaes.hospital.ui.components.BotonPeligro
 import sv.edu.unicaes.hospital.ui.components.BotonPrimario
+import sv.edu.unicaes.hospital.ui.components.CabeceraPersona
 import sv.edu.unicaes.hospital.ui.components.CampoTexto
 import sv.edu.unicaes.hospital.ui.components.ContenidoConEstado
 import sv.edu.unicaes.hospital.ui.components.DialogoConfirmacion
@@ -68,10 +70,16 @@ import sv.edu.unicaes.hospital.ui.components.EstadoPaso
 import sv.edu.unicaes.hospital.ui.components.EstadoPreview
 import sv.edu.unicaes.hospital.ui.components.EstadoVacio
 import sv.edu.unicaes.hospital.ui.components.EstadosPreviewProvider
+import sv.edu.unicaes.hospital.ui.components.FabHospital
+import sv.edu.unicaes.hospital.ui.components.FilaDato
 import sv.edu.unicaes.hospital.ui.components.FilaLista
 import sv.edu.unicaes.hospital.ui.components.IconoAccion
+import sv.edu.unicaes.hospital.ui.components.PestanasHospital
 import sv.edu.unicaes.hospital.ui.components.PreviewPantalla
+import sv.edu.unicaes.hospital.ui.components.SegmentosHospital
 import sv.edu.unicaes.hospital.ui.components.TarjetaHospital
+import sv.edu.unicaes.hospital.ui.components.TarjetaLista
+import sv.edu.unicaes.hospital.ui.components.TextosFila
 import sv.edu.unicaes.hospital.ui.components.TipoBanner
 import sv.edu.unicaes.hospital.ui.components.TituloSeccion
 import sv.edu.unicaes.hospital.ui.components.TopBarHospital
@@ -89,8 +97,11 @@ import sv.edu.unicaes.hospital.ui.theme.HospitalTheme
 import sv.edu.unicaes.hospital.ui.theme.HospitalUnicaesTheme
 import sv.edu.unicaes.hospital.ui.theme.Neutro700
 import sv.edu.unicaes.hospital.ui.theme.Primario200
+import sv.edu.unicaes.hospital.ui.theme.Primario50
 import sv.edu.unicaes.hospital.ui.theme.Primario700
 import sv.edu.unicaes.hospital.ui.theme.Superficie
+import sv.edu.unicaes.hospital.ui.theme.Texto2
+import sv.edu.unicaes.hospital.ui.theme.Texto3
 
 // Camas: mapa, ingreso, traslado y alta (AND-R8 a AND-R11). Capacidad fija de 11 habitaciones y
 // 17 camas; ninguna pantalla crea ni elimina habitaciones.
@@ -120,7 +131,8 @@ private fun CamaBoton(
             cama.libre -> estados.camaLibre
             else -> estados.camaOcupada
         }
-    val prefijo = if (cama.etiqueta.isEmpty()) "" else "${cama.etiqueta} "
+    val separador = if (mostrarNombre) " · " else " "
+    val prefijo = if (cama.etiqueta.isEmpty()) "" else "${cama.etiqueta}$separador"
     val texto =
         when {
             elegida -> "✓ $prefijo${stringResource(R.string.camas_elegida)}"
@@ -136,8 +148,13 @@ private fun CamaBoton(
         contentColor = colores.texto,
         border = BorderStroke(if (elegida) 3.dp else 1.dp, if (elegida) Primario200 else colores.borde),
     ) {
-        Box(contentAlignment = Alignment.Center, modifier = Modifier.padding(horizontal = Espacio.xxs)) {
-            Text(text = texto, fontSize = 13.sp, fontWeight = FontWeight.Medium, maxLines = 1)
+        Box(contentAlignment = Alignment.Center, modifier = Modifier.padding(horizontal = 6.dp)) {
+            Text(
+                text = texto,
+                style = TextStyle(fontSize = 13.sp, lineHeight = 16.sp, fontWeight = FontWeight.Medium),
+                textAlign = TextAlign.Center,
+                maxLines = 1,
+            )
         }
     }
 }
@@ -160,7 +177,10 @@ private fun SalaHabitacion(
                 .padding(Espacio.xs),
         verticalArrangement = Arrangement.spacedBy(6.dp),
     ) {
-        Text(text = habitacion.codigo, fontSize = 13.sp, fontWeight = FontWeight.Bold)
+        Text(
+            text = habitacion.codigo,
+            style = TextStyle(fontSize = 13.sp, lineHeight = 16.sp, fontWeight = FontWeight.Bold),
+        )
         habitacion.camas.forEach { cama ->
             CamaBoton(
                 cama = cama,
@@ -202,8 +222,8 @@ private fun RejillaHabitaciones(
 private fun LeyendaCamas() {
     Text(
         text = stringResource(R.string.camas_leyenda),
-        style = MaterialTheme.typography.bodySmall,
-        color = MaterialTheme.colorScheme.onSurfaceVariant,
+        style = TextStyle(fontSize = 13.sp, lineHeight = 18.sp),
+        color = Texto2,
     )
 }
 
@@ -228,13 +248,7 @@ fun MapaCamasScreen(
                 acciones = { IconoAccion(R.drawable.ic_more_vert, stringResource(R.string.accion_mas_opciones), {}) },
             )
         },
-        floatingActionButton = {
-            ExtendedFloatingActionButton(
-                onClick = onIngreso,
-                icon = { Icon(painterResource(R.drawable.ic_add), contentDescription = null) },
-                text = { Text(stringResource(R.string.camas_ingreso)) },
-            )
-        },
+        floatingActionButton = { FabHospital(texto = stringResource(R.string.camas_ingreso), onClick = onIngreso) },
     ) { padding ->
         ContenidoConEstado(
             estado = estado,
@@ -251,33 +265,30 @@ fun MapaCamasScreen(
         ) { habitaciones ->
             val p2 = habitaciones.filter { it.tipo == TipoHabitacion.SEMIPRIVADA }
             val p3 = habitaciones.filter { it.tipo == TipoHabitacion.VIP }
-            Column {
-                PrimaryTabRow(selectedTabIndex = planta) {
-                    Tab(
-                        selected = planta == 0,
-                        onClick = { planta = 0 },
-                        text = { Text(stringResource(R.string.camas_tab_planta2, p2.ocupadas(), p2.totalCamas())) },
-                    )
-                    Tab(
-                        selected = planta == 1,
-                        onClick = { planta = 1 },
-                        text = { Text(stringResource(R.string.camas_tab_planta3, p3.ocupadas(), p3.totalCamas())) },
-                    )
-                }
-                Column(
-                    modifier = Modifier.verticalScroll(rememberScrollState()).padding(Espacio.md),
-                    verticalArrangement = Arrangement.spacedBy(Espacio.sm),
-                ) {
-                    LeyendaCamas()
-                    RejillaHabitaciones(
-                        habitaciones = if (planta == 0) p2 else p3,
-                        columnas = 2,
-                        camaElegida = null,
-                        mostrarNombres = true,
-                        onCama = { _, cama -> if (cama.libre) onIngreso() else menuCama = cama.id },
-                    )
-                    Spacer(Modifier.height(Espacio.xxl * 2))
-                }
+            Column(
+                modifier =
+                    Modifier
+                        .verticalScroll(rememberScrollState())
+                        .padding(start = Espacio.md, end = Espacio.md, top = Espacio.xs, bottom = 96.dp),
+                verticalArrangement = Arrangement.spacedBy(Espacio.sm),
+            ) {
+                PestanasHospital(
+                    titulos =
+                        listOf(
+                            stringResource(R.string.camas_tab_planta2, p2.ocupadas(), p2.totalCamas()),
+                            stringResource(R.string.camas_tab_planta3, p3.ocupadas(), p3.totalCamas()),
+                        ),
+                    seleccionada = planta,
+                    onSeleccion = { planta = it },
+                )
+                LeyendaCamas()
+                RejillaHabitaciones(
+                    habitaciones = if (planta == 0) p2 else p3,
+                    columnas = 2,
+                    camaElegida = null,
+                    mostrarNombres = true,
+                    onCama = { _, cama -> if (cama.libre) onIngreso() else menuCama = cama.id },
+                )
                 DropdownMenu(expanded = menuCama != null, onDismissRequest = { menuCama = null }) {
                     DropdownMenuItem(text = { Text(stringResource(R.string.camas_ver_ficha)) }, onClick = {
                         menuCama = null
@@ -306,7 +317,11 @@ private fun StepperIngreso() {
             stringResource(R.string.ingreso_paso_tipo) to EstadoPaso.HECHO,
             stringResource(R.string.ingreso_paso_cama) to EstadoPaso.ACTUAL,
         )
-    Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(Espacio.xs)) {
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(Espacio.xs),
+    ) {
         pasos.forEachIndexed { indice, (titulo, estado) ->
             val circulo = Modifier.size(22.dp).clip(CircleShape)
             Box(
@@ -325,9 +340,13 @@ private fun StepperIngreso() {
                     fontWeight = FontWeight.Bold,
                 )
             }
-            Text(text = titulo, style = MaterialTheme.typography.bodyMedium, fontWeight = FontWeight.Medium)
+            Text(
+                text = titulo,
+                style = TextStyle(fontSize = 14.sp, lineHeight = 20.sp, fontWeight = FontWeight.Medium),
+                color = Neutro700,
+            )
             if (indice < pasos.lastIndex) {
-                Box(Modifier.width(Espacio.md).height(2.dp).background(Primario700))
+                Box(Modifier.weight(1f).height(2.dp).background(Primario700))
             }
         }
     }
@@ -363,26 +382,24 @@ fun IngresoCamaScreen(
             )
         },
         bottomBar = {
-            Column(
-                modifier =
-                    Modifier
-                        .background(Fondo)
-                        .navigationBarsPadding()
-                        .padding(start = Espacio.md, end = Espacio.md, top = Espacio.sm, bottom = Espacio.md),
-                verticalArrangement = Arrangement.spacedBy(Espacio.xs),
-            ) {
+            Column(modifier = Modifier.background(Fondo).navigationBarsPadding()) {
                 HorizontalDivider(color = BordeSuave)
-                if (camaEnConflicto != null) {
-                    SnackbarConflicto(
-                        texto = stringResource(R.string.ingreso_conflicto, camaEnConflicto),
-                        accion = stringResource(R.string.ingreso_elegir_otra),
+                Column(
+                    modifier = Modifier.padding(start = Espacio.md, end = Espacio.md, top = Espacio.sm, bottom = 28.dp),
+                    verticalArrangement = Arrangement.spacedBy(10.dp),
+                ) {
+                    if (camaEnConflicto != null) {
+                        SnackbarConflicto(
+                            texto = stringResource(R.string.ingreso_conflicto, camaEnConflicto),
+                            accion = stringResource(R.string.ingreso_elegir_otra),
+                        )
+                    }
+                    BotonPrimario(
+                        texto = "✓ " + stringResource(R.string.ingreso_confirmar, codigoElegida.orEmpty()),
+                        onClick = { codigoElegida?.let(onConfirmar) },
+                        habilitado = codigoElegida != null,
                     )
                 }
-                BotonPrimario(
-                    texto = "✓ " + stringResource(R.string.ingreso_confirmar, codigoElegida.orEmpty()),
-                    onClick = { codigoElegida?.let(onConfirmar) },
-                    habilitado = codigoElegida != null,
-                )
             }
         },
     ) { padding ->
@@ -392,7 +409,7 @@ fun IngresoCamaScreen(
                     .padding(padding)
                     .fillMaxSize()
                     .verticalScroll(rememberScrollState())
-                    .padding(Espacio.md),
+                    .padding(RellenoCuerpo),
             verticalArrangement = Arrangement.spacedBy(Espacio.sm),
         ) {
             StepperIngreso()
@@ -402,18 +419,15 @@ fun IngresoCamaScreen(
                     horizontalArrangement = Arrangement.spacedBy(Espacio.sm),
                 ) {
                     Avatar(iniciales(paciente.nombre))
-                    Column(modifier = Modifier.weight(1f)) {
-                        Text(paciente.nombre, style = MaterialTheme.typography.titleMedium)
-                        Text(
-                            text = stringResource(R.string.ingreso_doc, paciente.dui, paciente.etiqueta.orEmpty()),
-                            style = MaterialTheme.typography.bodySmall,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        )
-                    }
-                    TextButton(onClick = onCambiarPaciente) { Text(stringResource(R.string.accion_cambiar)) }
+                    TextosFila(
+                        titulo = paciente.nombre,
+                        soporte = stringResource(R.string.ingreso_doc, paciente.dui, paciente.etiqueta.orEmpty()),
+                        modifier = Modifier.weight(1f),
+                    )
+                    AccionTexto(texto = stringResource(R.string.accion_cambiar), onClick = onCambiarPaciente)
                 }
             }
-            Text(stringResource(R.string.ingreso_tipo), style = MaterialTheme.typography.bodyMedium)
+            TituloSeccion(stringResource(R.string.ingreso_tipo))
             SelectorTipo(tipo = tipo, libresPorTipo = libresPorTipo, onTipo = { tipo = it })
             if (libres.isEmpty()) {
                 val otro = if (tipo == TipoHabitacion.VIP) TipoHabitacion.SEMIPRIVADA else TipoHabitacion.VIP
@@ -429,16 +443,14 @@ fun IngresoCamaScreen(
                     onAccion = { tipo = otro },
                 )
             } else {
-                Text(
-                    text =
-                        stringResource(
-                            R.string.ingreso_planta,
-                            tipo.planta,
-                            nombreTipoPlural(tipo),
-                            delTipo.ocupadas(),
-                            delTipo.totalCamas(),
-                        ),
-                    style = MaterialTheme.typography.titleMedium,
+                TituloSeccion(
+                    stringResource(
+                        R.string.ingreso_planta,
+                        tipo.planta,
+                        nombreTipoPlural(tipo),
+                        delTipo.ocupadas(),
+                        delTipo.totalCamas(),
+                    ),
                 )
                 // En esta vista no se muestran nombres de pacientes.
                 RejillaHabitaciones(
@@ -449,7 +461,16 @@ fun IngresoCamaScreen(
                     onCama = { _, cama -> if (cama.libre) elegida = cama.id },
                 )
                 sugerida?.let { (h, c) ->
-                    Banner(tipo = TipoBanner.INFO, texto = stringResource(R.string.ingreso_sugerida, h.codigoCama(c)))
+                    val codigo = h.codigoCama(c).replace(" · ", " · Cama ")
+                    val texto = stringResource(R.string.ingreso_sugerida, codigo)
+                    Banner(
+                        tipo = TipoBanner.INFO,
+                        texto =
+                            buildAnnotatedString {
+                                withStyle(SpanStyle(fontWeight = FontWeight.SemiBold)) { append(codigo) }
+                                append(texto.removePrefix(codigo))
+                            },
+                    )
                 }
             }
         }
@@ -471,21 +492,18 @@ private fun SelectorTipo(
     onTipo: (TipoHabitacion) -> Unit,
 ) {
     val opciones = listOf(TipoHabitacion.VIP, TipoHabitacion.SEMIPRIVADA)
-    SingleChoiceSegmentedButtonRow(modifier = Modifier.fillMaxWidth()) {
-        opciones.forEachIndexed { indice, opcion ->
-            SegmentedButton(
-                selected = tipo == opcion,
-                onClick = { onTipo(opcion) },
-                shape = SegmentedButtonDefaults.itemShape(index = indice, count = opciones.size),
-                colors =
-                    SegmentedButtonDefaults.colors(
-                        activeContainerColor = MaterialTheme.colorScheme.primaryContainer,
-                    ),
-            ) {
-                Text(stringResource(R.string.ingreso_tipo_libres, nombreTipo(opcion), libresPorTipo[opcion] ?: 0))
-            }
-        }
-    }
+    SegmentosHospital(
+        opciones =
+            opciones.map {
+                stringResource(
+                    R.string.ingreso_tipo_libres,
+                    nombreTipo(it),
+                    libresPorTipo[it] ?: 0,
+                )
+            },
+        seleccionada = opciones.indexOf(tipo),
+        onSeleccion = { onTipo(opciones[it]) },
+    )
 }
 
 /** Snackbar oscuro (#334155, radio 8) con acción en #A5F3FC. */
@@ -536,41 +554,47 @@ fun TrasladoScreen(
                     .padding(padding)
                     .fillMaxSize()
                     .verticalScroll(rememberScrollState())
-                    .padding(Espacio.md),
+                    .padding(RellenoCuerpo),
             verticalArrangement = Arrangement.spacedBy(Espacio.sm),
         ) {
-            Text(paciente, style = MaterialTheme.typography.headlineSmall)
-            Text(
-                text = stringResource(R.string.traslado_ingresado_desde, asignacion.desde),
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-            )
             TarjetaHospital {
-                Text(stringResource(R.string.traslado_cama_actual), style = MaterialTheme.typography.bodySmall)
+                TextosFila(
+                    titulo = paciente,
+                    soporte = stringResource(R.string.traslado_ingresado_desde, asignacion.desde),
+                )
+            }
+            TarjetaHospital {
+                Text(
+                    text = stringResource(R.string.traslado_cama_actual),
+                    style = MaterialTheme.typography.bodySmall.copy(letterSpacing = 0.sp),
+                    color = Texto2,
+                )
                 Text(
                     text = "${stringResource(
                         R.string.ficha_cama,
                         asignacion.habitacion,
                         asignacion.cama,
                     )} · ${nombreTipo(asignacion.tipo).lowercase()}",
-                    style = MaterialTheme.typography.titleMedium,
+                    style = EstiloTituloTarjeta,
                 )
             }
-            Text(
-                "↓",
-                modifier = Modifier.align(Alignment.CenterHorizontally),
-                style = MaterialTheme.typography.titleLarge,
+            Icon(
+                painter = painterResource(R.drawable.ic_arrow_forward),
+                contentDescription = null,
+                tint = Texto3,
+                modifier = Modifier.align(Alignment.CenterHorizontally).rotate(90f),
             )
-            Text(stringResource(R.string.traslado_nueva_cama), style = MaterialTheme.typography.titleMedium)
+            TituloSeccion(stringResource(R.string.traslado_nueva_cama))
             val opciones = listOf(TipoHabitacion.VIP, TipoHabitacion.SEMIPRIVADA)
-            SingleChoiceSegmentedButtonRow(modifier = Modifier.fillMaxWidth()) {
-                opciones.forEachIndexed { indice, opcion ->
-                    SegmentedButton(
-                        selected = tipo == opcion,
-                        onClick = { tipo = opcion },
-                        shape = SegmentedButtonDefaults.itemShape(index = indice, count = opciones.size),
-                    ) { Text(stringResource(R.string.traslado_opcion_planta, opcion.planta, nombreTipo(opcion))) }
-                }
-            }
+            SegmentosHospital(
+                opciones =
+                    opciones.map {
+                        stringResource(R.string.traslado_opcion_planta, it.planta, nombreTipo(it).lowercase())
+                            .replace("· vip", "· VIP")
+                    },
+                seleccionada = opciones.indexOf(tipo),
+                onSeleccion = { tipo = opciones[it] },
+            )
             if (libres.isEmpty()) {
                 EstadoVacio(
                     titulo = stringResource(R.string.traslado_vacio_titulo),
@@ -580,22 +604,45 @@ fun TrasladoScreen(
             }
             libres.forEach { (habitacion, cama) ->
                 val codigo = habitacion.codigoCama(cama)
-                FilaLista(
-                    titulo = codigo,
-                    soporte =
-                        if (cama.etiqueta.isEmpty()) {
-                            stringResource(R.string.traslado_cama_unica)
-                        } else {
-                            stringResource(R.string.traslado_cama_libre, cama.etiqueta)
-                        },
+                val activa = elegida == codigo
+                TarjetaLista(
+                    elementos = listOf(codigo),
+                    colorBorde = if (activa) Primario700 else BordeSuave,
+                    anchoBorde = if (activa) 2.dp else 1.dp,
+                    colorFondo = if (activa) Primario50 else Superficie,
                     modifier =
                         Modifier.selectable(
-                            selected = elegida == codigo,
+                            selected = activa,
                             onClick = { elegida = codigo },
                             role = Role.RadioButton,
                         ),
-                    inicio = { RadioButton(selected = elegida == codigo, onClick = null) },
-                )
+                ) { _, _ ->
+                    FilaLista(
+                        titulo = codigo,
+                        soporte =
+                            if (cama.etiqueta.isEmpty()) {
+                                stringResource(R.string.traslado_cama_unica)
+                            } else {
+                                stringResource(R.string.traslado_cama_libre, cama.etiqueta)
+                            },
+                        divisor = false,
+                        enTarjeta = true,
+                        final = {
+                            if (activa) {
+                                Text(
+                                    text = "✓",
+                                    style =
+                                        TextStyle(
+                                            fontSize = 18.sp,
+                                            lineHeight = 18.sp,
+                                            fontWeight = FontWeight.Bold,
+                                        ),
+                                    color = Primario700,
+                                )
+                            }
+                        },
+                    )
+                }
             }
             CampoTexto(
                 etiqueta = stringResource(R.string.traslado_motivo),
@@ -626,22 +673,30 @@ fun AltaScreen(
         topBar = { TopBarHospital(titulo = stringResource(R.string.camas_dar_alta), onVolver = onVolver) },
     ) { padding ->
         Column(
-            modifier = Modifier.padding(padding).padding(Espacio.md),
+            modifier = Modifier.padding(padding).fillMaxSize().padding(RellenoCuerpo),
             verticalArrangement = Arrangement.spacedBy(Espacio.sm),
         ) {
-            Text(ficha.paciente.nombre, style = MaterialTheme.typography.headlineSmall)
-            Text(ficha.paciente.dui, color = MaterialTheme.colorScheme.onSurfaceVariant)
+            CabeceraPersona(nombre = ficha.paciente.nombre, soporte = ficha.paciente.dui)
             TarjetaHospital {
-                DatoAlta(stringResource(R.string.alta_cama), asignacion.codigo)
-                DatoAlta(stringResource(R.string.alta_ingreso), asignacion.ingreso)
-                DatoAlta(stringResource(R.string.alta_dias), asignacion.diasHospitalizado.toString())
-                DatoAlta(stringResource(R.string.alta_medico), asignacion.medicoTratante)
+                Column {
+                    FilaDato(stringResource(R.string.alta_cama), asignacion.codigo)
+                    FilaDato(stringResource(R.string.alta_ingreso), asignacion.ingreso)
+                    FilaDato(stringResource(R.string.alta_dias), asignacion.diasHospitalizado.toString())
+                    FilaDato(stringResource(R.string.alta_medico), asignacion.medicoTratante, divisor = false)
+                }
             }
-            Spacer(Modifier.height(Espacio.xs))
-            BotonPrimario(
+            Banner(
+                tipo = TipoBanner.AVISO,
+                texto = stringResource(R.string.alta_aviso),
+                icono = R.drawable.ic_notifications,
+            )
+            Spacer(Modifier.weight(1f))
+            BotonPeligro(
                 texto = stringResource(R.string.camas_dar_alta),
                 onClick = { confirmar = true },
-                destructivo = true,
+                icono = R.drawable.ic_logout,
+                alto = 52.dp,
+                modifier = Modifier.fillMaxWidth(),
             )
         }
     }
@@ -658,17 +713,6 @@ fun AltaScreen(
             onCancelar = { confirmar = false },
             destructivo = true,
         )
-    }
-}
-
-@Composable
-private fun DatoAlta(
-    etiqueta: String,
-    valor: String,
-) {
-    Row(modifier = Modifier.fillMaxWidth().padding(vertical = Espacio.xxs)) {
-        Text(etiqueta, color = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.weight(1f))
-        Text(valor, style = MaterialTheme.typography.titleMedium)
     }
 }
 

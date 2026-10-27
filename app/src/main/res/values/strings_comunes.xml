@@ -5,6 +5,7 @@
     <string name="accion_cancelar">Cancelar</string>
     <string name="accion_guardar">Guardar</string>
     <string name="accion_editar">Editar</string>
+    <string name="accion_llamar">Llamar a %1$s</string>
     <string name="accion_cambiar">Cambiar</string>
     <string name="accion_rechazar">Rechazar</string>
     <string name="accion_ver_todas">Ver todas</string>
@@ -37,8 +38,10 @@
     <!-- Ocupación agregada -->
     <string name="ocupacion_vip">VIP</string>
     <string name="ocupacion_semiprivadas">semiprivadas</string>
+    <string name="habitacion_semiprivada">semiprivada</string>
     <string name="ocupacion_planta">Planta %1$d · %2$s</string>
     <string name="ocupacion_libres">%1$d libres</string>
+    <string name="ocupacion_ocupadas">%1$d/%2$d camas ocupadas</string>
 
     <!-- Filtros -->
     <string name="filtro_todos">Todos</string>
@@ -52,7 +55,7 @@
     <string name="campo_telefono">Teléfono *</string>
     <string name="campo_telefono_simple">Teléfono</string>
     <string name="campo_sexo">Sexo</string>
-    <string name="campo_seleccionar">Seleccionar ▾</string>
+    <string name="campo_seleccionar">Seleccionar</string>
     <string name="campo_correo_opcional">Correo (opcional)</string>
     <string name="campo_direccion">Dirección</string>
     <string name="campo_contacto_emergencia">Contacto de emergencia</string>
@@ -60,6 +63,7 @@
     <string name="campo_ninguna">Ninguna</string>
     <string name="campo_paciente">Paciente *</string>
     <string name="campo_fecha">Fecha *</string>
+    <string name="campo_fecha_simple">Fecha</string>
     <string name="campo_doctor_turno">Doctor de turno *</string>
     <string name="campo_hora">Hora</string>
     <string name="campo_motivo">Motivo</string>

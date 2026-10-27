@@ -13,7 +13,8 @@ import sv.edu.unicaes.hospital.domain.model.TipoHabitacion
 object DatosMuestra {
     // Recepción ------------------------------------------------------------------------------
 
-    val turnoRecepcion = TurnoUi(dia = "Hoy", horario = "07:00–15:00", area = "Recepción", tipo = "Recepcionista")
+    val turnoRecepcion =
+        TurnoUi(dia = "Hoy", horario = "07:00–15:00", area = "Recepción", tipo = "Recepcionista", enCurso = true)
 
     val solicitudAmbulancia =
         SolicitudAmbulanciaUi(

@@ -2,27 +2,27 @@
 
 package sv.edu.unicaes.hospital.ui.recepcion
 
-import androidx.compose.foundation.horizontalScroll
+import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.verticalScroll
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.PrimaryTabRow
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Tab
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
@@ -31,17 +31,22 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.PreviewParameter
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import sv.edu.unicaes.hospital.R
 import sv.edu.unicaes.hospital.core.UiState
 import sv.edu.unicaes.hospital.domain.model.EstadoLaboratorio
 import sv.edu.unicaes.hospital.ui.components.BadgeLaboratorio
 import sv.edu.unicaes.hospital.ui.components.Banner
 import sv.edu.unicaes.hospital.ui.components.BotonPrimario
-import sv.edu.unicaes.hospital.ui.components.BotonSecundario
 import sv.edu.unicaes.hospital.ui.components.CampoTexto
+import sv.edu.unicaes.hospital.ui.components.Chevron
 import sv.edu.unicaes.hospital.ui.components.ChipDesplegable
 import sv.edu.unicaes.hospital.ui.components.ContenidoConEstado
 import sv.edu.unicaes.hospital.ui.components.DialogoConfirmacion
@@ -49,19 +54,31 @@ import sv.edu.unicaes.hospital.ui.components.EstadoPaso
 import sv.edu.unicaes.hospital.ui.components.EstadoPreview
 import sv.edu.unicaes.hospital.ui.components.EstadoVacio
 import sv.edu.unicaes.hospital.ui.components.EstadosPreviewProvider
+import sv.edu.unicaes.hospital.ui.components.EstiloFilaSoporte
+import sv.edu.unicaes.hospital.ui.components.FilaChips
+import sv.edu.unicaes.hospital.ui.components.FilaDato
 import sv.edu.unicaes.hospital.ui.components.FilaLista
 import sv.edu.unicaes.hospital.ui.components.IconoAccion
 import sv.edu.unicaes.hospital.ui.components.LineaTiempo
 import sv.edu.unicaes.hospital.ui.components.PasoLinea
+import sv.edu.unicaes.hospital.ui.components.PestanasHospital
 import sv.edu.unicaes.hospital.ui.components.PreviewPantalla
 import sv.edu.unicaes.hospital.ui.components.TarjetaHospital
+import sv.edu.unicaes.hospital.ui.components.TarjetaLista
+import sv.edu.unicaes.hospital.ui.components.TextosFila
 import sv.edu.unicaes.hospital.ui.components.TipoBanner
+import sv.edu.unicaes.hospital.ui.components.TituloSeccion
 import sv.edu.unicaes.hospital.ui.components.TopBarHospital
 import sv.edu.unicaes.hospital.ui.modelo.DatosMuestra
 import sv.edu.unicaes.hospital.ui.modelo.OrdenLabUi
 import sv.edu.unicaes.hospital.ui.theme.BordeSuave
+import sv.edu.unicaes.hospital.ui.theme.Error
 import sv.edu.unicaes.hospital.ui.theme.Espacio
 import sv.edu.unicaes.hospital.ui.theme.HospitalUnicaesTheme
+import sv.edu.unicaes.hospital.ui.theme.Primario50
+import sv.edu.unicaes.hospital.ui.theme.Primario700
+import sv.edu.unicaes.hospital.ui.theme.Superficie
+import sv.edu.unicaes.hospital.ui.theme.Texto2
 
 // Laboratorio: Pendiente → En Proceso → Completado, solo hacia adelante. El doctor crea la orden,
 // recepción/asistencia la avanza y Completado exige resultado (texto y/o PDF).
@@ -104,24 +121,20 @@ fun ColaLaboratorioScreen(
             )
         },
     ) { padding ->
-        Column(modifier = Modifier.padding(padding)) {
-            PrimaryTabRow(selectedTabIndex = pestana) {
-                EstadoLaboratorio.entries.forEachIndexed { indice, estadoLab ->
-                    val conteo = conteos[estadoLab]?.let { " $it" }.orEmpty()
-                    Tab(
-                        selected = pestana == indice,
-                        onClick = { pestana = indice },
-                        text = { Text("${glifosLab[estadoLab]} ${nombreEstado(estadoLab)}$conteo") },
-                    )
-                }
-            }
-            Row(
-                modifier =
-                    Modifier
-                        .horizontalScroll(rememberScrollState())
-                        .padding(horizontal = Espacio.md, vertical = Espacio.xs),
-                horizontalArrangement = Arrangement.spacedBy(Espacio.xs),
-            ) {
+        Column(
+            modifier = Modifier.padding(padding).padding(start = Espacio.md, end = Espacio.md, top = Espacio.xs),
+            verticalArrangement = Arrangement.spacedBy(Espacio.sm),
+        ) {
+            PestanasHospital(
+                titulos =
+                    EstadoLaboratorio.entries.map { estadoLab ->
+                        val conteo = conteos[estadoLab]?.let { " $it" }.orEmpty()
+                        "${glifosLab[estadoLab]} ${nombreEstado(estadoLab)}$conteo"
+                    },
+                seleccionada = pestana,
+                onSeleccion = { pestana = it },
+            )
+            FilaChips {
                 ChipDesplegable(stringResource(R.string.lab_filtro_hoy))
                 ChipDesplegable(stringResource(R.string.citas_filtro_doctor))
             }
@@ -143,15 +156,39 @@ fun ColaLaboratorioScreen(
                         detalle = stringResource(R.string.lab_vacio_detalle),
                     )
                 }
-                LazyColumn {
-                    items(visibles, key = { it.id }) { orden ->
-                        FilaLista(
-                            titulo = orden.examen,
-                            soporte = "${orden.paciente} · ${orden.doctor} · ${orden.hora}",
-                            resaltada = orden.nueva,
-                            onClick = { onOrden(orden) },
-                            final = { BadgeLaboratorio(orden.estado) },
-                        )
+                // Las órdenes recién llegadas van en su propia tarjeta resaltada.
+                val (nuevas, resto) = visibles.partition { it.nueva }
+                LazyColumn(
+                    contentPadding = PaddingValues(bottom = Espacio.md),
+                    verticalArrangement = Arrangement.spacedBy(Espacio.sm),
+                ) {
+                    listOf(nuevas, resto).filter { it.isNotEmpty() }.forEach { grupo ->
+                        item {
+                            val resaltada = grupo === nuevas
+                            TarjetaLista(
+                                elementos = grupo,
+                                colorBorde = if (resaltada) Primario700 else BordeSuave,
+                                anchoBorde = if (resaltada) 2.dp else 1.dp,
+                                colorFondo = if (resaltada) Primario50 else Superficie,
+                            ) { orden, ultima ->
+                                FilaLista(
+                                    titulo = orden.examen,
+                                    soporte = "${orden.paciente} · ${orden.doctor} · ${orden.hora}",
+                                    onClick = { onOrden(orden) },
+                                    divisor = !ultima,
+                                    enTarjeta = true,
+                                    final = {
+                                        Row(
+                                            verticalAlignment = Alignment.CenterVertically,
+                                            horizontalArrangement = Arrangement.spacedBy(Espacio.sm),
+                                        ) {
+                                            BadgeLaboratorio(orden.estado)
+                                            Chevron()
+                                        }
+                                    },
+                                )
+                            }
+                        }
                     }
                 }
             }
@@ -187,19 +224,28 @@ fun DetalleOrdenScreen(
             vacio = {},
         ) { orden ->
             Column(
-                modifier = Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(Espacio.md),
+                modifier = Modifier.fillMaxSize().padding(RellenoCuerpo),
                 verticalArrangement = Arrangement.spacedBy(Espacio.sm),
             ) {
                 TarjetaHospital {
-                    Text(orden.examen, style = MaterialTheme.typography.titleLarge)
-                    Text(stringResource(R.string.lab_paciente, orden.paciente, orden.dui))
-                    Text(stringResource(R.string.lab_ordeno, orden.doctor, orden.ordenada))
-                    Text(
-                        text = stringResource(R.string.lab_indicaciones, orden.indicaciones),
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    Text(orden.examen, style = TextStyle(fontSize = 22.sp, lineHeight = 28.sp))
+                    Column {
+                        FilaDato(stringResource(R.string.lab_paciente), "${orden.paciente} · ${orden.dui}")
+                        FilaDato(stringResource(R.string.lab_ordeno), "${orden.doctor} · ${orden.ordenada}")
+                        FilaDato(stringResource(R.string.lab_indicaciones), orden.indicaciones, divisor = false)
+                    }
+                }
+                Surface(
+                    modifier = Modifier.fillMaxWidth(),
+                    shape = MaterialTheme.shapes.large,
+                    color = Superficie,
+                    border = BorderStroke(1.dp, BordeSuave),
+                ) {
+                    LineaTiempo(
+                        pasos = pasosOrden(orden),
+                        modifier = Modifier.padding(start = 14.dp, end = 14.dp, top = 18.dp, bottom = 18.dp),
                     )
                 }
-                LineaTiempo(pasos = pasosOrden(orden))
                 if (faltaResultado) {
                     Banner(
                         tipo = TipoBanner.AVISO,
@@ -208,6 +254,7 @@ fun DetalleOrdenScreen(
                         onAccion = onCargarResultado,
                     )
                 }
+                Spacer(Modifier.weight(1f))
                 when (orden.estado) {
                     EstadoLaboratorio.PENDIENTE -> {
                         BotonPrimario(texto = stringResource(R.string.lab_pasar_en_proceso), onClick = {
@@ -217,17 +264,12 @@ fun DetalleOrdenScreen(
                     }
 
                     EstadoLaboratorio.EN_PROCESO -> {
-                        if (orden.resultado == null) {
-                            EstadoVacio(
-                                titulo = stringResource(R.string.lab_sin_resultado_titulo),
-                                detalle = stringResource(R.string.lab_sin_resultado_detalle),
-                            )
-                        }
                         BotonPrimario(
                             texto = stringResource(R.string.lab_cargar_resultado),
                             onClick = onCargarResultado,
+                            icono = R.drawable.ic_upload,
                         )
-                        BotonSecundario(
+                        BotonPrimario(
                             texto =
                                 if (orden.resultado == null) {
                                     stringResource(R.string.lab_marcar_completado_falta)
@@ -236,14 +278,17 @@ fun DetalleOrdenScreen(
                                 },
                             onClick = onCompletar,
                             habilitado = orden.resultado != null,
-                            modifier = Modifier.fillMaxWidth(),
                         )
                     }
 
                     EstadoLaboratorio.COMPLETADO -> {
                         TarjetaHospital {
-                            Text(stringResource(R.string.lab_resultado), style = MaterialTheme.typography.bodySmall)
-                            Text(orden.resultado.orEmpty())
+                            Text(
+                                text = stringResource(R.string.lab_resultado),
+                                style = MaterialTheme.typography.bodySmall.copy(letterSpacing = 0.sp),
+                                color = Texto2,
+                            )
+                            Text(orden.resultado.orEmpty(), style = EstiloFilaSoporte)
                         }
                     }
                 }
@@ -324,41 +369,70 @@ fun CargarResultadoScreen(
                 Modifier
                     .padding(padding)
                     .fillMaxSize()
-                    .verticalScroll(rememberScrollState())
-                    .padding(Espacio.md),
+                    .padding(RellenoCuerpo),
             verticalArrangement = Arrangement.spacedBy(Espacio.sm),
         ) {
-            Text("${orden.examen} · ${orden.paciente}", style = MaterialTheme.typography.titleMedium)
+            Text("${orden.examen} · ${orden.paciente}", style = EstiloFilaSoporte, color = Texto2)
             CampoTexto(
                 etiqueta = stringResource(R.string.lab_resultado_texto),
                 valor = resultado,
                 onValor = { resultado = it },
                 singleLine = false,
-                minLines = 4,
+                minLines = 3,
             )
-            Text(stringResource(R.string.lab_archivo_pdf), style = MaterialTheme.typography.titleSmall)
+            TituloSeccion(stringResource(R.string.lab_archivo_pdf))
             if (progresoSubida != null) {
                 TarjetaHospital {
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        Column(modifier = Modifier.weight(1f)) {
-                            Text("ego-luis-martinez.pdf", style = MaterialTheme.typography.titleMedium)
-                            Text(
-                                text = stringResource(R.string.lab_subiendo, (progresoSubida * 100).toInt()),
-                                style = MaterialTheme.typography.bodySmall,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                            )
-                        }
-                        IconoAccion(R.drawable.ic_close, stringResource(R.string.lab_quitar_archivo), {})
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(Espacio.sm),
+                    ) {
+                        Icon(
+                            painter = painterResource(R.drawable.ic_documento),
+                            contentDescription = null,
+                            tint = Error,
+                            modifier = Modifier.size(28.dp),
+                        )
+                        TextosFila(
+                            titulo = "ego-luis-martinez.pdf",
+                            soporte = stringResource(R.string.lab_subiendo, (progresoSubida * 100).toInt()),
+                            modifier = Modifier.weight(1f),
+                        )
+                        IconoAccion(
+                            R.drawable.ic_close,
+                            stringResource(R.string.lab_quitar_archivo),
+                            {},
+                            tinte = Texto2,
+                        )
                     }
                     LinearProgressIndicator(
                         progress = { progresoSubida },
-                        modifier = Modifier.fillMaxWidth().height(6.dp),
+                        modifier = Modifier.fillMaxWidth().height(4.dp).clip(RoundedCornerShape(2.dp)),
                         trackColor = BordeSuave,
+                        drawStopIndicator = {},
+                        gapSize = 0.dp,
                     )
                 }
             }
             if (errorArchivo != null) Banner(tipo = TipoBanner.ERROR, texto = errorArchivo)
-            TextButton(onClick = {}) { Text(stringResource(R.string.lab_adjuntar_otro)) }
+            Row(
+                modifier = Modifier.clickable(onClick = {}).padding(vertical = Espacio.xs),
+                horizontalArrangement = Arrangement.spacedBy(Espacio.xs),
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                Icon(
+                    painter = painterResource(R.drawable.ic_add),
+                    contentDescription = null,
+                    tint = Primario700,
+                    modifier = Modifier.size(20.dp),
+                )
+                Text(
+                    text = stringResource(R.string.lab_adjuntar_otro),
+                    style = TextStyle(fontSize = 14.sp, lineHeight = 20.sp, fontWeight = FontWeight.Medium),
+                    color = Primario700,
+                )
+            }
+            Spacer(Modifier.weight(1f))
             BotonPrimario(
                 texto = stringResource(R.string.lab_guardar_completar),
                 onClick = onGuardar,

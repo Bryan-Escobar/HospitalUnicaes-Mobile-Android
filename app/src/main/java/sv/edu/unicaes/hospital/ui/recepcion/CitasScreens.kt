@@ -1,33 +1,23 @@
-@file:OptIn(ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class)
-
 package sv.edu.unicaes.hospital.ui.recepcion
 
-import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.ExperimentalLayoutApi
-import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
-import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.ExtendedFloatingActionButton
-import androidx.compose.material3.FilterChip
-import androidx.compose.material3.FilterChipDefaults
-import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.PrimaryTabRow
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Tab
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
@@ -38,17 +28,22 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.PreviewParameter
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import sv.edu.unicaes.hospital.R
 import sv.edu.unicaes.hospital.core.UiState
+import sv.edu.unicaes.hospital.ui.components.AccionTexto
+import sv.edu.unicaes.hospital.ui.components.BadgeEstado
 import sv.edu.unicaes.hospital.ui.components.Banner
 import sv.edu.unicaes.hospital.ui.components.BotonPrimario
 import sv.edu.unicaes.hospital.ui.components.BotonSecundario
 import sv.edu.unicaes.hospital.ui.components.CampoTexto
 import sv.edu.unicaes.hospital.ui.components.ChipDesplegable
+import sv.edu.unicaes.hospital.ui.components.ChipOpcion
 import sv.edu.unicaes.hospital.ui.components.ChipsFiltro
 import sv.edu.unicaes.hospital.ui.components.ContenidoConEstado
 import sv.edu.unicaes.hospital.ui.components.DialogoConfirmacion
@@ -56,23 +51,37 @@ import sv.edu.unicaes.hospital.ui.components.EstadoPreview
 import sv.edu.unicaes.hospital.ui.components.EstadoVacio
 import sv.edu.unicaes.hospital.ui.components.EstadosPreviewProvider
 import sv.edu.unicaes.hospital.ui.components.Etiqueta
+import sv.edu.unicaes.hospital.ui.components.FabHospital
+import sv.edu.unicaes.hospital.ui.components.FilaChips
 import sv.edu.unicaes.hospital.ui.components.FilaCita
 import sv.edu.unicaes.hospital.ui.components.FilaLista
 import sv.edu.unicaes.hospital.ui.components.IconoAccion
+import sv.edu.unicaes.hospital.ui.components.PestanasHospital
 import sv.edu.unicaes.hospital.ui.components.PreviewPantalla
 import sv.edu.unicaes.hospital.ui.components.TarjetaHospital
+import sv.edu.unicaes.hospital.ui.components.TarjetaLista
 import sv.edu.unicaes.hospital.ui.components.TipoBanner
 import sv.edu.unicaes.hospital.ui.components.TituloSeccion
 import sv.edu.unicaes.hospital.ui.components.TopBarHospital
 import sv.edu.unicaes.hospital.ui.modelo.AgendaDoctorUi
+import sv.edu.unicaes.hospital.ui.modelo.CitaUi
 import sv.edu.unicaes.hospital.ui.modelo.DatosMuestra
 import sv.edu.unicaes.hospital.ui.modelo.SolicitudCitaUi
-import sv.edu.unicaes.hospital.ui.theme.BordeCampo
 import sv.edu.unicaes.hospital.ui.theme.Espacio
+import sv.edu.unicaes.hospital.ui.theme.HospitalTheme
 import sv.edu.unicaes.hospital.ui.theme.HospitalUnicaesTheme
-import sv.edu.unicaes.hospital.ui.theme.Primario100
-import sv.edu.unicaes.hospital.ui.theme.Primario700
-import sv.edu.unicaes.hospital.ui.theme.Primario900
+import sv.edu.unicaes.hospital.ui.theme.Texto2
+
+/** Una fila de la agenda del doctor: una cita o un hueco libre. */
+private sealed interface EntradaAgenda {
+    data class Ocupada(
+        val cita: CitaUi,
+    ) : EntradaAgenda
+
+    data class Libre(
+        val hora: String,
+    ) : EntradaAgenda
+}
 
 /** AND-R5 · Citas del día agrupadas por doctor de turno. */
 @Composable
@@ -90,23 +99,14 @@ fun CitasScreen(
                 acciones = { IconoAccion(R.drawable.ic_calendar, stringResource(R.string.accion_calendario), {}) },
             )
         },
-        floatingActionButton = {
-            ExtendedFloatingActionButton(
-                onClick = onNuevaCita,
-                icon = { Icon(painterResource(R.drawable.ic_add), contentDescription = null) },
-                text = { Text(stringResource(R.string.citas_nueva)) },
-            )
-        },
+        floatingActionButton = { FabHospital(texto = stringResource(R.string.citas_nueva), onClick = onNuevaCita) },
     ) { padding ->
-        Column(modifier = Modifier.padding(padding)) {
+        Column(
+            modifier = Modifier.padding(padding).padding(start = Espacio.md, end = Espacio.md, top = Espacio.xs),
+            verticalArrangement = Arrangement.spacedBy(Espacio.sm),
+        ) {
             ChipsFiltro(opciones = DatosMuestra.diasSemana, seleccionada = dia, onSeleccion = { dia = it })
-            Row(
-                modifier =
-                    Modifier
-                        .horizontalScroll(rememberScrollState())
-                        .padding(horizontal = Espacio.md, vertical = Espacio.xxs),
-                horizontalArrangement = Arrangement.spacedBy(Espacio.xs),
-            ) {
+            FilaChips {
                 ChipDesplegable(stringResource(R.string.citas_filtro_doctor))
                 ChipDesplegable(stringResource(R.string.citas_filtro_especialidad))
                 ChipDesplegable(stringResource(R.string.citas_filtro_estado))
@@ -125,25 +125,38 @@ fun CitasScreen(
                     )
                 },
             ) { agendas ->
-                LazyColumn(contentPadding = PaddingValues(bottom = Espacio.xxl * 2)) {
+                LazyColumn(
+                    contentPadding = PaddingValues(bottom = 96.dp),
+                    verticalArrangement = Arrangement.spacedBy(Espacio.sm),
+                ) {
                     agendas.forEach { agenda ->
+                        item { TituloSeccion(texto = "${agenda.doctor} · ${agenda.especialidad} · ${agenda.horario}") }
                         item {
-                            TituloSeccion(
-                                texto = "${agenda.doctor} · ${agenda.especialidad} · ${agenda.horario}",
-                                modifier = Modifier.padding(horizontal = Espacio.md),
-                            )
-                        }
-                        items(agenda.citas, key = { it.id }) { FilaCita(cita = it, onClick = onCita) }
-                        items(agenda.horasLibres) { hora ->
-                            FilaLista(
-                                titulo = stringResource(R.string.citas_libre),
-                                inicio = { Text(hora, style = MaterialTheme.typography.titleMedium) },
-                                final = {
-                                    TextButton(
-                                        onClick = onNuevaCita,
-                                    ) { Text(stringResource(R.string.citas_agendar)) }
-                                },
-                            )
+                            val entradas =
+                                agenda.citas.map { EntradaAgenda.Ocupada(it) } +
+                                    agenda.horasLibres.map { EntradaAgenda.Libre(it) }
+                            TarjetaLista(entradas) { entrada, ultima ->
+                                when (entrada) {
+                                    is EntradaAgenda.Ocupada -> {
+                                        FilaCita(cita = entrada.cita, divisor = !ultima, onClick = onCita)
+                                    }
+
+                                    is EntradaAgenda.Libre -> {
+                                        FilaLista(
+                                            titulo = "${entrada.hora} ${stringResource(R.string.citas_libre)}",
+                                            soporte = stringResource(R.string.citas_hueco_disponible),
+                                            divisor = !ultima,
+                                            enTarjeta = true,
+                                            final = {
+                                                AccionTexto(
+                                                    texto = stringResource(R.string.citas_agendar),
+                                                    onClick = onNuevaCita,
+                                                )
+                                            },
+                                        )
+                                    }
+                                }
+                            }
                         }
                     }
                 }
@@ -179,6 +192,22 @@ fun NuevaCitaScreen(
                 cerrar = true,
             )
         },
+        bottomBar = {
+            Column(
+                modifier = Modifier.navigationBarsPadding().padding(RellenoCuerpo),
+                verticalArrangement = Arrangement.spacedBy(Espacio.xs),
+                horizontalAlignment = Alignment.CenterHorizontally,
+            ) {
+                BotonPrimario(texto = stringResource(R.string.citas_guardar), onClick = onGuardar)
+                if (reprogramar) {
+                    BotonSecundario(
+                        texto = stringResource(R.string.citas_cancelar_cita),
+                        onClick = { confirmarCancelacion = true },
+                        destructivo = true,
+                    )
+                }
+            }
+        },
     ) { padding ->
         Column(
             modifier =
@@ -186,8 +215,8 @@ fun NuevaCitaScreen(
                     .padding(padding)
                     .fillMaxSize()
                     .verticalScroll(rememberScrollState())
-                    .padding(Espacio.md),
-            verticalArrangement = Arrangement.spacedBy(Espacio.xs),
+                    .padding(RellenoCuerpo),
+            verticalArrangement = Arrangement.spacedBy(Espacio.sm),
         ) {
             if (solicitud != null) {
                 Banner(
@@ -196,62 +225,28 @@ fun NuevaCitaScreen(
                 )
             }
             CampoTexto(stringResource(R.string.campo_paciente), paciente, { paciente = it })
-            CampoTexto(stringResource(R.string.campo_fecha), fecha, { fecha = it })
+            CampoTexto(stringResource(R.string.campo_fecha), fecha, { fecha = it }, final = { IconoDesplegable() })
             CampoTexto(
                 etiqueta = stringResource(R.string.campo_doctor_turno),
                 valor = doctor,
                 onValor = { doctor = it },
                 ayuda = stringResource(R.string.citas_ayuda_doctor),
+                final = { IconoDesplegable() },
             )
             TituloSeccion(stringResource(R.string.campo_hora))
-            FlowRow(horizontalArrangement = Arrangement.spacedBy(Espacio.xs)) {
+            FilaChips {
                 DatosMuestra.horasCita.forEach { opcion ->
                     val ocupada = opcion in DatosMuestra.horasOcupadas
-                    val elegida = opcion == hora
-                    FilterChip(
-                        selected = elegida,
-                        enabled = !ocupada,
+                    ChipOpcion(
+                        texto = if (ocupada) stringResource(R.string.citas_hora_ocupada, opcion) else opcion,
+                        elegida = opcion == hora,
+                        habilitada = !ocupada,
                         onClick = { hora = opcion },
-                        label = {
-                            Text(
-                                when {
-                                    elegida -> "✓ $opcion"
-                                    ocupada -> stringResource(R.string.citas_hora_ocupada, opcion)
-                                    else -> opcion
-                                },
-                            )
-                        },
-                        shape = RoundedCornerShape(8.dp),
-                        colors =
-                            FilterChipDefaults.filterChipColors(
-                                selectedContainerColor = Primario100,
-                                selectedLabelColor = Primario900,
-                            ),
-                        border =
-                            FilterChipDefaults.filterChipBorder(
-                                enabled = !ocupada,
-                                selected = elegida,
-                                borderColor = BordeCampo,
-                                selectedBorderColor = Primario700,
-                            ),
                     )
                 }
             }
             CampoTexto(stringResource(R.string.campo_motivo), motivo, { motivo = it })
             if (errorChoque) Banner(tipo = TipoBanner.AVISO, texto = stringResource(R.string.citas_error_choque))
-            BotonPrimario(
-                texto = stringResource(R.string.citas_guardar),
-                onClick = onGuardar,
-                modifier = Modifier.padding(top = Espacio.sm),
-            )
-            if (reprogramar) {
-                BotonSecundario(
-                    texto = stringResource(R.string.citas_cancelar_cita),
-                    onClick = { confirmarCancelacion = true },
-                    destructivo = true,
-                    modifier = Modifier.align(Alignment.CenterHorizontally),
-                )
-            }
         }
     }
 
@@ -292,16 +287,20 @@ fun SolicitudesCitasScreen(
             )
         },
     ) { padding ->
-        Column(modifier = Modifier.padding(padding)) {
-            PrimaryTabRow(selectedTabIndex = pestana) {
-                listOf(
-                    stringResource(R.string.solicitudes_nuevas, nuevas),
-                    stringResource(R.string.solicitudes_convertidas),
-                    stringResource(R.string.solicitudes_rechazadas),
-                ).forEachIndexed { indice, titulo ->
-                    Tab(selected = pestana == indice, onClick = { pestana = indice }, text = { Text(titulo) })
-                }
-            }
+        Column(
+            modifier = Modifier.padding(padding).padding(start = Espacio.md, end = Espacio.md, top = Espacio.xs),
+            verticalArrangement = Arrangement.spacedBy(Espacio.sm),
+        ) {
+            PestanasHospital(
+                titulos =
+                    listOf(
+                        stringResource(R.string.solicitudes_nuevas, nuevas),
+                        stringResource(R.string.solicitudes_convertidas),
+                        stringResource(R.string.solicitudes_rechazadas),
+                    ),
+                seleccionada = pestana,
+                onSeleccion = { pestana = it },
+            )
             ContenidoConEstado(
                 estado = if (pestana == 0) estado else UiState.Vacio,
                 mensajeError = stringResource(R.string.solicitudes_error),
@@ -315,7 +314,7 @@ fun SolicitudesCitasScreen(
                 },
             ) { solicitudes ->
                 LazyColumn(
-                    contentPadding = PaddingValues(Espacio.md),
+                    contentPadding = PaddingValues(bottom = Espacio.md),
                     verticalArrangement = Arrangement.spacedBy(Espacio.sm),
                 ) {
                     items(solicitudes, key = { it.id }) { solicitud ->
@@ -357,6 +356,7 @@ fun SolicitudesCitasScreen(
     }
 }
 
+/** Solicitud: paciente y antigüedad, motivo, especialidad y preferencia, y las dos acciones. */
 @Composable
 private fun TarjetaSolicitudCita(
     solicitud: SolicitudCitaUi,
@@ -364,26 +364,40 @@ private fun TarjetaSolicitudCita(
     onConvertir: () -> Unit,
 ) {
     TarjetaHospital {
-        Text("${solicitud.paciente} · ${solicitud.hace}", style = MaterialTheme.typography.titleMedium)
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            Text(text = solicitud.paciente, style = EstiloTituloTarjeta, modifier = Modifier.weight(1f))
+            Text(text = solicitud.hace, style = TextStyle(fontSize = 13.sp, lineHeight = 20.sp), color = Texto2)
+        }
         Text(
             text = stringResource(R.string.solicitudes_motivo, solicitud.motivo),
-            style = MaterialTheme.typography.bodyMedium,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            style = TextStyle(fontSize = 14.sp, lineHeight = 20.sp),
+            color = MaterialTheme.colorScheme.onSurface,
         )
-        Row(
-            horizontalArrangement = Arrangement.spacedBy(Espacio.xs),
-            modifier = Modifier.padding(vertical = Espacio.xxs),
-        ) {
-            Etiqueta(solicitud.especialidad)
+        Row(horizontalArrangement = Arrangement.spacedBy(Espacio.xs)) {
+            BadgeEstado(texto = solicitud.especialidad, colores = HospitalTheme.estados.personalMedico)
             Etiqueta(solicitud.preferencia)
         }
         Row(
             horizontalArrangement = Arrangement.spacedBy(Espacio.xs, Alignment.End),
+            verticalAlignment = Alignment.CenterVertically,
             modifier = Modifier.fillMaxWidth(),
         ) {
-            BotonSecundario(texto = stringResource(R.string.accion_rechazar), onClick = onRechazar)
-            Button(onClick = onConvertir, modifier = Modifier.padding(start = Espacio.xxs)) {
-                Text(stringResource(R.string.solicitudes_convertir))
+            TextButton(onClick = onRechazar, modifier = Modifier.height(44.dp)) {
+                Text(
+                    text = stringResource(R.string.accion_rechazar),
+                    style = TextStyle(fontSize = 15.sp, fontWeight = FontWeight.Medium),
+                )
+            }
+            Button(
+                onClick = onConvertir,
+                shape = CircleShape,
+                contentPadding = PaddingValues(horizontal = Espacio.md),
+                modifier = Modifier.height(40.dp),
+            ) {
+                Text(
+                    text = stringResource(R.string.solicitudes_convertir),
+                    style = TextStyle(fontSize = 14.sp, lineHeight = 22.sp, fontWeight = FontWeight.Medium),
+                )
             }
         }
     }

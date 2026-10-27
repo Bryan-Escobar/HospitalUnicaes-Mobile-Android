@@ -28,6 +28,9 @@
     <string name="expediente_alergias">Alergias</string>
     <string name="expediente_alergias_valor">Alergias: %1$s</string>
     <string name="expediente_hospitalizacion">Hospitalización</string>
+    <string name="expediente_dato_dui">Documento (DUI)</string>
+    <string name="expediente_dato_edad">Edad</string>
+    <string name="expediente_edad_valor">%1$d años</string>
     <string name="expediente_consulta_resumen">%1$s · %2$d receta(s) · %3$d orden(es)</string>
     <string name="expediente_lab_preview">Laboratorio (vista previa)</string>
     <string name="expediente_vacio_titulo">Sin consultas registradas</string>
@@ -39,6 +42,7 @@
     <string name="consulta_diagnostico">Diagnóstico *</string>
     <string name="consulta_notas">Notas</string>
     <string name="consulta_notas_ayuda">Notas internas: el paciente no las ve.</string>
+    <string name="consulta_notas_placeholder">Notas de la consulta</string>
     <string name="consulta_recetas">Recetas (%1$d)</string>
     <string name="consulta_agregar_receta">+ Receta</string>
     <string name="consulta_sin_recetas">Sin recetas</string>

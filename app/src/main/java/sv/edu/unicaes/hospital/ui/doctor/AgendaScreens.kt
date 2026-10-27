@@ -4,19 +4,16 @@ package sv.edu.unicaes.hospital.ui.doctor
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.PrimaryTabRow
+import androidx.compose.material3.Icon
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Tab
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -25,35 +22,50 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.PreviewParameter
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import sv.edu.unicaes.hospital.R
 import sv.edu.unicaes.hospital.core.UiState
 import sv.edu.unicaes.hospital.domain.model.EstadoCita
-import sv.edu.unicaes.hospital.ui.components.Avatar
 import sv.edu.unicaes.hospital.ui.components.BadgeCita
+import sv.edu.unicaes.hospital.ui.components.BadgeEstado
 import sv.edu.unicaes.hospital.ui.components.BotonPrimario
 import sv.edu.unicaes.hospital.ui.components.BotonSecundario
+import sv.edu.unicaes.hospital.ui.components.CabeceraPersona
 import sv.edu.unicaes.hospital.ui.components.ChipsFiltro
 import sv.edu.unicaes.hospital.ui.components.ContenidoConEstado
 import sv.edu.unicaes.hospital.ui.components.EstadoPreview
 import sv.edu.unicaes.hospital.ui.components.EstadoVacio
 import sv.edu.unicaes.hospital.ui.components.EstadosPreviewProvider
+import sv.edu.unicaes.hospital.ui.components.EstiloFilaSoporte
 import sv.edu.unicaes.hospital.ui.components.FilaCita
+import sv.edu.unicaes.hospital.ui.components.FilaDato
 import sv.edu.unicaes.hospital.ui.components.FilaTurno
 import sv.edu.unicaes.hospital.ui.components.IconoAccion
+import sv.edu.unicaes.hospital.ui.components.PestanasHospital
 import sv.edu.unicaes.hospital.ui.components.PreviewPantalla
 import sv.edu.unicaes.hospital.ui.components.TarjetaHospital
+import sv.edu.unicaes.hospital.ui.components.TarjetaLista
 import sv.edu.unicaes.hospital.ui.components.TarjetaTurno
 import sv.edu.unicaes.hospital.ui.components.TopBarHospital
-import sv.edu.unicaes.hospital.ui.components.iniciales
 import sv.edu.unicaes.hospital.ui.modelo.AgendaUi
 import sv.edu.unicaes.hospital.ui.modelo.DatosMuestra
 import sv.edu.unicaes.hospital.ui.modelo.DetalleCitaUi
 import sv.edu.unicaes.hospital.ui.modelo.TurnoUi
+import sv.edu.unicaes.hospital.ui.recepcion.RellenoCuerpo
+import sv.edu.unicaes.hospital.ui.theme.AmbarTexto
 import sv.edu.unicaes.hospital.ui.theme.Espacio
+import sv.edu.unicaes.hospital.ui.theme.HospitalTheme
 import sv.edu.unicaes.hospital.ui.theme.HospitalUnicaesTheme
+import sv.edu.unicaes.hospital.ui.theme.Neutro700
+import sv.edu.unicaes.hospital.ui.theme.Primario700
+import sv.edu.unicaes.hospital.ui.theme.Texto2
+import sv.edu.unicaes.hospital.ui.theme.VerdeTexto
 
 /** AND-D1 · Agenda (destino inicial del Doctor): turno en curso y citas del día elegido. */
 @Composable
@@ -68,7 +80,14 @@ fun AgendaScreen(
             TopBarHospital(
                 titulo = stringResource(R.string.tab_agenda),
                 enVivo = true,
-                acciones = { IconoAccion(R.drawable.ic_calendar, stringResource(R.string.accion_calendario), {}) },
+                acciones = {
+                    IconoAccion(
+                        R.drawable.ic_calendar,
+                        stringResource(R.string.accion_calendario),
+                        {},
+                        tinte = Neutro700,
+                    )
+                },
             )
         },
     ) { padding ->
@@ -87,28 +106,22 @@ fun AgendaScreen(
                 )
             },
         ) { agenda ->
-            LazyColumn(contentPadding = PaddingValues(vertical = Espacio.md)) {
+            LazyColumn(contentPadding = RellenoCuerpo, verticalArrangement = Arrangement.spacedBy(Espacio.sm)) {
                 agenda.turno?.let { turno ->
-                    item {
-                        TarjetaTurno(
-                            titulo = stringResource(R.string.agenda_turno_en_curso),
-                            turno = turno,
-                            modifier = Modifier.padding(horizontal = Espacio.md),
-                        )
-                    }
+                    item { TarjetaTurno(titulo = stringResource(R.string.agenda_turno_en_curso), turno = turno) }
                 }
-                item {
-                    ChipsFiltro(
-                        opciones = agenda.dias,
-                        seleccionada = dia,
-                        onSeleccion = { dia = it },
-                        modifier = Modifier.padding(vertical = Espacio.sm),
-                    )
-                }
+                item { ChipsFiltro(opciones = agenda.dias, seleccionada = dia, onSeleccion = { dia = it }) }
                 // Se resalta la próxima cita programada.
                 val proxima = agenda.citas.firstOrNull { it.estado == EstadoCita.PROGRAMADA }?.id
-                items(agenda.citas, key = { it.id }) { cita ->
-                    FilaCita(cita = cita, resaltada = cita.id == proxima, onClick = { onCita(cita.id) })
+                item {
+                    TarjetaLista(agenda.citas) { cita, ultimo ->
+                        FilaCita(
+                            cita = cita,
+                            resaltada = cita.id == proxima,
+                            divisor = !ultimo,
+                            onClick = { onCita(cita.id) },
+                        )
+                    }
                 }
             }
         }
@@ -134,15 +147,6 @@ fun DetalleCitaScreen(
                 onVolver = onVolver,
             )
         },
-        bottomBar = {
-            if (estado is UiState.Exito && estado.datos.cita.estado == EstadoCita.PROGRAMADA) {
-                BotonPrimario(
-                    texto = stringResource(R.string.cita_iniciar_consulta),
-                    onClick = onIniciarConsulta,
-                    modifier = Modifier.navigationBarsPadding().padding(Espacio.md),
-                )
-            }
-        },
     ) { padding ->
         ContenidoConEstado(
             estado = estado,
@@ -159,62 +163,82 @@ fun DetalleCitaScreen(
             },
         ) { detalle ->
             Column(
-                modifier = Modifier.fillMaxSize().padding(Espacio.md),
+                modifier = Modifier.fillMaxSize().padding(RellenoCuerpo),
                 verticalArrangement = Arrangement.spacedBy(Espacio.sm),
             ) {
-                Row(
-                    horizontalArrangement = Arrangement.spacedBy(Espacio.md),
-                    verticalAlignment = Alignment.CenterVertically,
-                ) {
-                    Avatar(iniciales(detalle.cita.paciente), tamano = 56.dp)
-                    Column {
-                        Text(detalle.cita.paciente, style = MaterialTheme.typography.headlineSmall)
-                        Text(
-                            text = stringResource(R.string.cita_edad_dui, detalle.edad, detalle.dui),
-                            color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        )
-                    }
+                CabeceraPersona(
+                    nombre = detalle.cita.paciente,
+                    soporte = stringResource(R.string.cita_edad_dui, detalle.edad, detalle.dui),
+                )
+                TarjetaHospital {
+                    FilaDato(stringResource(R.string.campo_motivo), detalle.cita.motivo)
+                    FilaDato(stringResource(R.string.campo_fecha_simple), detalle.cita.fecha)
+                    FilaDatoConBadge(stringResource(R.string.citas_filtro_estado)) { BadgeCita(detalle.cita.estado) }
                 }
                 TarjetaHospital {
-                    DatoCita(stringResource(R.string.campo_motivo), detalle.cita.motivo)
-                    DatoCita(stringResource(R.string.campo_fecha), detalle.cita.fecha)
-                    Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth()) {
-                        Text(
-                            text = stringResource(R.string.citas_filtro_estado),
-                            color = MaterialTheme.colorScheme.onSurfaceVariant,
-                            modifier = Modifier.weight(1f),
+                    val alergias = detalle.alergias
+                    Row(
+                        horizontalArrangement = Arrangement.spacedBy(10.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                    ) {
+                        Icon(
+                            painter =
+                                painterResource(
+                                    if (alergias ==
+                                        null
+                                    ) {
+                                        R.drawable.ic_check
+                                    } else {
+                                        R.drawable.ic_alerta
+                                    },
+                                ),
+                            contentDescription = null,
+                            tint = if (alergias == null) VerdeTexto else AmbarTexto,
+                            modifier = Modifier.size(20.dp),
                         )
-                        BadgeCita(detalle.cita.estado)
+                        Text(
+                            text =
+                                alergias?.let { stringResource(R.string.expediente_alergias_valor, it) }
+                                    ?: stringResource(R.string.cita_sin_alergias),
+                            style = EstiloFilaSoporte,
+                        )
                     }
                 }
-                Text(
-                    text =
-                        detalle.alergias?.let { stringResource(R.string.expediente_alergias_valor, it) }
-                            ?: stringResource(R.string.cita_sin_alergias),
-                    style = MaterialTheme.typography.bodyLarge,
-                )
                 BotonSecundario(
                     texto = stringResource(R.string.cita_ver_expediente),
                     onClick = onVerExpediente,
                     modifier = Modifier.fillMaxWidth(),
                 )
+                Spacer(Modifier.weight(1f))
+                if (detalle.cita.estado == EstadoCita.PROGRAMADA) {
+                    BotonPrimario(texto = stringResource(R.string.cita_iniciar_consulta), onClick = onIniciarConsulta)
+                }
             }
         }
     }
 }
 
+/** Como [FilaDato] (`.kv`), pero con un badge como valor. */
 @Composable
-private fun DatoCita(
+private fun FilaDatoConBadge(
     etiqueta: String,
-    valor: String,
+    badge: @Composable () -> Unit,
 ) {
-    Row(modifier = Modifier.fillMaxWidth().padding(vertical = Espacio.xxs)) {
-        Text(etiqueta, color = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.weight(1f))
-        Text(valor, style = MaterialTheme.typography.titleMedium)
+    Row(
+        modifier = Modifier.fillMaxWidth().padding(vertical = 9.dp),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        Text(
+            text = etiqueta,
+            style = TextStyle(fontSize = 15.sp, lineHeight = 20.sp),
+            color = Texto2,
+            modifier = Modifier.weight(1f),
+        )
+        badge()
     }
 }
 
-/** AND-D7 · Mis turnos (solo lectura): esta semana y la siguiente. */
+/** AND-D7 · Mis turnos (solo lectura): esta semana y la siguiente; el turno en curso va aparte. */
 @Composable
 fun MisTurnosScreen(
     estado: UiState<Pair<List<TurnoUi>, List<TurnoUi>>>,
@@ -222,19 +246,19 @@ fun MisTurnosScreen(
 ) {
     var semana by rememberSaveable { mutableIntStateOf(0) }
     Scaffold(topBar = { TopBarHospital(titulo = stringResource(R.string.turnos_mis_turnos)) }) { padding ->
-        Column(modifier = Modifier.padding(padding)) {
-            PrimaryTabRow(selectedTabIndex = semana) {
-                Tab(
-                    selected = semana == 0,
-                    onClick = { semana = 0 },
-                    text = { Text(stringResource(R.string.turnos_esta_semana)) },
-                )
-                Tab(
-                    selected = semana == 1,
-                    onClick = { semana = 1 },
-                    text = { Text(stringResource(R.string.turnos_siguiente)) },
-                )
-            }
+        Column(
+            modifier = Modifier.padding(padding).padding(RellenoCuerpo),
+            verticalArrangement = Arrangement.spacedBy(Espacio.sm),
+        ) {
+            PestanasHospital(
+                titulos =
+                    listOf(
+                        stringResource(R.string.turnos_esta_semana),
+                        stringResource(R.string.turnos_siguiente),
+                    ),
+                seleccionada = semana,
+                onSeleccion = { semana = it },
+            )
             ContenidoConEstado(
                 estado = estado,
                 mensajeError = stringResource(R.string.turnos_error),
@@ -249,11 +273,39 @@ fun MisTurnosScreen(
                     )
                 },
             ) { (esta, siguiente) ->
-                LazyColumn {
-                    items(if (semana == 0) esta else siguiente) { FilaTurno(it) }
+                val turnos = if (semana == 0) esta else siguiente
+                val enCurso = turnos.firstOrNull { it.enCurso }
+                val resto = turnos.filterNot { it.enCurso }
+                LazyColumn(verticalArrangement = Arrangement.spacedBy(Espacio.sm)) {
+                    enCurso?.let { turno -> item { TarjetaTurnoEnCurso(turno) } }
+                    if (resto.isNotEmpty()) {
+                        item {
+                            TarjetaLista(resto) { turno, ultimo -> FilaTurno(turno, divisor = !ultimo) }
+                        }
+                    }
                 }
             }
         }
+    }
+}
+
+/** Turno en curso de "Mis turnos": "Mié 21 · 06:00–18:00" 16/24 500, badge "● En curso" y área. */
+@Composable
+private fun TarjetaTurnoEnCurso(turno: TurnoUi) {
+    TarjetaHospital(colorBorde = Primario700, anchoBorde = 2.5.dp) {
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            Text(
+                text = "${turno.dia} · ${turno.horario}",
+                style = TextStyle(fontSize = 16.sp, lineHeight = 24.sp, fontWeight = FontWeight.Medium),
+                modifier = Modifier.weight(1f),
+            )
+            BadgeEstado(
+                texto = stringResource(R.string.turno_en_curso),
+                colores = HospitalTheme.estados.turnoEnCurso,
+                glifo = "●",
+            )
+        }
+        Text(text = turno.area, style = EstiloFilaSoporte, color = Texto2)
     }
 }
 

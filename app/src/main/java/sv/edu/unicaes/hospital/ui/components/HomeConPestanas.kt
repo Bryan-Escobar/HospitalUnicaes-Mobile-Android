@@ -4,20 +4,34 @@ import androidx.annotation.DrawableRes
 import androidx.annotation.StringRes
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.Icon
+import androidx.compose.material3.NavigationBarItemDefaults
+import androidx.compose.material3.NavigationRailItemDefaults
 import androidx.compose.material3.Text
+import androidx.compose.material3.adaptive.navigationsuite.NavigationSuiteDefaults
 import androidx.compose.material3.adaptive.navigationsuite.NavigationSuiteScaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.sp
 import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.NavHostController
+import sv.edu.unicaes.hospital.ui.theme.Primario100
+import sv.edu.unicaes.hospital.ui.theme.Primario900
+import sv.edu.unicaes.hospital.ui.theme.Superficie2
+import sv.edu.unicaes.hospital.ui.theme.Texto1
+import sv.edu.unicaes.hospital.ui.theme.Texto2
 
 data class Pestana(
     @param:StringRes val titulo: Int,
     @param:DrawableRes val icono: Int,
     val ruta: Any,
 )
+
+// `.and-nav`: fondo n100, píldora primary-100 (56×32), etiqueta 12/16 500; activa n900, inactiva n600.
+private val estiloDestino = TextStyle(fontSize = 12.sp, lineHeight = 16.sp, fontWeight = FontWeight.Medium)
 
 /**
  * Barra inferior (o riel en pantallas grandes) con las pestañas de un rol. La pestaña elegida
@@ -30,17 +44,42 @@ fun HomeConPestanas(
     onSeleccion: (Int) -> Unit,
     contenido: @Composable (modifier: Modifier) -> Unit,
 ) {
+    val colores =
+        NavigationSuiteDefaults.itemColors(
+            navigationBarItemColors =
+                NavigationBarItemDefaults.colors(
+                    selectedIconColor = Primario900,
+                    selectedTextColor = Texto1,
+                    indicatorColor = Primario100,
+                    unselectedIconColor = Texto2,
+                    unselectedTextColor = Texto2,
+                ),
+            navigationRailItemColors =
+                NavigationRailItemDefaults.colors(
+                    selectedIconColor = Primario900,
+                    selectedTextColor = Texto1,
+                    indicatorColor = Primario100,
+                    unselectedIconColor = Texto2,
+                    unselectedTextColor = Texto2,
+                ),
+        )
     NavigationSuiteScaffold(
         navigationSuiteItems = {
             pestanas.forEachIndexed { indice, pestana ->
                 item(
                     icon = { Icon(painterResource(pestana.icono), contentDescription = null) },
-                    label = { Text(stringResource(pestana.titulo)) },
+                    label = { Text(text = stringResource(pestana.titulo), style = estiloDestino) },
                     selected = indice == seleccionada,
                     onClick = { onSeleccion(indice) },
+                    colors = colores,
                 )
             }
         },
+        navigationSuiteColors =
+            NavigationSuiteDefaults.colors(
+                navigationBarContainerColor = Superficie2,
+                navigationRailContainerColor = Superficie2,
+            ),
     ) {
         contenido(Modifier.fillMaxSize())
     }

@@ -1,13 +1,20 @@
 <resources>
     <!-- app_name se define por variante (dev/prod) en app/build.gradle.kts -->
 
+    <!-- Marca -->
+    <string name="marca_nombre">HospitalUnicaes</string>
+    <string name="marca_hospital">Hospital Universitario Central</string>
+    <string name="marca_universidad">Universidad Católica de El Salvador</string>
+    <string name="splash_restaurando">Restaurando sesión…</string>
+
     <!-- Login -->
-    <string name="login_titulo">Hospital Universitario Central</string>
-    <string name="login_subtitulo">Ingresa con tu cuenta del hospital</string>
     <string name="login_correo">Correo electrónico</string>
+    <string name="login_correo_placeholder">nombre@correo.com</string>
     <string name="login_contrasena">Contraseña</string>
+    <string name="login_olvide">¿Olvidaste tu contraseña?</string>
     <string name="login_ingresar">Ingresar</string>
     <string name="login_ingresando">Ingresando…</string>
+    <string name="login_pie">Acceso para personal de recepción, asistencia y doctores.</string>
 
     <!-- Estados comunes -->
     <string name="estado_cargando">Cargando…</string>

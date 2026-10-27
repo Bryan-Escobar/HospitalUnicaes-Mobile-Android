@@ -33,8 +33,10 @@ data class EstadoColors(
     val solicitudNueva: ParColor = ParColor(AmbarTexto, AmbarFondo, AmbarBorde),
     val solicitudRechazada: ParColor = ParColor(GrisTexto, GrisFondo, GrisBorde),
     val turnoEnCurso: ParColor = ParColor(Primario800, Primario50, Primario200),
+    val personalEmergencia: ParColor = ParColor(RojoTexto, RojoFondo, RojoBorde),
+    val personalMedico: ParColor = ParColor(Primario900, Primario50, Primario200),
     // Etiquetas informativas: tipo de personal, habitación asignada, área.
-    val etiqueta: ParColor = ParColor(Texto2, Superficie2, BordeSuave),
+    val etiqueta: ParColor = ParColor(Neutro700, Superficie2, Borde),
 )
 
 val LocalEstadoColors = staticCompositionLocalOf { EstadoColors() }

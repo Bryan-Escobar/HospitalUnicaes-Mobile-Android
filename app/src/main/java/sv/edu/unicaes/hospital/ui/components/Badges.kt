@@ -41,7 +41,9 @@ import sv.edu.unicaes.hospital.ui.theme.Primario700
 import sv.edu.unicaes.hospital.ui.theme.Primario800
 import sv.edu.unicaes.hospital.ui.theme.Superficie2
 
-private val estiloBadge = TextStyle(fontSize = 13.sp, lineHeight = 18.sp, fontWeight = FontWeight.SemiBold)
+// `.badge`: 13/16 600, borde 1, píldora; el glifo va en 700.
+private val estiloBadge = TextStyle(fontSize = 13.sp, lineHeight = 16.sp, fontWeight = FontWeight.SemiBold)
+private val estiloBadgeGrande = TextStyle(fontSize = 15.sp, lineHeight = 20.sp, fontWeight = FontWeight.Bold)
 
 /** Píldora de estado: el estado nunca se comunica solo con color, siempre texto + glifo. */
 @Composable
@@ -50,20 +52,27 @@ fun BadgeEstado(
     colores: ParColor,
     modifier: Modifier = Modifier,
     glifo: String? = null,
+    grande: Boolean = false,
 ) {
+    val estilo = if (grande) estiloBadgeGrande else estiloBadge
     Row(
         modifier =
             modifier
                 .clip(CircleShape)
                 .background(colores.fondo)
                 .border(1.dp, colores.borde, CircleShape)
-                .padding(start = 7.dp, end = 9.dp, top = 3.dp, bottom = 3.dp)
-                .semantics(mergeDescendants = true) {},
+                .then(
+                    if (grande) {
+                        Modifier.padding(horizontal = 12.dp, vertical = 5.dp)
+                    } else {
+                        Modifier.padding(start = 8.dp, end = 9.dp, top = 3.dp, bottom = 3.dp)
+                    },
+                ).semantics(mergeDescendants = true) {},
         horizontalArrangement = Arrangement.spacedBy(5.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
-        if (glifo != null) Text(text = glifo, style = estiloBadge, color = colores.texto)
-        Text(text = texto, style = estiloBadge, color = colores.texto, maxLines = 1)
+        if (glifo != null) Text(text = glifo, style = estilo.copy(fontWeight = FontWeight.Bold), color = colores.texto)
+        Text(text = texto, style = estilo, color = colores.texto, maxLines = 1)
     }
 }
 
@@ -74,6 +83,25 @@ fun Etiqueta(
     modifier: Modifier = Modifier,
 ) {
     BadgeEstado(texto = texto, colores = HospitalTheme.estados.etiqueta, modifier = modifier)
+}
+
+/**
+ * Tipo de personal o área: Emergencia en rojo; médicos (Doctor, Alergista…) en teal;
+ * el resto (Recepcionista, Enfermería…) neutro.
+ */
+@Composable
+fun EtiquetaPersonal(
+    tipo: String,
+    modifier: Modifier = Modifier,
+) {
+    val estados = HospitalTheme.estados
+    val colores =
+        when (tipo) {
+            "Emergencia" -> estados.personalEmergencia
+            "Doctor", "Alergista", "General", "Médico" -> estados.personalMedico
+            else -> estados.etiqueta
+        }
+    BadgeEstado(texto = tipo, colores = colores, modifier = modifier)
 }
 
 @Composable
@@ -102,6 +130,7 @@ fun BadgeLaboratorio(
 fun BadgeAmbulancia(
     estado: EstadoAmbulancia,
     modifier: Modifier = Modifier,
+    grande: Boolean = false,
 ) {
     val estados = HospitalTheme.estados
     val (colores, glifo, texto) =
@@ -118,7 +147,7 @@ fun BadgeAmbulancia(
                 Triple(estados.ambulanciaEnMantenimiento, "‖", R.string.ambulancia_en_mantenimiento)
             }
         }
-    BadgeEstado(texto = stringResource(texto), colores = colores, glifo = glifo, modifier = modifier)
+    BadgeEstado(texto = stringResource(texto), colores = colores, glifo = glifo, modifier = modifier, grande = grande)
 }
 
 @Composable
@@ -168,7 +197,7 @@ fun ChipEnVivo(
                 .border(1.dp, colores.borde, forma)
                 .padding(horizontal = 10.dp, vertical = 6.dp)
                 .semantics(mergeDescendants = true) {},
-        horizontalArrangement = Arrangement.spacedBy(Espacio.xs),
+        horizontalArrangement = Arrangement.spacedBy(6.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
         when (estado) {

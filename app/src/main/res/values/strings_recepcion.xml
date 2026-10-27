@@ -23,6 +23,7 @@
     <string name="pacientes_duplicado">Ya existe un paciente con el documento %1$s.</string>
     <string name="pacientes_abrir_ficha">Abrir ficha</string>
     <string name="pacientes_correo_ayuda">Para invitar a la app iOS</string>
+    <string name="pacientes_direccion_placeholder">Colonia, calle, número</string>
     <string name="ficha_titulo">Ficha</string>
     <string name="ficha_cabecera">DUI %1$s · %2$d años · %3$s</string>
     <string name="ficha_asignacion">Asignación de cama</string>
@@ -42,6 +43,7 @@
     <string name="citas_filtro_especialidad">Especialidad</string>
     <string name="citas_filtro_estado">Estado</string>
     <string name="citas_libre">Libre</string>
+    <string name="citas_hueco_disponible">Hueco disponible</string>
     <string name="citas_agendar">Agendar</string>
     <string name="citas_vacio_titulo">No hay citas este día</string>
     <string name="citas_vacio_detalle">Ningún doctor de turno tiene citas.</string>
@@ -70,7 +72,7 @@
     <!-- AND-R8 a R11 · Camas -->
     <string name="camas_tab_planta2">Planta 2 · %1$d/%2$d</string>
     <string name="camas_tab_planta3">Planta 3 VIP · %1$d/%2$d</string>
-    <string name="camas_leyenda">○ Libre · ● Ocupada · Toca una cama</string>
+    <string name="camas_leyenda">Leyenda: ○ Libre · ● Ocupada · Toca una cama</string>
     <string name="camas_libre">Libre</string>
     <string name="camas_ocupada">Ocupada</string>
     <string name="camas_elegida">Elegida</string>
@@ -112,11 +114,14 @@
     <string name="alta_ingreso">Ingreso</string>
     <string name="alta_dias">Días hospitalizado</string>
     <string name="alta_medico">Médico tratante</string>
+    <string name="alta_aviso">Al dar de alta, la cama quedará Libre para todo el hospital al instante.</string>
     <string name="alta_dialogo_titulo">¿Dar de alta a %1$s?</string>
     <string name="alta_dialogo_texto">La cama %1$s quedará Libre para todo el hospital al instante.</string>
 
     <!-- AND-R12 · Turnos del personal -->
     <string name="turnos_semana">19 – 25 oct</string>
+    <string name="turnos_ir_semana_anterior">Semana anterior</string>
+    <string name="turnos_ir_semana_siguiente">Semana siguiente</string>
     <string name="turnos_area_todas">Área: Todas</string>
     <string name="turnos_solapa">Se solapa con su turno de 14:00–22:00 del mismo día. Ajusta el horario.</string>
     <string name="turnos_vacio_titulo">Sin turnos esta semana</string>
@@ -149,7 +154,9 @@
     <string name="bitacora_filtro_tipo">Tipo de emergencia</string>
     <string name="bitacora_finalizado">Finalizado</string>
     <string name="bitacora_detalle">Detalle · %1$s</string>
-    <string name="bitacora_detalle_texto">Despachó: %1$s · Destino: %2$s · Km: %3$d · Obs.: %4$s</string>
+    <string name="bitacora_despacho">Despachó</string>
+    <string name="bitacora_km">Km</string>
+    <string name="bitacora_observaciones">Obs.: %1$s</string>
     <string name="bitacora_vacio_titulo">Sin servicios en este período</string>
     <string name="bitacora_vacio_detalle">Cambia el filtro de fechas.</string>
     <string name="bitacora_error">No se pudo cargar la bitácora.</string>
@@ -162,9 +169,9 @@
     <string name="lab_error_cola">No se pudo cargar la cola.</string>
     <string name="lab_orden">Orden</string>
     <string name="lab_orden_numero">Orden #%1$d</string>
-    <string name="lab_paciente">Paciente: %1$s · %2$s</string>
-    <string name="lab_ordeno">Ordenó: %1$s · %2$s</string>
-    <string name="lab_indicaciones">Indicaciones: %1$s</string>
+    <string name="lab_paciente">Paciente</string>
+    <string name="lab_ordeno">Ordenó</string>
+    <string name="lab_indicaciones">Indicaciones</string>
     <string name="lab_por_ti">%1$s · por ti</string>
     <string name="lab_aun_no">Aún no</string>
     <string name="lab_requiere_resultado">Requiere resultado</string>
@@ -175,8 +182,6 @@
     <string name="lab_marcar_completado">Marcar como Completado</string>
     <string name="lab_marcar_completado_falta">Marcar como Completado (falta resultado)</string>
     <string name="lab_falta_resultado">Falta el resultado. Carga texto o PDF antes de marcar Completado.</string>
-    <string name="lab_sin_resultado_titulo">Aún sin resultado</string>
-    <string name="lab_sin_resultado_detalle">Carga el resultado para completar.</string>
     <string name="lab_error_orden">No se pudo cargar la orden.</string>
     <string name="lab_resultado">Resultado</string>
     <string name="lab_resultado_texto">Resultado (texto) *</string>

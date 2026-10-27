@@ -13,6 +13,12 @@ val Primario700 = Color(0xFF0E7490) // acción (5,4:1)
 val Primario800 = Color(0xFF155E75) // presionado
 val Primario900 = Color(0xFF164E63) // texto sobre 50
 
+// Marca institucional · solo Splash y logo (diseño AND-00)
+val MarcaGranate = Color(0xFF5A1716) // vino-900 · fondo del splash
+val MarcaVino = Color(0xFF862524) // vino-700 · fondo del logo
+val MarcaDorado = Color(0xFFE8B840) // oro-400 · aro del logo, progreso, pie
+val MarcaRosado = Color(0xFFF4DCDA) // texto secundario sobre vino
+
 // Neutros · grises fríos
 val Fondo = Color(0xFFF8FAFC)
 val Superficie = Color(0xFFFFFFFF)
@@ -34,6 +40,8 @@ val Neutro700 = Color(0xFF334155) // etiquetas, snackbar
 // Semánticos de estado (texto / fondo). Siempre acompañados de texto e icono.
 val AmbarTexto = Color(0xFF92400E)
 val AmbarFondo = Color(0xFFFEF3C7)
+val AmbarFondoSuave = Color(0xFFFFFBEB) // warn-50 · banners de aviso
+val AmbarTextoBanner = Color(0xFF78350F) // warn-900
 val AzulTexto = Color(0xFF1E40AF)
 val AzulFondo = Color(0xFFDBEAFE)
 val VerdeTexto = Color(0xFF166534)

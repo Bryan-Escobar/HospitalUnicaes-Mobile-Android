@@ -2,29 +2,33 @@
 
 package sv.edu.unicaes.hospital.ui.doctor
 
+import androidx.annotation.DrawableRes
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.ExtendedFloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.ModalBottomSheet
-import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.PrimaryTabRow
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Tab
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
@@ -37,13 +41,22 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.PreviewParameter
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import androidx.compose.ui.window.Dialog
+import androidx.compose.ui.window.DialogProperties
 import sv.edu.unicaes.hospital.R
 import sv.edu.unicaes.hospital.core.UiState
 import sv.edu.unicaes.hospital.domain.model.EstadoLaboratorio
+import sv.edu.unicaes.hospital.ui.components.AccionTexto
 import sv.edu.unicaes.hospital.ui.components.BadgeLaboratorio
 import sv.edu.unicaes.hospital.ui.components.BotonPrimario
 import sv.edu.unicaes.hospital.ui.components.CampoTexto
@@ -53,20 +66,35 @@ import sv.edu.unicaes.hospital.ui.components.ContenidoConEstado
 import sv.edu.unicaes.hospital.ui.components.EstadoPreview
 import sv.edu.unicaes.hospital.ui.components.EstadoVacio
 import sv.edu.unicaes.hospital.ui.components.EstadosPreviewProvider
-import sv.edu.unicaes.hospital.ui.components.Etiqueta
+import sv.edu.unicaes.hospital.ui.components.EstiloFilaSoporte
+import sv.edu.unicaes.hospital.ui.components.EstiloFilaTitulo
+import sv.edu.unicaes.hospital.ui.components.FabHospital
+import sv.edu.unicaes.hospital.ui.components.FilaDato
 import sv.edu.unicaes.hospital.ui.components.FilaLista
+import sv.edu.unicaes.hospital.ui.components.PestanasHospital
 import sv.edu.unicaes.hospital.ui.components.PreviewPantalla
 import sv.edu.unicaes.hospital.ui.components.TarjetaHospital
+import sv.edu.unicaes.hospital.ui.components.TarjetaLista
 import sv.edu.unicaes.hospital.ui.components.TituloSeccion
 import sv.edu.unicaes.hospital.ui.components.TopBarHospital
 import sv.edu.unicaes.hospital.ui.modelo.DatosMuestra
 import sv.edu.unicaes.hospital.ui.modelo.ExpedienteUi
 import sv.edu.unicaes.hospital.ui.modelo.PacienteUi
+import sv.edu.unicaes.hospital.ui.recepcion.EstiloTituloTarjeta
 import sv.edu.unicaes.hospital.ui.recepcion.FilaPaciente
+import sv.edu.unicaes.hospital.ui.recepcion.IconoDesplegable
+import sv.edu.unicaes.hospital.ui.recepcion.RellenoCuerpo
+import sv.edu.unicaes.hospital.ui.recepcion.RellenoCuerpoConFab
 import sv.edu.unicaes.hospital.ui.theme.AmbarFondo
 import sv.edu.unicaes.hospital.ui.theme.AmbarTexto
+import sv.edu.unicaes.hospital.ui.theme.AmbarTextoBanner
 import sv.edu.unicaes.hospital.ui.theme.Espacio
+import sv.edu.unicaes.hospital.ui.theme.Fondo
 import sv.edu.unicaes.hospital.ui.theme.HospitalUnicaesTheme
+import sv.edu.unicaes.hospital.ui.theme.Primario700
+import sv.edu.unicaes.hospital.ui.theme.Primario800
+import sv.edu.unicaes.hospital.ui.theme.Superficie2
+import sv.edu.unicaes.hospital.ui.theme.Texto2
 
 /** AND-D3 · Mis pacientes: solo los que el doctor atiende (médico tratante). */
 @Composable
@@ -79,16 +107,14 @@ fun MisPacientesScreen(
     var filtro by rememberSaveable { mutableIntStateOf(0) }
 
     Scaffold(topBar = { TopBarHospital(titulo = stringResource(R.string.doctor_mis_pacientes)) }) { padding ->
-        Column(modifier = Modifier.padding(padding)) {
-            // Barra de búsqueda M3: alto 56, radio 28.
-            OutlinedTextField(
-                value = busqueda,
-                onValueChange = { busqueda = it },
-                placeholder = { Text(stringResource(R.string.doctor_buscar_paciente)) },
-                leadingIcon = { Icon(painterResource(R.drawable.ic_search), contentDescription = null) },
-                singleLine = true,
-                shape = MaterialTheme.shapes.extraLarge,
-                modifier = Modifier.padding(horizontal = Espacio.md).fillMaxWidth(),
+        Column(
+            modifier = Modifier.padding(padding).padding(start = Espacio.md, end = Espacio.md, top = Espacio.xs),
+            verticalArrangement = Arrangement.spacedBy(Espacio.sm),
+        ) {
+            BarraBusqueda(
+                valor = busqueda,
+                onValor = { busqueda = it },
+                placeholder = stringResource(R.string.doctor_buscar_paciente),
             )
             ChipsFiltro(
                 opciones =
@@ -98,7 +124,6 @@ fun MisPacientesScreen(
                     ),
                 seleccionada = filtro,
                 onSeleccion = { filtro = it },
-                modifier = Modifier.padding(vertical = Espacio.xs),
             )
             ContenidoConEstado(
                 estado = estado,
@@ -116,18 +141,63 @@ fun MisPacientesScreen(
                     pacientes.filter {
                         (busqueda.isBlank() || it.nombre.contains(busqueda, true)) && (filtro == 0 || it.hospitalizado)
                     }
-                LazyColumn {
-                    items(visibles, key = { it.id }) { paciente ->
-                        FilaPaciente(
-                            paciente = paciente,
-                            soporte = paciente.ultimaVisita.orEmpty(),
-                            onClick = { onPaciente(paciente) },
-                        )
+                LazyColumn(contentPadding = PaddingValues(bottom = Espacio.md)) {
+                    item {
+                        TarjetaLista(visibles) { paciente, ultimo ->
+                            FilaPaciente(
+                                paciente = paciente,
+                                soporte = paciente.ultimaVisita.orEmpty(),
+                                divisor = !ultimo,
+                                onClick = { onPaciente(paciente) },
+                            )
+                        }
                     }
                 }
             }
         }
     }
+}
+
+/** Barra de búsqueda M3 del diseño: alto 56, píldora n100 sin borde, lupa n600 y texto 16/24. */
+@Composable
+private fun BarraBusqueda(
+    valor: String,
+    onValor: (String) -> Unit,
+    placeholder: String,
+) {
+    val estilo = TextStyle(fontSize = 16.sp, lineHeight = 24.sp, color = MaterialTheme.colorScheme.onSurface)
+    BasicTextField(
+        value = valor,
+        onValueChange = onValor,
+        singleLine = true,
+        textStyle = estilo,
+        cursorBrush = SolidColor(Primario700),
+        modifier = Modifier.fillMaxWidth(),
+        decorationBox = { campo ->
+            Row(
+                modifier =
+                    Modifier
+                        .fillMaxWidth()
+                        .height(56.dp)
+                        .clip(RoundedCornerShape(28.dp))
+                        .background(Superficie2)
+                        .padding(horizontal = Espacio.md),
+                horizontalArrangement = Arrangement.spacedBy(Espacio.sm),
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                Icon(
+                    painter = painterResource(R.drawable.ic_search),
+                    contentDescription = null,
+                    tint = Texto2,
+                    modifier = Modifier.size(22.dp),
+                )
+                Box(modifier = Modifier.weight(1f)) {
+                    if (valor.isEmpty()) Text(text = placeholder, style = estilo, color = Texto2)
+                    campo()
+                }
+            }
+        },
+    )
 }
 
 /** AND-D4 · Expediente (solo médico tratante, paciente y administración). */
@@ -150,10 +220,9 @@ fun ExpedienteScreen(
             )
         },
         floatingActionButton = {
-            ExtendedFloatingActionButton(
+            FabHospital(
+                texto = stringResource(R.string.consulta_nueva),
                 onClick = onNuevaConsulta,
-                icon = { Icon(painterResource(R.drawable.ic_add), contentDescription = null) },
-                text = { Text(stringResource(R.string.consulta_nueva)) },
             )
         },
     ) { padding ->
@@ -169,58 +238,48 @@ fun ExpedienteScreen(
                 )
             },
         ) { expediente ->
-            Column {
-                PrimaryTabRow(selectedTabIndex = pestana) {
-                    listOf(
-                        R.string.expediente_consultas,
-                        R.string.mas_laboratorio,
-                        R.string.expediente_datos,
-                    ).forEachIndexed { indice, titulo ->
-                        Tab(
-                            selected = pestana == indice,
-                            onClick = { pestana = indice },
-                            text = { Text(stringResource(titulo)) },
+            LazyColumn(contentPadding = RellenoCuerpoConFab, verticalArrangement = Arrangement.spacedBy(Espacio.sm)) {
+                item {
+                    PestanasHospital(
+                        titulos =
+                            listOf(
+                                stringResource(R.string.expediente_consultas),
+                                stringResource(R.string.mas_laboratorio),
+                                stringResource(R.string.expediente_datos),
+                            ),
+                        seleccionada = pestana,
+                        onSeleccion = { pestana = it },
+                    )
+                }
+                expediente.alergias?.let { alergias ->
+                    // Tarjeta prioritaria: borde #92400E sobre #FEF3C7.
+                    item {
+                        TarjetaConIcono(
+                            icono = R.drawable.ic_alerta,
+                            tinte = AmbarTexto,
+                            titulo = stringResource(R.string.expediente_alergias),
+                            detalle = alergias,
+                            colorTitulo = AmbarTexto,
+                            colorDetalle = AmbarTextoBanner,
+                            colorBorde = AmbarTexto,
+                            colorFondo = AmbarFondo,
                         )
                     }
                 }
-                LazyColumn(
-                    contentPadding =
-                        PaddingValues(
-                            start = Espacio.md,
-                            end = Espacio.md,
-                            top = Espacio.md,
-                            bottom = 96.dp,
-                        ),
-                    verticalArrangement = Arrangement.spacedBy(Espacio.sm),
-                ) {
-                    expediente.alergias?.let { alergias ->
-                        // Tarjeta prioritaria: borde #92400E sobre #FEF3C7.
-                        item {
-                            TarjetaHospital(colorBorde = AmbarTexto, colorFondo = AmbarFondo, anchoBorde = 2.5.dp) {
-                                Text(
-                                    text = "⚠ ${stringResource(R.string.expediente_alergias)}",
-                                    style = MaterialTheme.typography.bodySmall,
-                                    color = AmbarTexto,
+                when (pestana) {
+                    0 -> {
+                        expediente.hospitalizacion?.let { hospitalizacion ->
+                            item {
+                                TarjetaConIcono(
+                                    icono = R.drawable.ic_bed,
+                                    tinte = Primario800,
+                                    titulo = stringResource(R.string.expediente_hospitalizacion),
+                                    detalle = hospitalizacion,
                                 )
-                                Text(alergias, style = MaterialTheme.typography.titleMedium, color = AmbarTexto)
                             }
                         }
-                    }
-                    when (pestana) {
-                        0 -> {
-                            expediente.hospitalizacion?.let { hospitalizacion ->
-                                item {
-                                    TarjetaHospital {
-                                        Text(
-                                            stringResource(R.string.expediente_hospitalizacion),
-                                            style = MaterialTheme.typography.bodySmall,
-                                        )
-                                        Text(hospitalizacion, style = MaterialTheme.typography.titleMedium)
-                                    }
-                                }
-                            }
-                            item { TituloSeccion(stringResource(R.string.expediente_consultas)) }
-                            items(expediente.consultas) { consulta ->
+                        item {
+                            TarjetaLista(expediente.consultas) { consulta, ultimo ->
                                 FilaLista(
                                     titulo = "${consulta.fecha} · ${consulta.diagnostico}",
                                     soporte =
@@ -234,54 +293,88 @@ fun ExpedienteScreen(
                                         } else {
                                             consulta.doctor
                                         },
+                                    divisor = !ultimo,
+                                    enTarjeta = true,
                                     final = { Chevron() },
                                     onClick = {},
                                 )
                             }
-                            item { TituloSeccion(stringResource(R.string.expediente_lab_preview)) }
-                            items(expediente.laboratorio, key = { it.id }) { orden ->
+                        }
+                        item { TituloSeccion(stringResource(R.string.expediente_lab_preview)) }
+                        item {
+                            TarjetaLista(expediente.laboratorio) { orden, ultimo ->
                                 FilaLista(
                                     titulo = "${orden.examen} · ${orden.hora}",
+                                    divisor = !ultimo,
+                                    enTarjeta = true,
                                     final = { BadgeLaboratorio(orden.estado) },
                                 )
                             }
                         }
+                    }
 
-                        1 -> {
-                            items(expediente.laboratorio, key = { it.id }) { orden ->
+                    1 -> {
+                        item {
+                            TarjetaLista(expediente.laboratorio) { orden, ultimo ->
                                 FilaLista(
                                     titulo = orden.examen,
                                     soporte = "${orden.doctor} · ${orden.hora}",
+                                    divisor = !ultimo,
+                                    enTarjeta = true,
                                     final = { BadgeLaboratorio(orden.estado) },
                                 )
                             }
                         }
+                    }
 
-                        else -> {
-                            item {
-                                TarjetaHospital {
-                                    Text(expediente.paciente.nombre, style = MaterialTheme.typography.titleMedium)
-                                    Text(
-                                        stringResource(
-                                            R.string.ficha_cabecera,
-                                            expediente.paciente.dui,
-                                            expediente.edad,
-                                            expediente.telefono,
-                                        ),
-                                    )
-                                    Text(
-                                        text = "${stringResource(
-                                            R.string.campo_contacto_emergencia,
-                                        )}: ${expediente.contactoEmergencia}",
-                                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                                    )
-                                }
+                    else -> {
+                        item {
+                            TarjetaHospital {
+                                FilaDato(stringResource(R.string.expediente_dato_dui), expediente.paciente.dui)
+                                FilaDato(
+                                    stringResource(R.string.expediente_dato_edad),
+                                    stringResource(R.string.expediente_edad_valor, expediente.edad),
+                                )
+                                FilaDato(stringResource(R.string.campo_telefono_simple), expediente.telefono)
+                                FilaDato(
+                                    stringResource(R.string.campo_contacto_emergencia),
+                                    expediente.contactoEmergencia,
+                                    divisor = false,
+                                )
                             }
                         }
                     }
                 }
             }
         }
+    }
+}
+
+/** Tarjeta con icono a la izquierda y título 16/22 500 + detalle 14/20 (alergias, hospitalización). */
+@Composable
+private fun TarjetaConIcono(
+    @DrawableRes icono: Int,
+    tinte: Color,
+    titulo: String,
+    detalle: String,
+    colorTitulo: Color = MaterialTheme.colorScheme.onSurface,
+    colorDetalle: Color = Texto2,
+    colorBorde: Color? = null,
+    colorFondo: Color? = null,
+) {
+    val contenido: @Composable ColumnScope.() -> Unit = {
+        Row(horizontalArrangement = Arrangement.spacedBy(10.dp), verticalAlignment = Alignment.CenterVertically) {
+            Icon(painterResource(icono), contentDescription = null, tint = tinte, modifier = Modifier.size(22.dp))
+            Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
+                Text(text = titulo, style = EstiloFilaTitulo, color = colorTitulo)
+                Text(text = detalle, style = EstiloFilaSoporte, color = colorDetalle)
+            }
+        }
+    }
+    if (colorBorde != null && colorFondo != null) {
+        TarjetaHospital(colorBorde = colorBorde, colorFondo = colorFondo, anchoBorde = 2.5.dp, contenido = contenido)
+    } else {
+        TarjetaHospital(contenido = contenido)
     }
 }
 
@@ -313,6 +406,10 @@ fun NuevaConsultaScreen(
     var hojaReceta by rememberSaveable { mutableStateOf(false) }
     val ordenes = remember { mutableStateListOf<OrdenNuevaUi>().apply { addAll(ordenesIniciales) } }
     val recetas = remember { mutableStateListOf<RecetaNuevaUi>() }
+    val guardar = {
+        intentoGuardar = true
+        if (diagnostico.isNotBlank()) onGuardar()
+    }
 
     Scaffold(
         topBar = {
@@ -320,7 +417,20 @@ fun NuevaConsultaScreen(
                 titulo = stringResource(R.string.consulta_nueva),
                 onVolver = onCerrar,
                 cerrar = true,
-                acciones = { TextButton(onClick = onGuardar) { Text(stringResource(R.string.accion_guardar)) } },
+                acciones = {
+                    AccionTexto(
+                        texto = stringResource(R.string.accion_guardar),
+                        onClick = guardar,
+                        modifier = Modifier.padding(horizontal = Espacio.sm),
+                    )
+                },
+            )
+        },
+        bottomBar = {
+            BotonPrimario(
+                texto = stringResource(R.string.consulta_guardar),
+                onClick = guardar,
+                modifier = Modifier.navigationBarsPadding().imePadding().padding(Espacio.md),
             )
         },
     ) { padding ->
@@ -329,16 +439,16 @@ fun NuevaConsultaScreen(
                 Modifier
                     .padding(padding)
                     .fillMaxSize()
-                    .imePadding()
                     .verticalScroll(rememberScrollState())
-                    .padding(Espacio.md),
-            verticalArrangement = Arrangement.spacedBy(Espacio.xs),
+                    .padding(RellenoCuerpo),
+            verticalArrangement = Arrangement.spacedBy(Espacio.sm),
         ) {
-            Text("$paciente · $contexto", style = MaterialTheme.typography.titleMedium)
+            Text("$paciente · $contexto", style = EstiloFilaSoporte, color = Texto2)
             CampoTexto(
                 etiqueta = stringResource(R.string.consulta_diagnostico),
                 valor = diagnostico,
                 onValor = { diagnostico = it },
+                placeholder = stringResource(R.string.campo_obligatorio),
                 error =
                     if (intentoGuardar &&
                         diagnostico.isBlank()
@@ -347,57 +457,55 @@ fun NuevaConsultaScreen(
                     } else {
                         null
                     },
-                ayuda = stringResource(R.string.campo_obligatorio),
             )
             CampoTexto(
                 etiqueta = stringResource(R.string.consulta_notas),
                 valor = notas,
                 onValor = { notas = it },
-                ayuda = stringResource(R.string.consulta_notas_ayuda),
+                placeholder = stringResource(R.string.consulta_notas_placeholder),
                 singleLine = false,
                 minLines = 3,
             )
-            TituloSeccion(
-                texto = stringResource(R.string.consulta_recetas, recetas.size),
+            TarjetaConAccion(
+                titulo = stringResource(R.string.consulta_recetas, recetas.size),
                 accion = stringResource(R.string.consulta_agregar_receta),
                 onAccion = { hojaReceta = true },
-            )
-            if (recetas.isEmpty()) {
-                Text(stringResource(R.string.consulta_sin_recetas), color = MaterialTheme.colorScheme.onSurfaceVariant)
+            ) {
+                if (recetas.isEmpty()) {
+                    Text(stringResource(R.string.consulta_sin_recetas), style = EstiloFilaSoporte, color = Texto2)
+                }
+                recetas.forEachIndexed { indice, receta ->
+                    FilaLista(
+                        titulo = receta.medicamento,
+                        soporte = "${receta.dosis} · ${receta.frecuencia}",
+                        divisor = indice < recetas.lastIndex,
+                        enTarjeta = true,
+                        margenHorizontal = 0.dp,
+                    )
+                }
             }
-            recetas.forEach { receta ->
-                FilaLista(
-                    titulo = receta.medicamento,
-                    soporte = "${receta.dosis} · ${receta.frecuencia}",
-                    divisor = false,
-                )
-            }
-            TituloSeccion(
-                texto = stringResource(R.string.consulta_ordenes, ordenes.size),
+            TarjetaConAccion(
+                titulo = stringResource(R.string.consulta_ordenes, ordenes.size),
                 accion = stringResource(R.string.consulta_agregar_orden),
                 onAccion = { hojaOrden = true },
-            )
-            ordenes.forEach { orden ->
-                FilaLista(
-                    titulo = orden.examen,
-                    soporte = orden.indicaciones,
-                    divisor = false,
-                    final = { BadgeLaboratorio(EstadoLaboratorio.PENDIENTE) },
-                )
+            ) {
+                ordenes.forEachIndexed { indice, orden ->
+                    FilaLista(
+                        titulo = orden.examen,
+                        soporte = orden.indicaciones,
+                        divisor = indice < ordenes.lastIndex,
+                        enTarjeta = true,
+                        margenHorizontal = 0.dp,
+                        final = { BadgeLaboratorio(EstadoLaboratorio.PENDIENTE) },
+                    )
+                }
             }
-            BotonPrimario(
-                texto = stringResource(R.string.consulta_guardar),
-                onClick = {
-                    intentoGuardar = true
-                    if (diagnostico.isNotBlank()) onGuardar()
-                },
-                modifier = Modifier.padding(top = Espacio.sm),
-            )
         }
     }
 
     if (hojaOrden) {
-        HojaOrdenLaboratorio(
+        PantallaOrdenLaboratorio(
+            paciente = paciente,
             onCerrar = { hojaOrden = false },
             onAgregar = {
                 ordenes += it
@@ -406,7 +514,8 @@ fun NuevaConsultaScreen(
         )
     }
     if (hojaReceta) {
-        HojaReceta(
+        PantallaReceta(
+            paciente = paciente,
             onCerrar = { hojaReceta = false },
             onAgregar = {
                 recetas += it
@@ -416,44 +525,118 @@ fun NuevaConsultaScreen(
     }
 }
 
-/** AND-D6 · Orden de laboratorio (ModalBottomSheet sobre AND-D5). Toda orden nace Pendiente. */
+/** Tarjeta con título 16/24 500 y acción de texto a la derecha ("+ Receta", "+ Orden"). */
 @Composable
-private fun HojaOrdenLaboratorio(
-    onCerrar: () -> Unit,
-    onAgregar: (OrdenNuevaUi) -> Unit,
+private fun TarjetaConAccion(
+    titulo: String,
+    accion: String,
+    onAccion: () -> Unit,
+    contenido: @Composable ColumnScope.() -> Unit,
 ) {
-    var examen by rememberSaveable { mutableStateOf(DatosMuestra.tiposExamen.first()) }
-    var indicaciones by rememberSaveable { mutableStateOf("Ayuno de 8 horas") }
-    ModalBottomSheet(onDismissRequest = onCerrar) {
-        Column(
-            modifier = Modifier.padding(horizontal = Espacio.md).navigationBarsPadding(),
-            verticalArrangement = Arrangement.spacedBy(Espacio.xs),
-        ) {
-            Text(stringResource(R.string.orden_titulo), style = MaterialTheme.typography.titleLarge)
-            CampoTexto(stringResource(R.string.orden_tipo_examen), examen, { examen = it })
-            CampoTexto(stringResource(R.string.orden_indicaciones), indicaciones, { indicaciones = it })
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(Espacio.xs),
+    TarjetaHospital {
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            Text(text = titulo, style = EstiloTituloTarjeta, modifier = Modifier.weight(1f))
+            AccionTexto(texto = accion, onClick = onAccion)
+        }
+        contenido()
+    }
+}
+
+/**
+ * Formulario a pantalla completa sobre AND-D5 (AND-D6 en el diseño): barra con volver, subtítulo
+ * "Paciente · Nueva consulta", campos y abajo a la derecha Cancelar + acción principal.
+ */
+@Composable
+private fun PantallaFormulario(
+    titulo: String,
+    subtitulo: String,
+    accion: String,
+    accionHabilitada: Boolean,
+    onCerrar: () -> Unit,
+    onAccion: () -> Unit,
+    contenido: @Composable ColumnScope.() -> Unit,
+) {
+    Dialog(
+        onDismissRequest = onCerrar,
+        properties = DialogProperties(usePlatformDefaultWidth = false, decorFitsSystemWindows = false),
+    ) {
+        Scaffold(
+            containerColor = Fondo,
+            topBar = { TopBarHospital(titulo = titulo, onVolver = onCerrar) },
+        ) { padding ->
+            Column(
+                modifier =
+                    Modifier
+                        .padding(padding)
+                        .fillMaxSize()
+                        .imePadding()
+                        .padding(RellenoCuerpo),
+                verticalArrangement = Arrangement.spacedBy(Espacio.sm),
             ) {
-                Text(stringResource(R.string.orden_se_crea_en))
-                BadgeLaboratorio(EstadoLaboratorio.PENDIENTE)
-            }
-            Row(
-                modifier = Modifier.fillMaxWidth().padding(vertical = Espacio.sm),
-                horizontalArrangement = Arrangement.spacedBy(Espacio.xs, Alignment.End),
-            ) {
-                TextButton(onClick = onCerrar) { Text(stringResource(R.string.accion_cancelar)) }
-                Button(onClick = { onAgregar(OrdenNuevaUi(examen, indicaciones)) }, enabled = examen.isNotBlank()) {
-                    Text(stringResource(R.string.orden_agregar))
+                Text(subtitulo, style = EstiloFilaSoporte, color = Texto2)
+                contenido()
+                Spacer(Modifier.weight(1f))
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(Espacio.xs, Alignment.End),
+                ) {
+                    val estiloBoton = TextStyle(fontSize = 16.sp, lineHeight = 22.sp, fontWeight = FontWeight.Medium)
+                    TextButton(onClick = onCerrar, modifier = Modifier.height(52.dp), shape = CircleShape) {
+                        Text(stringResource(R.string.accion_cancelar), style = estiloBoton)
+                    }
+                    Button(
+                        onClick = onAccion,
+                        enabled = accionHabilitada,
+                        modifier = Modifier.height(52.dp),
+                        shape = CircleShape,
+                        contentPadding = PaddingValues(horizontal = 24.dp),
+                    ) { Text(accion, style = estiloBoton) }
                 }
             }
         }
     }
 }
 
+/** AND-D6 · Orden de laboratorio sobre AND-D5. Toda orden nace Pendiente. */
 @Composable
-private fun HojaReceta(
+private fun PantallaOrdenLaboratorio(
+    paciente: String,
+    onCerrar: () -> Unit,
+    onAgregar: (OrdenNuevaUi) -> Unit,
+) {
+    var examen by rememberSaveable { mutableStateOf(DatosMuestra.tiposExamen.first()) }
+    var indicaciones by rememberSaveable { mutableStateOf("Ayuno de 8 horas") }
+    PantallaFormulario(
+        titulo = stringResource(R.string.orden_titulo),
+        subtitulo = "$paciente · ${stringResource(R.string.consulta_nueva)}",
+        accion = stringResource(R.string.orden_agregar),
+        accionHabilitada = examen.isNotBlank(),
+        onCerrar = onCerrar,
+        onAccion = { onAgregar(OrdenNuevaUi(examen, indicaciones)) },
+    ) {
+        CampoTexto(
+            etiqueta = stringResource(R.string.orden_tipo_examen),
+            valor = examen,
+            onValor = { examen = it },
+            final = { IconoDesplegable() },
+        )
+        CampoTexto(
+            etiqueta = stringResource(R.string.orden_indicaciones),
+            valor = indicaciones,
+            onValor = { indicaciones = it },
+            singleLine = false,
+            minLines = 3,
+        )
+        Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+            Text(stringResource(R.string.orden_se_crea_en), style = EstiloFilaSoporte, color = Texto2)
+            BadgeLaboratorio(EstadoLaboratorio.PENDIENTE)
+        }
+    }
+}
+
+@Composable
+private fun PantallaReceta(
+    paciente: String,
     onCerrar: () -> Unit,
     onAgregar: (RecetaNuevaUi) -> Unit,
 ) {
@@ -461,27 +644,24 @@ private fun HojaReceta(
     var dosis by rememberSaveable { mutableStateOf("") }
     var frecuencia by rememberSaveable { mutableStateOf("") }
     var indicaciones by rememberSaveable { mutableStateOf("") }
-    ModalBottomSheet(onDismissRequest = onCerrar) {
-        Column(
-            modifier = Modifier.padding(horizontal = Espacio.md).navigationBarsPadding(),
-            verticalArrangement = Arrangement.spacedBy(Espacio.xs),
-        ) {
-            Text(stringResource(R.string.receta_titulo), style = MaterialTheme.typography.titleLarge)
-            CampoTexto(stringResource(R.string.receta_medicamento), medicamento, { medicamento = it })
-            CampoTexto(stringResource(R.string.receta_dosis), dosis, { dosis = it })
-            CampoTexto(stringResource(R.string.receta_frecuencia), frecuencia, { frecuencia = it })
-            CampoTexto(stringResource(R.string.orden_indicaciones), indicaciones, { indicaciones = it })
-            Row(
-                modifier = Modifier.fillMaxWidth().padding(vertical = Espacio.sm),
-                horizontalArrangement = Arrangement.spacedBy(Espacio.xs, Alignment.End),
-            ) {
-                TextButton(onClick = onCerrar) { Text(stringResource(R.string.accion_cancelar)) }
-                Button(
-                    onClick = { onAgregar(RecetaNuevaUi(medicamento, dosis, frecuencia)) },
-                    enabled = medicamento.isNotBlank(),
-                ) { Text(stringResource(R.string.receta_agregar)) }
-            }
-        }
+    PantallaFormulario(
+        titulo = stringResource(R.string.receta_titulo),
+        subtitulo = "$paciente · ${stringResource(R.string.consulta_nueva)}",
+        accion = stringResource(R.string.receta_agregar),
+        accionHabilitada = medicamento.isNotBlank(),
+        onCerrar = onCerrar,
+        onAccion = { onAgregar(RecetaNuevaUi(medicamento, dosis, frecuencia)) },
+    ) {
+        CampoTexto(stringResource(R.string.receta_medicamento), medicamento, { medicamento = it })
+        CampoTexto(stringResource(R.string.receta_dosis), dosis, { dosis = it })
+        CampoTexto(stringResource(R.string.receta_frecuencia), frecuencia, { frecuencia = it })
+        CampoTexto(
+            etiqueta = stringResource(R.string.orden_indicaciones),
+            valor = indicaciones,
+            onValor = { indicaciones = it },
+            singleLine = false,
+            minLines = 3,
+        )
     }
 }
 

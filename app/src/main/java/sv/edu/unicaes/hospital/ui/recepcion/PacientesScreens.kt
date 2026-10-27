@@ -5,20 +5,16 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.ExtendedFloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
@@ -29,14 +25,23 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.PreviewParameter
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import sv.edu.unicaes.hospital.R
 import sv.edu.unicaes.hospital.core.UiState
+import sv.edu.unicaes.hospital.domain.model.TipoHabitacion
+import sv.edu.unicaes.hospital.ui.components.AccionTexto
 import sv.edu.unicaes.hospital.ui.components.Avatar
 import sv.edu.unicaes.hospital.ui.components.BadgeCita
+import sv.edu.unicaes.hospital.ui.components.BadgeEstado
 import sv.edu.unicaes.hospital.ui.components.Banner
+import sv.edu.unicaes.hospital.ui.components.BotonPeligro
 import sv.edu.unicaes.hospital.ui.components.BotonPrimario
 import sv.edu.unicaes.hospital.ui.components.BotonSecundario
+import sv.edu.unicaes.hospital.ui.components.CabeceraPersona
 import sv.edu.unicaes.hospital.ui.components.CampoTexto
 import sv.edu.unicaes.hospital.ui.components.Chevron
 import sv.edu.unicaes.hospital.ui.components.ChipEnVivo
@@ -45,11 +50,13 @@ import sv.edu.unicaes.hospital.ui.components.ContenidoConEstado
 import sv.edu.unicaes.hospital.ui.components.EstadoPreview
 import sv.edu.unicaes.hospital.ui.components.EstadoVacio
 import sv.edu.unicaes.hospital.ui.components.EstadosPreviewProvider
-import sv.edu.unicaes.hospital.ui.components.Etiqueta
+import sv.edu.unicaes.hospital.ui.components.FabHospital
 import sv.edu.unicaes.hospital.ui.components.FilaLista
 import sv.edu.unicaes.hospital.ui.components.IconoAccion
 import sv.edu.unicaes.hospital.ui.components.PreviewPantalla
 import sv.edu.unicaes.hospital.ui.components.TarjetaHospital
+import sv.edu.unicaes.hospital.ui.components.TarjetaLista
+import sv.edu.unicaes.hospital.ui.components.TextosFila
 import sv.edu.unicaes.hospital.ui.components.TipoBanner
 import sv.edu.unicaes.hospital.ui.components.TituloSeccion
 import sv.edu.unicaes.hospital.ui.components.TopBarHospital
@@ -58,7 +65,19 @@ import sv.edu.unicaes.hospital.ui.modelo.DatosMuestra
 import sv.edu.unicaes.hospital.ui.modelo.FichaPacienteUi
 import sv.edu.unicaes.hospital.ui.modelo.PacienteUi
 import sv.edu.unicaes.hospital.ui.theme.Espacio
+import sv.edu.unicaes.hospital.ui.theme.HospitalTheme
 import sv.edu.unicaes.hospital.ui.theme.HospitalUnicaesTheme
+import sv.edu.unicaes.hospital.ui.theme.Primario700
+import sv.edu.unicaes.hospital.ui.theme.Texto2
+
+/** Relleno del cuerpo de las pantallas (`.and-body`): 8 arriba, 16 a los lados y abajo. */
+internal val RellenoCuerpo = PaddingValues(start = Espacio.md, end = Espacio.md, top = Espacio.xs, bottom = Espacio.md)
+
+/** Relleno del cuerpo cuando hay FAB: deja espacio para que no tape la última fila. */
+internal val RellenoCuerpoConFab = PaddingValues(start = Espacio.md, end = Espacio.md, top = Espacio.xs, bottom = 96.dp)
+
+/** Título de tarjeta (`h2` del diseño): 16/24 500. */
+internal val EstiloTituloTarjeta = TextStyle(fontSize = 16.sp, lineHeight = 24.sp, fontWeight = FontWeight.Medium)
 
 /** AND-R2 · Pacientes: búsqueda por nombre o documento y filtros rápidos. */
 @Composable
@@ -74,22 +93,21 @@ fun PacientesScreen(
     Scaffold(
         topBar = { TopBarHospital(titulo = stringResource(R.string.tab_pacientes)) },
         floatingActionButton = {
-            ExtendedFloatingActionButton(
+            FabHospital(
+                texto = stringResource(R.string.pacientes_registrar),
                 onClick = onRegistrar,
-                icon = { Icon(painterResource(R.drawable.ic_add), contentDescription = null) },
-                text = { Text(stringResource(R.string.pacientes_registrar)) },
             )
         },
     ) { padding ->
-        Column(modifier = Modifier.padding(padding)) {
-            OutlinedTextField(
-                value = busqueda,
-                onValueChange = { busqueda = it },
-                placeholder = { Text(stringResource(R.string.pacientes_buscar)) },
-                leadingIcon = { Icon(painterResource(R.drawable.ic_search), contentDescription = null) },
-                singleLine = true,
-                shape = MaterialTheme.shapes.extraLarge,
-                modifier = Modifier.padding(horizontal = Espacio.md).fillMaxWidth(),
+        Column(
+            modifier = Modifier.padding(padding).padding(start = Espacio.md, end = Espacio.md, top = Espacio.xs),
+            verticalArrangement = Arrangement.spacedBy(Espacio.sm),
+        ) {
+            CampoTexto(
+                etiqueta = null,
+                valor = busqueda,
+                onValor = { busqueda = it },
+                placeholder = stringResource(R.string.pacientes_buscar),
             )
             ChipsFiltro(
                 opciones =
@@ -100,7 +118,6 @@ fun PacientesScreen(
                     ),
                 seleccionada = filtro,
                 onSeleccion = { filtro = it },
-                modifier = Modifier.padding(vertical = Espacio.xs),
             )
             ContenidoConEstado(
                 estado = estado,
@@ -121,9 +138,11 @@ fun PacientesScreen(
                         (busqueda.isBlank() || it.nombre.contains(busqueda, true) || it.dui.contains(busqueda)) &&
                             (filtro != 1 || it.hospitalizado)
                     }
-                LazyColumn(contentPadding = PaddingValues(bottom = Espacio.xxl * 2)) {
-                    items(visibles, key = { it.id }) { paciente ->
-                        FilaPaciente(paciente = paciente, onClick = { onPaciente(paciente) })
+                LazyColumn(contentPadding = PaddingValues(bottom = 96.dp)) {
+                    item {
+                        TarjetaLista(visibles) { paciente, ultimo ->
+                            FilaPaciente(paciente = paciente, divisor = !ultimo, onClick = { onPaciente(paciente) })
+                        }
                     }
                 }
             }
@@ -131,18 +150,33 @@ fun PacientesScreen(
     }
 }
 
+/** Fila de paciente dentro de [TarjetaLista]: avatar, nombre, documento y su etiqueta (o chevron). */
 @Composable
 fun FilaPaciente(
     paciente: PacienteUi,
     onClick: () -> Unit,
     soporte: String = paciente.dui,
+    divisor: Boolean = true,
 ) {
     FilaLista(
         titulo = paciente.nombre,
         soporte = soporte,
         onClick = onClick,
+        divisor = divisor,
+        enTarjeta = true,
         inicio = { Avatar(iniciales(paciente.nombre)) },
-        final = { if (paciente.etiqueta != null) Etiqueta(paciente.etiqueta) else Chevron() },
+        final = {
+            val etiqueta = paciente.etiqueta
+            if (etiqueta == null) {
+                Chevron()
+            } else {
+                val estados = HospitalTheme.estados
+                BadgeEstado(
+                    texto = etiqueta,
+                    colores = if (etiqueta == "Emergencia") estados.personalEmergencia else estados.personalMedico,
+                )
+            }
+        },
     )
 }
 
@@ -171,7 +205,13 @@ fun RegistroPacienteScreen(
                 titulo = stringResource(R.string.pacientes_registrar),
                 onVolver = onCerrar,
                 cerrar = true,
-                acciones = { TextButton(onClick = onGuardar) { Text(stringResource(R.string.accion_guardar)) } },
+                acciones = {
+                    AccionTexto(
+                        texto = stringResource(R.string.accion_guardar),
+                        onClick = onGuardar,
+                        modifier = Modifier.padding(horizontal = Espacio.sm),
+                    )
+                },
             )
         },
     ) { padding ->
@@ -182,8 +222,8 @@ fun RegistroPacienteScreen(
                     .fillMaxSize()
                     .imePadding()
                     .verticalScroll(rememberScrollState())
-                    .padding(Espacio.md),
-            verticalArrangement = Arrangement.spacedBy(Espacio.xs),
+                    .padding(RellenoCuerpo),
+            verticalArrangement = Arrangement.spacedBy(Espacio.sm),
         ) {
             CampoTexto(
                 stringResource(R.string.campo_nombre_completo),
@@ -206,42 +246,77 @@ fun RegistroPacienteScreen(
                     onAccion = onAbrirFichaExistente,
                 )
             }
-            CampoTexto(
-                stringResource(R.string.campo_nacimiento),
-                nacimiento,
-                { nacimiento = it },
-                placeholder = "dd/mm/aaaa",
-            )
-            CampoTexto(stringResource(R.string.campo_telefono), telefono, { telefono = it }, placeholder = "0000-0000")
+            Row(horizontalArrangement = Arrangement.spacedBy(Espacio.sm)) {
+                CampoTexto(
+                    stringResource(R.string.campo_nacimiento),
+                    nacimiento,
+                    { nacimiento = it },
+                    placeholder = "dd/mm/aaaa",
+                    modifier = Modifier.weight(1f),
+                )
+                CampoTexto(
+                    stringResource(R.string.campo_telefono),
+                    telefono,
+                    { telefono = it },
+                    placeholder = "0000-0000",
+                    modifier = Modifier.weight(1f),
+                )
+            }
             CampoTexto(
                 etiqueta = stringResource(R.string.campo_sexo),
                 valor = sexo,
                 onValor = { sexo = it },
                 placeholder = stringResource(R.string.campo_seleccionar),
+                final = { IconoDesplegable() },
             )
             CampoTexto(
                 etiqueta = stringResource(R.string.campo_correo_opcional),
                 valor = correo,
                 onValor = { correo = it },
-                ayuda = stringResource(R.string.pacientes_correo_ayuda),
+                placeholder = stringResource(R.string.pacientes_correo_ayuda),
             )
-            CampoTexto(stringResource(R.string.campo_direccion), direccion, { direccion = it })
+            CampoTexto(
+                etiqueta = stringResource(R.string.campo_direccion),
+                valor = direccion,
+                onValor = { direccion = it },
+                placeholder = stringResource(R.string.pacientes_direccion_placeholder),
+            )
             TituloSeccion(stringResource(R.string.campo_contacto_emergencia))
-            CampoTexto(stringResource(R.string.campo_nombre), contactoNombre, { contactoNombre = it })
-            CampoTexto(stringResource(R.string.campo_telefono_simple), contactoTelefono, { contactoTelefono = it })
+            Row(horizontalArrangement = Arrangement.spacedBy(Espacio.sm)) {
+                CampoTexto(
+                    stringResource(R.string.campo_nombre),
+                    contactoNombre,
+                    { contactoNombre = it },
+                    placeholder = stringResource(R.string.campo_nombre),
+                    modifier = Modifier.weight(1f),
+                )
+                CampoTexto(
+                    stringResource(R.string.campo_telefono_simple),
+                    contactoTelefono,
+                    { contactoTelefono = it },
+                    placeholder = "0000-0000",
+                    modifier = Modifier.weight(1f),
+                )
+            }
             CampoTexto(
                 etiqueta = stringResource(R.string.campo_alergias),
                 valor = alergias,
                 onValor = { alergias = it },
                 placeholder = stringResource(R.string.campo_ninguna),
             )
-            BotonPrimario(
-                texto = stringResource(R.string.accion_guardar),
-                onClick = onGuardar,
-                modifier = Modifier.padding(top = Espacio.sm),
-            )
         }
     }
+}
+
+/** Chevron ▾ de los campos de selección (18, n600). */
+@Composable
+internal fun IconoDesplegable() {
+    Icon(
+        painter = painterResource(R.drawable.ic_expand_more),
+        contentDescription = null,
+        tint = Texto2,
+        modifier = Modifier.size(18.dp),
+    )
 }
 
 /**
@@ -278,30 +353,20 @@ fun FichaPacienteScreen(
             vacio = {},
         ) { ficha ->
             LazyColumn(
-                contentPadding = PaddingValues(Espacio.md),
+                contentPadding = RellenoCuerpo,
                 verticalArrangement = Arrangement.spacedBy(Espacio.sm),
             ) {
                 item {
-                    Row(
-                        horizontalArrangement = Arrangement.spacedBy(Espacio.sm),
-                        verticalAlignment = Alignment.CenterVertically,
-                    ) {
-                        Avatar(iniciales(ficha.paciente.nombre), tamano = Espacio.xxl + Espacio.xs)
-                        Column {
-                            Text(ficha.paciente.nombre, style = MaterialTheme.typography.headlineSmall)
-                            Text(
-                                text =
-                                    stringResource(
-                                        R.string.ficha_cabecera,
-                                        ficha.paciente.dui,
-                                        ficha.edad,
-                                        ficha.telefono,
-                                    ),
-                                style = MaterialTheme.typography.bodyMedium,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                            )
-                        }
-                    }
+                    CabeceraPersona(
+                        nombre = ficha.paciente.nombre,
+                        soporte =
+                            stringResource(
+                                R.string.ficha_cabecera,
+                                ficha.paciente.dui,
+                                ficha.edad,
+                                ficha.telefono,
+                            ),
+                    )
                 }
                 item {
                     TarjetaAsignacion(
@@ -311,32 +376,29 @@ fun FichaPacienteScreen(
                         onAlta = onAlta,
                     )
                 }
+                item { TarjetaContacto(ficha.contactoEmergencia) }
                 item {
                     TarjetaHospital {
-                        Text(
-                            stringResource(R.string.campo_contacto_emergencia),
-                            style = MaterialTheme.typography.bodySmall,
-                        )
-                        Text(ficha.contactoEmergencia, style = MaterialTheme.typography.titleMedium)
+                        Text(stringResource(R.string.tab_citas), style = EstiloTituloTarjeta)
+                        if (ficha.citas.isEmpty()) {
+                            EstadoVacio(
+                                titulo = stringResource(R.string.ficha_sin_citas_titulo),
+                                detalle = stringResource(R.string.ficha_sin_citas_detalle),
+                                accion = stringResource(R.string.ficha_agendar),
+                                onAccion = onAgendar,
+                            )
+                        }
+                        ficha.citas.forEachIndexed { indice, cita ->
+                            FilaLista(
+                                titulo = "${cita.fecha} · ${cita.hora}",
+                                soporte = cita.doctor,
+                                divisor = indice < ficha.citas.lastIndex,
+                                enTarjeta = true,
+                                margenHorizontal = 0.dp,
+                                final = { BadgeCita(cita.estado) },
+                            )
+                        }
                     }
-                }
-                item { TituloSeccion(stringResource(R.string.tab_citas)) }
-                if (ficha.citas.isEmpty()) {
-                    item {
-                        EstadoVacio(
-                            titulo = stringResource(R.string.ficha_sin_citas_titulo),
-                            detalle = stringResource(R.string.ficha_sin_citas_detalle),
-                            accion = stringResource(R.string.ficha_agendar),
-                            onAccion = onAgendar,
-                        )
-                    }
-                }
-                items(ficha.citas, key = { it.id }) { cita ->
-                    FilaLista(
-                        titulo = "${cita.fecha} · ${cita.hora}",
-                        soporte = cita.doctor,
-                        final = { BadgeCita(cita.estado) },
-                    )
                 }
                 item { Banner(tipo = TipoBanner.INFO, texto = stringResource(R.string.ficha_nota_privacidad)) }
             }
@@ -355,33 +417,68 @@ private fun TarjetaAsignacion(
         Row(verticalAlignment = Alignment.CenterVertically) {
             Text(
                 text = stringResource(R.string.ficha_asignacion),
-                style = MaterialTheme.typography.bodySmall,
+                style = EstiloTituloTarjeta,
                 modifier = Modifier.weight(1f),
             )
             ChipEnVivo()
         }
         val asignacion = ficha.asignacion
         if (asignacion == null) {
-            Text(stringResource(R.string.ficha_sin_cama), style = MaterialTheme.typography.titleMedium)
+            TextosFila(titulo = stringResource(R.string.ficha_sin_cama))
             BotonPrimario(texto = stringResource(R.string.camas_ingresar), onClick = onIngresar)
         } else {
-            Text(
-                text = stringResource(R.string.ficha_cama, asignacion.habitacion, asignacion.cama),
-                style = MaterialTheme.typography.titleMedium,
+            val tipo =
+                stringResource(
+                    if (asignacion.tipo ==
+                        TipoHabitacion.VIP
+                    ) {
+                        R.string.ocupacion_vip
+                    } else {
+                        R.string.habitacion_semiprivada
+                    },
+                )
+            TextosFila(
+                titulo = stringResource(R.string.ficha_cama, asignacion.habitacion, asignacion.cama) + " · $tipo",
+                soporte = stringResource(R.string.ficha_desde, asignacion.desde, asignacion.tipo.planta),
             )
-            Text(
-                text = stringResource(R.string.ficha_desde, asignacion.desde, asignacion.tipo.planta),
-                style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-            )
-            Row(
-                horizontalArrangement = Arrangement.spacedBy(Espacio.xs),
-                modifier = Modifier.padding(top = Espacio.xs),
-            ) {
-                BotonSecundario(texto = stringResource(R.string.camas_trasladar), onClick = onTrasladar)
-                BotonSecundario(texto = stringResource(R.string.camas_dar_alta), onClick = onAlta, destructivo = true)
+            Row(horizontalArrangement = Arrangement.spacedBy(Espacio.xs)) {
+                BotonSecundario(
+                    texto = stringResource(R.string.camas_trasladar),
+                    onClick = onTrasladar,
+                    modifier = Modifier.weight(1f),
+                )
+                BotonPeligro(
+                    texto = stringResource(R.string.camas_dar_alta),
+                    onClick = onAlta,
+                    modifier = Modifier.weight(1f),
+                )
             }
         }
+    }
+}
+
+/** "Contacto de emergencia" con nombre, teléfono y botón de llamar. */
+@Composable
+private fun TarjetaContacto(contacto: String) {
+    val nombre = contacto.substringBefore(" · ")
+    val telefono = contacto.substringAfter(" · ", missingDelimiterValue = "")
+    TarjetaHospital {
+        Text(stringResource(R.string.campo_contacto_emergencia), style = EstiloTituloTarjeta)
+        FilaLista(
+            titulo = nombre,
+            soporte = telefono.ifEmpty { null },
+            divisor = false,
+            enTarjeta = true,
+            margenHorizontal = 0.dp,
+            final = {
+                IconoAccion(
+                    icono = R.drawable.ic_phone,
+                    descripcion = stringResource(R.string.accion_llamar, nombre),
+                    onClick = {},
+                    tinte = Primario700,
+                )
+            },
+        )
     }
 }
 

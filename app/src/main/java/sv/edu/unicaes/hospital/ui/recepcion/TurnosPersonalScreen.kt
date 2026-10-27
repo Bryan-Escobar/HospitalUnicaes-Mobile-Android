@@ -13,8 +13,6 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.Button
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.ExtendedFloatingActionButton
-import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Scaffold
@@ -28,22 +26,25 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.PreviewParameter
+import androidx.compose.ui.unit.dp
 import sv.edu.unicaes.hospital.R
 import sv.edu.unicaes.hospital.core.UiState
 import sv.edu.unicaes.hospital.ui.components.Banner
 import sv.edu.unicaes.hospital.ui.components.CampoTexto
+import sv.edu.unicaes.hospital.ui.components.ChipDesplegable
 import sv.edu.unicaes.hospital.ui.components.ChipsFiltro
 import sv.edu.unicaes.hospital.ui.components.ContenidoConEstado
 import sv.edu.unicaes.hospital.ui.components.EstadoPreview
 import sv.edu.unicaes.hospital.ui.components.EstadoVacio
 import sv.edu.unicaes.hospital.ui.components.EstadosPreviewProvider
-import sv.edu.unicaes.hospital.ui.components.Etiqueta
+import sv.edu.unicaes.hospital.ui.components.EtiquetaPersonal
+import sv.edu.unicaes.hospital.ui.components.FabHospital
 import sv.edu.unicaes.hospital.ui.components.FilaLista
 import sv.edu.unicaes.hospital.ui.components.IconoAccion
 import sv.edu.unicaes.hospital.ui.components.PreviewPantalla
+import sv.edu.unicaes.hospital.ui.components.TarjetaLista
 import sv.edu.unicaes.hospital.ui.components.TipoBanner
 import sv.edu.unicaes.hospital.ui.components.TituloSeccion
 import sv.edu.unicaes.hospital.ui.components.TopBarHospital
@@ -51,6 +52,7 @@ import sv.edu.unicaes.hospital.ui.modelo.DatosMuestra
 import sv.edu.unicaes.hospital.ui.modelo.DiaTurnosUi
 import sv.edu.unicaes.hospital.ui.theme.Espacio
 import sv.edu.unicaes.hospital.ui.theme.HospitalUnicaesTheme
+import sv.edu.unicaes.hospital.ui.theme.Neutro700
 
 /** AND-R12 · Turnos del personal por semana y área. Los solapamientos bloquean Guardar. */
 @Composable
@@ -60,7 +62,7 @@ fun TurnosPersonalScreen(
     onReintentar: () -> Unit = {},
     hojaAbierta: Boolean = false,
 ) {
-    var area by rememberSaveable { mutableIntStateOf(1) }
+    var area by rememberSaveable { mutableIntStateOf(0) }
     var mostrarHoja by rememberSaveable { mutableStateOf(hojaAbierta) }
 
     Scaffold(
@@ -72,38 +74,37 @@ fun TurnosPersonalScreen(
             )
         },
         floatingActionButton = {
-            ExtendedFloatingActionButton(
-                onClick = { mostrarHoja = true },
-                icon = { Icon(painterResource(R.drawable.ic_add), contentDescription = null) },
-                text = { Text(stringResource(R.string.turnos_nuevo)) },
-            )
+            FabHospital(texto = stringResource(R.string.turnos_nuevo), onClick = { mostrarHoja = true })
         },
     ) { padding ->
-        Column(modifier = Modifier.padding(padding)) {
+        Column(
+            modifier = Modifier.padding(padding).padding(start = Espacio.md, end = Espacio.md, top = Espacio.xs),
+            verticalArrangement = Arrangement.spacedBy(Espacio.sm),
+        ) {
             Row(
-                modifier = Modifier.fillMaxWidth().padding(horizontal = Espacio.xs),
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(Espacio.md, Alignment.CenterHorizontally),
                 verticalAlignment = Alignment.CenterVertically,
             ) {
-                TextButton(onClick = {}) { Text("‹") }
-                Text(
-                    text = stringResource(R.string.turnos_semana),
-                    style = MaterialTheme.typography.titleMedium,
-                    modifier = Modifier.weight(1f),
+                IconoAccion(
+                    R.drawable.ic_chevron_left,
+                    stringResource(R.string.turnos_ir_semana_anterior),
+                    {},
+                    tinte = Neutro700,
                 )
-                TextButton(onClick = {}) { Text("›") }
+                Text(text = stringResource(R.string.turnos_semana), style = EstiloTituloTarjeta)
+                IconoAccion(
+                    R.drawable.ic_chevron_right,
+                    stringResource(R.string.turnos_ir_semana_siguiente),
+                    {},
+                    tinte = Neutro700,
+                )
             }
             ChipsFiltro(
-                opciones =
-                    listOf(
-                        stringResource(R.string.turnos_area_todas),
-                        "Doctor",
-                        "Alergista",
-                        "Emergencia",
-                        "Enfermería",
-                        "Recepción",
-                    ),
+                opciones = listOf("Doctor", "Alergista", "Emergencia", "Enfermería", "Recepción"),
                 seleccionada = area,
                 onSeleccion = { area = it },
+                antes = { ChipDesplegable(stringResource(R.string.turnos_area_todas)) },
             )
             ContenidoConEstado(
                 estado = estado,
@@ -119,15 +120,22 @@ fun TurnosPersonalScreen(
                     )
                 },
             ) { dias ->
-                LazyColumn(contentPadding = PaddingValues(bottom = Espacio.xxl * 2)) {
+                LazyColumn(
+                    contentPadding = PaddingValues(bottom = 96.dp),
+                    verticalArrangement = Arrangement.spacedBy(Espacio.sm),
+                ) {
                     dias.forEach { dia ->
-                        item { TituloSeccion(dia.dia, modifier = Modifier.padding(horizontal = Espacio.md)) }
+                        item { TituloSeccion(dia.dia) }
                         items(dia.turnos) { turno ->
-                            FilaLista(
-                                titulo = turno.persona,
-                                soporte = "${turno.area} · ${turno.horario}",
-                                final = { Etiqueta(turno.tipo) },
-                            )
+                            TarjetaLista(listOf(turno)) { _, _ ->
+                                FilaLista(
+                                    titulo = turno.persona,
+                                    soporte = "${turno.area} · ${turno.horario}",
+                                    divisor = false,
+                                    enTarjeta = true,
+                                    final = { EtiquetaPersonal(turno.tipo) },
+                                )
+                            }
                         }
                     }
                 }

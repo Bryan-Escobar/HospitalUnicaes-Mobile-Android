@@ -2,7 +2,6 @@
 
 package sv.edu.unicaes.hospital.ui.recepcion
 
-import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -12,10 +11,8 @@ import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Scaffold
@@ -28,15 +25,23 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.SpanStyle
+import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.buildAnnotatedString
+import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.tooling.preview.PreviewParameter
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import sv.edu.unicaes.hospital.R
 import sv.edu.unicaes.hospital.core.UiState
 import sv.edu.unicaes.hospital.domain.model.EstadoAmbulancia
+import sv.edu.unicaes.hospital.ui.components.AccionTexto
 import sv.edu.unicaes.hospital.ui.components.BadgeAmbulancia
 import sv.edu.unicaes.hospital.ui.components.BadgeEstado
 import sv.edu.unicaes.hospital.ui.components.Banner
+import sv.edu.unicaes.hospital.ui.components.BotonPeligro
 import sv.edu.unicaes.hospital.ui.components.BotonPrimario
 import sv.edu.unicaes.hospital.ui.components.BotonSecundario
 import sv.edu.unicaes.hospital.ui.components.CampoTexto
@@ -46,9 +51,13 @@ import sv.edu.unicaes.hospital.ui.components.DialogoConfirmacion
 import sv.edu.unicaes.hospital.ui.components.EstadoPreview
 import sv.edu.unicaes.hospital.ui.components.EstadoVacio
 import sv.edu.unicaes.hospital.ui.components.EstadosPreviewProvider
+import sv.edu.unicaes.hospital.ui.components.EstiloFilaSoporte
+import sv.edu.unicaes.hospital.ui.components.FilaChips
+import sv.edu.unicaes.hospital.ui.components.FilaDato
 import sv.edu.unicaes.hospital.ui.components.FilaLista
 import sv.edu.unicaes.hospital.ui.components.PreviewPantalla
 import sv.edu.unicaes.hospital.ui.components.TarjetaHospital
+import sv.edu.unicaes.hospital.ui.components.TarjetaLista
 import sv.edu.unicaes.hospital.ui.components.TipoBanner
 import sv.edu.unicaes.hospital.ui.components.TituloSeccion
 import sv.edu.unicaes.hospital.ui.components.TopBarHospital
@@ -62,6 +71,7 @@ import sv.edu.unicaes.hospital.ui.theme.Error
 import sv.edu.unicaes.hospital.ui.theme.Espacio
 import sv.edu.unicaes.hospital.ui.theme.HospitalTheme
 import sv.edu.unicaes.hospital.ui.theme.HospitalUnicaesTheme
+import sv.edu.unicaes.hospital.ui.theme.Texto2
 
 /**
  * AND-R13 · Ambulancia: el paciente solicita (iOS) y recepción despacha. Solo se despacha si está
@@ -101,18 +111,26 @@ fun AmbulanciaScreen(
             },
         ) { ambulancia ->
             LazyColumn(
-                contentPadding = PaddingValues(Espacio.md),
+                contentPadding = RellenoCuerpo,
                 verticalArrangement = Arrangement.spacedBy(Espacio.sm),
             ) {
                 item {
                     TarjetaHospital {
-                        Row(verticalAlignment = Alignment.CenterVertically) {
-                            Text(
-                                text = stringResource(R.string.ambulancia_unidad),
-                                style = MaterialTheme.typography.titleLarge,
-                                modifier = Modifier.weight(1f),
+                        Text(
+                            text = stringResource(R.string.ambulancia_unidad),
+                            style = EstiloFilaSoporte,
+                            color = Texto2,
+                        )
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(Espacio.sm),
+                        ) {
+                            Icon(
+                                painter = painterResource(R.drawable.ic_ambulancia),
+                                contentDescription = null,
+                                tint = coloresAmbulancia(ambulancia.estado).texto,
                             )
-                            BadgeAmbulancia(ambulancia.estado)
+                            BadgeAmbulancia(ambulancia.estado, grande = true)
                         }
                     }
                 }
@@ -148,15 +166,16 @@ fun AmbulanciaScreen(
                             })
                         }
                     } else {
-                        Text(
-                            text = stringResource(R.string.ambulancia_sin_servicio),
-                            color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        )
+                        TarjetaHospital {
+                            Text(
+                                text = stringResource(R.string.ambulancia_sin_servicio),
+                                style = EstiloFilaSoporte,
+                                color = Texto2,
+                            )
+                        }
                     }
                 }
-                item {
-                    TextButton(onClick = onBitacora) { Text(stringResource(R.string.ambulancia_ver_bitacora)) }
-                }
+                item { AccionTexto(texto = stringResource(R.string.ambulancia_ver_bitacora), onClick = onBitacora) }
             }
 
             val solicitud = ambulancia.solicitudes.firstOrNull { it.id == despachando }
@@ -185,39 +204,71 @@ private fun TarjetaSolicitudAmbulancia(
     onDespachar: () -> Unit,
 ) {
     TarjetaHospital(colorBorde = Error, anchoBorde = 2.5.dp) {
-        Text(
-            text = "${solicitud.paciente} · ${solicitud.hora} · ${solicitud.hace}",
-            style = MaterialTheme.typography.titleMedium,
-        )
-        Text(stringResource(R.string.ambulancia_tipo, solicitud.tipo), style = MaterialTheme.typography.bodyMedium)
-        Text(
-            stringResource(R.string.ambulancia_ubicacion, solicitud.ubicacion),
-            style = MaterialTheme.typography.bodyMedium,
-        )
-        Text(
-            text = stringResource(R.string.ambulancia_descripcion, solicitud.descripcion),
-            style = MaterialTheme.typography.bodyMedium,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
-        )
-        Row(
-            modifier = Modifier.fillMaxWidth().padding(top = Espacio.xs),
-            horizontalArrangement = Arrangement.spacedBy(Espacio.xs, Alignment.End),
-        ) {
-            BotonSecundario(texto = stringResource(R.string.accion_rechazar), onClick = {})
-            Button(
-                onClick = onDespachar,
-                enabled = puedeDespachar,
-                colors = ButtonDefaults.buttonColors(containerColor = Error),
-            ) {
-                Text(
-                    stringResource(
-                        if (puedeDespachar) R.string.ambulancia_despachar else R.string.ambulancia_no_disponible,
-                    ),
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            Text(text = solicitud.paciente, style = EstiloTituloTarjeta, modifier = Modifier.weight(1f))
+            Text(
+                text = "${solicitud.hora} · ${solicitud.hace}",
+                style = TextStyle(fontSize = 13.sp, lineHeight = 20.sp),
+                color = Texto2,
+            )
+        }
+        Column {
+            TextoEtiquetado(stringResource(R.string.ambulancia_tipo, solicitud.tipo))
+            TextoEtiquetado(stringResource(R.string.ambulancia_ubicacion, solicitud.ubicacion))
+            TextoEtiquetado(stringResource(R.string.ambulancia_descripcion, solicitud.descripcion))
+        }
+        Row(horizontalArrangement = Arrangement.spacedBy(Espacio.xs)) {
+            BotonSecundario(
+                texto = stringResource(R.string.accion_rechazar),
+                onClick = {},
+                modifier = Modifier.weight(1f),
+            )
+            if (puedeDespachar) {
+                BotonPeligro(
+                    texto = stringResource(R.string.ambulancia_despachar),
+                    onClick = onDespachar,
+                    icono = R.drawable.ic_sirena,
+                    modifier = Modifier.weight(1f),
+                )
+            } else {
+                BotonSecundario(
+                    texto = stringResource(R.string.ambulancia_no_disponible),
+                    onClick = {},
+                    habilitado = false,
+                    modifier = Modifier.weight(1f),
                 )
             }
         }
     }
 }
+
+/** "Etiqueta: valor" con la etiqueta en gris (14/22). */
+@Composable
+private fun TextoEtiquetado(texto: String) {
+    val corte = texto.indexOf(": ")
+    Text(
+        text =
+            buildAnnotatedString {
+                if (corte > 0) {
+                    withStyle(SpanStyle(color = Texto2)) { append(texto.substring(0, corte + 1)) }
+                    append(texto.substring(corte + 1))
+                } else {
+                    append(texto)
+                }
+            },
+        style = TextStyle(fontSize = 14.sp, lineHeight = 22.sp),
+    )
+}
+
+@Composable
+private fun coloresAmbulancia(estado: EstadoAmbulancia) =
+    with(HospitalTheme.estados) {
+        when (estado) {
+            EstadoAmbulancia.DISPONIBLE -> ambulanciaDisponible
+            EstadoAmbulancia.EN_SERVICIO -> ambulanciaEnServicio
+            EstadoAmbulancia.EN_MANTENIMIENTO -> ambulanciaEnMantenimiento
+        }
+    }
 
 /** Hoja de cierre del servicio: hora de llegada, destino, observaciones y kilometraje. */
 @Composable
@@ -262,14 +313,11 @@ fun BitacoraScreen(
     Scaffold(
         topBar = { TopBarHospital(titulo = stringResource(R.string.bitacora_titulo), onVolver = onVolver) },
     ) { padding ->
-        Column(modifier = Modifier.padding(padding)) {
-            Row(
-                modifier =
-                    Modifier
-                        .horizontalScroll(rememberScrollState())
-                        .padding(horizontal = Espacio.md, vertical = Espacio.xxs),
-                horizontalArrangement = Arrangement.spacedBy(Espacio.xs),
-            ) {
+        Column(
+            modifier = Modifier.padding(padding).padding(start = Espacio.md, end = Espacio.md, top = Espacio.xs),
+            verticalArrangement = Arrangement.spacedBy(Espacio.sm),
+        ) {
+            FilaChips {
                 ChipDesplegable(stringResource(R.string.bitacora_filtro_fecha))
                 ChipDesplegable(stringResource(R.string.citas_filtro_estado))
                 ChipDesplegable(stringResource(R.string.bitacora_filtro_tipo))
@@ -286,38 +334,47 @@ fun BitacoraScreen(
                     )
                 },
             ) { servicios ->
-                LazyColumn(contentPadding = PaddingValues(bottom = Espacio.lg)) {
-                    items(servicios, key = { it.id }) { servicio ->
-                        FilaLista(
-                            titulo = "${servicio.fecha} · ${servicio.horario}",
-                            soporte =
-                                listOfNotNull(
-                                    servicio.tipo,
-                                    servicio.paciente,
-                                    servicio.duracion,
-                                ).joinToString(" · "),
-                            final = { BadgeServicio(servicio.estado) },
-                        )
+                LazyColumn(
+                    contentPadding = PaddingValues(bottom = Espacio.md),
+                    verticalArrangement = Arrangement.spacedBy(Espacio.sm),
+                ) {
+                    item {
+                        TarjetaLista(servicios) { servicio, ultimo ->
+                            FilaLista(
+                                titulo =
+                                    listOfNotNull(
+                                        servicio.fecha,
+                                        servicio.horario.ifEmpty { null },
+                                    ).joinToString(" · "),
+                                soporte =
+                                    listOfNotNull(
+                                        servicio.tipo,
+                                        servicio.paciente,
+                                        servicio.duracion,
+                                    ).joinToString(" · "),
+                                divisor = !ultimo,
+                                enTarjeta = true,
+                                final = { BadgeServicio(servicio.estado) },
+                            )
+                        }
                     }
                     if (detalle != null) {
                         item {
-                            TarjetaHospital(modifier = Modifier.padding(Espacio.md)) {
+                            TarjetaHospital {
                                 Text(
                                     text = stringResource(R.string.bitacora_detalle, detalle.fecha),
-                                    style = MaterialTheme.typography.titleMedium,
+                                    style = EstiloTituloTarjeta,
                                 )
-                                Text(
-                                    text =
-                                        stringResource(
-                                            R.string.bitacora_detalle_texto,
-                                            detalle.despacho,
-                                            detalle.destino,
-                                            detalle.kilometraje,
-                                            detalle.observaciones,
-                                        ),
-                                    style = MaterialTheme.typography.bodyMedium,
-                                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                                )
+                                Column {
+                                    FilaDato(stringResource(R.string.bitacora_despacho), detalle.despacho)
+                                    FilaDato(stringResource(R.string.ambulancia_destino), detalle.destino)
+                                    FilaDato(
+                                        stringResource(R.string.bitacora_km),
+                                        detalle.kilometraje.toString(),
+                                        divisor = false,
+                                    )
+                                }
+                                TextoEtiquetado(stringResource(R.string.bitacora_observaciones, detalle.observaciones))
                             }
                         }
                     }
