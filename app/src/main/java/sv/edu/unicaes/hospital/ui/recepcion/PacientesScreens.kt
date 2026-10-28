@@ -403,8 +403,7 @@ internal fun IconoDesplegable() {
 
 /**
  * AND-R4 · Ficha del paciente (vista recepción). Recepción ve datos personales, citas y
- * la cama asignada, nunca el expediente clínico (context.md §3.4). Con [mostrarHospitalizacion]
- * en false se ocultan la cama y las citas (aún sin conectar a la API).
+ * la cama asignada, nunca el expediente clínico (context.md §3.4).
  */
 @Composable
 fun FichaPacienteScreen(
@@ -416,7 +415,6 @@ fun FichaPacienteScreen(
     onAlta: () -> Unit,
     onAgendar: () -> Unit,
     onReintentar: () -> Unit = {},
-    mostrarHospitalizacion: Boolean = true,
 ) {
     Scaffold(
         topBar = {
@@ -449,39 +447,35 @@ fun FichaPacienteScreen(
                             } ?: stringResource(R.string.ficha_cabecera_sin_edad, ficha.paciente.dui, ficha.telefono),
                     )
                 }
-                if (mostrarHospitalizacion) {
-                    item {
-                        TarjetaAsignacion(
-                            ficha = ficha,
-                            onIngresar = onIngresar,
-                            onTrasladar = onTrasladar,
-                            onAlta = onAlta,
-                        )
-                    }
+                item {
+                    TarjetaAsignacion(
+                        ficha = ficha,
+                        onIngresar = onIngresar,
+                        onTrasladar = onTrasladar,
+                        onAlta = onAlta,
+                    )
                 }
                 item { TarjetaContacto(ficha.contactoEmergencia) }
-                if (mostrarHospitalizacion) {
-                    item {
-                        TarjetaHospital {
-                            Text(stringResource(R.string.tab_citas), style = EstiloTituloTarjeta)
-                            if (ficha.citas.isEmpty()) {
-                                EstadoVacio(
-                                    titulo = stringResource(R.string.ficha_sin_citas_titulo),
-                                    detalle = stringResource(R.string.ficha_sin_citas_detalle),
-                                    accion = stringResource(R.string.ficha_agendar),
-                                    onAccion = onAgendar,
-                                )
-                            }
-                            ficha.citas.forEachIndexed { indice, cita ->
-                                FilaLista(
-                                    titulo = "${cita.fecha} · ${cita.hora}",
-                                    soporte = cita.doctor,
-                                    divisor = indice < ficha.citas.lastIndex,
-                                    enTarjeta = true,
-                                    margenHorizontal = 0.dp,
-                                    final = { BadgeCita(cita.estado) },
-                                )
-                            }
+                item {
+                    TarjetaHospital {
+                        Text(stringResource(R.string.tab_citas), style = EstiloTituloTarjeta)
+                        if (ficha.citas.isEmpty()) {
+                            EstadoVacio(
+                                titulo = stringResource(R.string.ficha_sin_citas_titulo),
+                                detalle = stringResource(R.string.ficha_sin_citas_detalle),
+                                accion = stringResource(R.string.ficha_agendar),
+                                onAccion = onAgendar,
+                            )
+                        }
+                        ficha.citas.forEachIndexed { indice, cita ->
+                            FilaLista(
+                                titulo = "${cita.fecha} · ${cita.hora}",
+                                soporte = cita.doctor,
+                                divisor = indice < ficha.citas.lastIndex,
+                                enTarjeta = true,
+                                margenHorizontal = 0.dp,
+                                final = { BadgeCita(cita.estado) },
+                            )
                         }
                     }
                 }

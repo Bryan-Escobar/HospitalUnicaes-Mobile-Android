@@ -29,6 +29,8 @@
     <string name="cita_programada">Programada</string>
     <string name="cita_atendida">Atendida</string>
     <string name="cita_cancelada">Cancelada</string>
+    <string name="cita_confirmada">Confirmada</string>
+    <string name="cita_no_asistio">No asistió</string>
     <string name="turno_en_curso">En curso</string>
     <string name="turno_terminado">Terminado</string>
     <string name="turno_sin_turno">Sin turno</string>

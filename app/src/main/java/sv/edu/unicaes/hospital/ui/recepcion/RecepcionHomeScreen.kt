@@ -109,7 +109,6 @@ private fun RecepcionNavHost(
                 onAlta = { navController.navigate(AltaRuta) },
                 onAgendar = { navController.navigate(NuevaCitaRuta()) },
                 onReintentar = viewModel::cargar,
-                mostrarHospitalizacion = false,
             )
         }
         composable<CitasRuta> {
