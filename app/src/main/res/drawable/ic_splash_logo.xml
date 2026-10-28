@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    Logo completo para la splash del sistema (SplashScreen API): lienzo 108 que se pinta a 288dp,
+    logo de 36 unidades = 96dp, el mismo tamaño que en la splash de Compose (AND-00).
+-->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+    <group
+        android:scaleX="0.375"
+        android:scaleY="0.375"
+        android:translateX="36"
+        android:translateY="36">
+        <path
+            android:fillColor="#FF862524"
+            android:pathData="M27,0H69A27,27 0,0 1,96 27V69A27,27 0,0 1,69 96H27A27,27 0,0 1,0 69V27A27,27 0,0 1,27 0Z" />
+        <path
+            android:strokeColor="#FFE8B840"
+            android:strokeWidth="4.32"
+            android:pathData="M12.48,48A35.52,35.52 0,1 1,83.52 48A35.52,35.52 0,1 1,12.48 48Z" />
+        <path
+            android:fillColor="#FFFFFFFF"
+            android:pathData="M42.4,30H53.6V42.4H66V53.6H53.6V66H42.4V53.6H30V42.4H42.4Z" />
+    </group>
+</vector>

@@ -2,4 +2,11 @@
 <resources>
 
     <style name="Theme.HospitalUnicaes" parent="android:Theme.Material.Light.NoActionBar" />
+
+    <!-- Splash del sistema (AND-00): fondo vino-900 y el logo; luego sigue la splash de Compose. -->
+    <style name="Theme.HospitalUnicaes.Splash" parent="Theme.SplashScreen">
+        <item name="windowSplashScreenBackground">@color/marca_granate</item>
+        <item name="windowSplashScreenAnimatedIcon">@drawable/ic_splash_logo</item>
+        <item name="postSplashScreenTheme">@style/Theme.HospitalUnicaes</item>
+    </style>
 </resources>
