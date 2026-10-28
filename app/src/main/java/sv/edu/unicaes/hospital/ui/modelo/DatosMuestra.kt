@@ -42,7 +42,6 @@ object DatosMuestra {
         InicioRecepcionUi(
             turno = turnoRecepcion,
             solicitudAmbulancia = solicitudAmbulancia,
-            solicitudesCitas = 3,
             laboratorioPendiente = 7,
             ocupacion = ocupacion,
             citasHoyTotal = 18,
@@ -126,38 +125,6 @@ object DatosMuestra {
                 horario = "07:00–15:00",
                 citas = listOf(CitaUi("c-3", "09:00", "Pedro Alas", "Dr. Molina", "Fiebre", EstadoCita.ATENDIDA)),
                 horasLibres = listOf("13:00"),
-            ),
-        )
-
-    /** Horas de la Dra. Rivas el jueves; las ocupadas se muestran deshabilitadas. */
-    val horasCita = listOf("08:00", "08:30", "09:00", "10:30", "11:00", "12:30")
-    val horasOcupadas = setOf("09:00")
-
-    val solicitudesCitas =
-        listOf(
-            SolicitudCitaUi(
-                "s-1",
-                "Luis Martínez",
-                "hace 5 min",
-                "molestias en la garganta y tos",
-                "Medicina general",
-                "Lun 26 · mañana",
-            ),
-            SolicitudCitaUi(
-                "s-2",
-                "Elena Cruz",
-                "hace 40 min",
-                "revisión de prueba cutánea",
-                "Alergista",
-                "Cualquier día · tarde",
-            ),
-            SolicitudCitaUi(
-                "s-3",
-                "Pedro Alas",
-                "ayer",
-                "no sé qué especialista necesito",
-                "No sabe",
-                "Mié 28 · mañana",
             ),
         )
 

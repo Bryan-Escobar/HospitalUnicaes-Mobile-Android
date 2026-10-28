@@ -38,6 +38,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import sv.edu.unicaes.hospital.R
 import sv.edu.unicaes.hospital.core.UiState
 import sv.edu.unicaes.hospital.core.mensaje
+import sv.edu.unicaes.hospital.domain.model.EstadoCita
 import sv.edu.unicaes.hospital.domain.model.Sexo
 import sv.edu.unicaes.hospital.domain.model.TipoHabitacion
 import sv.edu.unicaes.hospital.ui.components.AccionTexto
@@ -427,6 +428,7 @@ fun FichaPacienteScreen(
     onTrasladar: () -> Unit,
     onAlta: () -> Unit,
     onAgendar: () -> Unit,
+    onCita: (String) -> Unit = {},
     onReintentar: () -> Unit = {},
 ) {
     Scaffold(
@@ -482,13 +484,29 @@ fun FichaPacienteScreen(
                             )
                         }
                         ficha.citas.forEachIndexed { indice, cita ->
+                            // Solo las citas activas se pueden reprogramar o cancelar.
+                            val activa = cita.estado == EstadoCita.PROGRAMADA || cita.estado == EstadoCita.CONFIRMADA
                             FilaLista(
                                 titulo = "${cita.fecha} · ${cita.hora}",
-                                soporte = cita.doctor,
+                                soporte =
+                                    if (activa) {
+                                        stringResource(R.string.ficha_cita_editable, cita.doctor)
+                                    } else {
+                                        cita.doctor
+                                    },
                                 divisor = indice < ficha.citas.lastIndex,
                                 enTarjeta = true,
                                 margenHorizontal = 0.dp,
+                                onClick = if (activa) ({ onCita(cita.id) }) else null,
                                 final = { BadgeCita(cita.estado) },
+                            )
+                        }
+                        // Sin citas, el estado vacío ya trae el botón de agendar.
+                        if (ficha.citas.isNotEmpty()) {
+                            BotonSecundario(
+                                texto = stringResource(R.string.ficha_agendar_otra),
+                                onClick = onAgendar,
+                                modifier = Modifier.fillMaxWidth().padding(top = Espacio.xs),
                             )
                         }
                     }

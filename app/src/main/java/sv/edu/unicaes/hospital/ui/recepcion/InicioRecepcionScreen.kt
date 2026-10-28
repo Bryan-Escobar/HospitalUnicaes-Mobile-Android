@@ -20,7 +20,6 @@ import sv.edu.unicaes.hospital.ui.components.ContenidoConEstado
 import sv.edu.unicaes.hospital.ui.components.EstadoPreview
 import sv.edu.unicaes.hospital.ui.components.EstadoVacio
 import sv.edu.unicaes.hospital.ui.components.EstadosPreviewProvider
-import sv.edu.unicaes.hospital.ui.components.Etiqueta
 import sv.edu.unicaes.hospital.ui.components.FilaCita
 import sv.edu.unicaes.hospital.ui.components.IconoAccion
 import sv.edu.unicaes.hospital.ui.components.PreviewPantalla
@@ -41,7 +40,6 @@ import sv.edu.unicaes.hospital.ui.theme.ParColor
 fun InicioRecepcionScreen(
     estado: UiState<InicioRecepcionUi>,
     onAmbulancia: () -> Unit,
-    onSolicitudesCitas: () -> Unit,
     onLaboratorio: () -> Unit,
     onCitas: () -> Unit,
     onReintentar: () -> Unit = {},
@@ -106,14 +104,6 @@ fun InicioRecepcionScreen(
                 }
                 item {
                     TarjetaBandeja(
-                        titulo = stringResource(R.string.inicio_solicitudes_citas),
-                        detalle = stringResource(R.string.inicio_desde_ios),
-                        icono = R.drawable.ic_calendar,
-                        onClick = onSolicitudesCitas,
-                    ) { Etiqueta(stringResource(R.string.inicio_nuevas, datos.solicitudesCitas)) }
-                }
-                item {
-                    TarjetaBandeja(
                         titulo = stringResource(R.string.mas_laboratorio),
                         detalle = stringResource(R.string.inicio_ordenes_por_atender),
                         icono = R.drawable.ic_laboratorio,
@@ -142,7 +132,6 @@ private fun InicioRecepcionPreview(
         InicioRecepcionScreen(
             estado = estado.con(DatosMuestra.inicioRecepcion),
             onAmbulancia = {},
-            onSolicitudesCitas = {},
             onLaboratorio = {},
             onCitas = {},
         )
