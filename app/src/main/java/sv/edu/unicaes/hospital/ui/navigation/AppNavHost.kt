@@ -39,8 +39,7 @@ fun AppNavHost(
             SplashScreen(onDestino = { navController.irA(it) })
         }
         composable<LoginRuta> {
-            // Tras ingresar, el Splash resuelve el destino según el rol.
-            LoginScreen(onIngresado = { navController.irA(SplashRuta) })
+            LoginScreen(onIngresado = { navController.irA(it) })
         }
         composable<RecepcionRuta> {
             RecepcionHomeScreen(onCerrarSesion = sesionViewModel::cerrarSesion)

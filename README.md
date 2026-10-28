@@ -47,6 +47,7 @@ MVVM: `Screen (Compose) → ViewModel (StateFlow) → Repository → HospitalApi
 |---|---|
 | `ui/` | Pantallas Compose, ViewModels, navegación (`ui/navigation`) y tema (`ui/theme`, tokens del sistema de diseño) |
 | `data/remote` | `HospitalApi` (Retrofit), DTOs y `AuthInterceptor` (agrega el JWT de Supabase a cada llamada) |
+| `data/local` | `DataStoreSessionManager`: la sesión de Supabase se guarda en DataStore y se restaura al abrir la app |
 | `data/repository` | Repositorios: única puerta de los ViewModels a los datos |
 | `domain/model` | Modelos de la app (`Usuario`, `Rol`) |
 | `core/` | `Resultado`, `AppError` (traducción de 401/403/409/422) y `UiState` |

@@ -1,0 +1,93 @@
+<resources>
+    <!-- Acciones -->
+    <string name="accion_volver">Volver</string>
+    <string name="accion_cerrar">Cerrar</string>
+    <string name="accion_cancelar">Cancelar</string>
+    <string name="accion_guardar">Guardar</string>
+    <string name="accion_editar">Editar</string>
+    <string name="accion_llamar">Llamar a %1$s</string>
+    <string name="accion_cambiar">Cambiar</string>
+    <string name="accion_rechazar">Rechazar</string>
+    <string name="accion_ver_todas">Ver todas</string>
+    <string name="accion_calendario">Abrir calendario</string>
+    <string name="accion_notificaciones">Notificaciones</string>
+    <string name="accion_mas_opciones">Más opciones</string>
+    <string name="accion_quitar_filtros">Quitar filtros</string>
+
+    <!-- Indicador de tiempo real -->
+    <string name="conexion_en_vivo">En vivo</string>
+    <string name="conexion_reconectando">Reconectando…</string>
+    <string name="conexion_sin_conexion">Sin conexión</string>
+
+    <!-- Estados del dominio (textos exactos de context.md) -->
+    <string name="lab_pendiente">Pendiente</string>
+    <string name="lab_en_proceso">En Proceso</string>
+    <string name="lab_completado">Completado</string>
+    <string name="ambulancia_disponible">Disponible</string>
+    <string name="ambulancia_en_servicio">En Servicio</string>
+    <string name="ambulancia_en_mantenimiento">En Mantenimiento</string>
+    <string name="cita_programada">Programada</string>
+    <string name="cita_atendida">Atendida</string>
+    <string name="cita_cancelada">Cancelada</string>
+    <string name="turno_en_curso">En curso</string>
+    <string name="turno_terminado">Terminado</string>
+    <string name="turno_sin_turno">Sin turno</string>
+    <string name="tipo_vip">VIP</string>
+    <string name="tipo_semiprivada">Semiprivada</string>
+
+    <!-- Ocupación agregada -->
+    <string name="ocupacion_vip">VIP</string>
+    <string name="ocupacion_semiprivadas">semiprivadas</string>
+    <string name="habitacion_semiprivada">semiprivada</string>
+    <string name="ocupacion_planta">Planta %1$d · %2$s</string>
+    <string name="ocupacion_libres">%1$d libres</string>
+    <string name="ocupacion_ocupadas">%1$d/%2$d camas ocupadas</string>
+
+    <!-- Filtros -->
+    <string name="filtro_todos">Todos</string>
+    <string name="filtro_hospitalizados">Hospitalizados</string>
+
+    <!-- Campos de formulario -->
+    <string name="campo_nombre">Nombre</string>
+    <string name="campo_nombre_completo">Nombre completo *</string>
+    <string name="campo_dui">Documento (DUI) *</string>
+    <string name="campo_nacimiento">Fecha de nac. *</string>
+    <string name="campo_telefono">Teléfono *</string>
+    <string name="campo_telefono_simple">Teléfono</string>
+    <string name="campo_sexo">Sexo</string>
+    <string name="campo_seleccionar">Seleccionar</string>
+    <string name="campo_correo_opcional">Correo (opcional)</string>
+    <string name="campo_direccion">Dirección</string>
+    <string name="campo_contacto_emergencia">Contacto de emergencia</string>
+    <string name="campo_alergias">Alergias conocidas</string>
+    <string name="campo_ninguna">Ninguna</string>
+    <string name="campo_paciente">Paciente *</string>
+    <string name="campo_fecha">Fecha *</string>
+    <string name="campo_fecha_simple">Fecha</string>
+    <string name="campo_doctor_turno">Doctor de turno *</string>
+    <string name="campo_hora">Hora</string>
+    <string name="campo_motivo">Motivo</string>
+    <string name="campo_persona">Persona</string>
+    <string name="campo_area">Área</string>
+    <string name="campo_inicio">Inicio</string>
+    <string name="campo_fin">Fin</string>
+    <string name="campo_obligatorio">Obligatorio</string>
+
+    <!-- Errores de carga (§10) -->
+    <string name="error_cargar_lista">No se pudo cargar la lista.</string>
+
+    <!-- Perfil -->
+    <string name="perfil_rol_tipo">Rol y tipo</string>
+    <string name="perfil_sin_registrar">Sin registrar</string>
+    <string name="perfil_error">No se pudo cargar tu perfil.</string>
+    <string name="rol_recepcion">Recepcionista/Asistente</string>
+    <string name="rol_doctor">Doctor</string>
+    <string name="rol_administrador">Administrador</string>
+    <string name="rol_paciente">Paciente</string>
+    <string name="perfil_cerrar_titulo">¿Cerrar sesión?</string>
+    <string name="perfil_cerrar_texto">Tendrás que ingresar de nuevo con tu correo y contraseña.</string>
+
+    <!-- Turnos -->
+    <string name="turnos_nuevo">Nuevo turno</string>
+    <string name="turnos_error">No se pudieron cargar los turnos.</string>
+</resources>

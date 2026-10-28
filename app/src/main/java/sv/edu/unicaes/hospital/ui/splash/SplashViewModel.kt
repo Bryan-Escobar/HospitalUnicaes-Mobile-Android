@@ -12,11 +12,8 @@ import sv.edu.unicaes.hospital.core.AppError
 import sv.edu.unicaes.hospital.core.Resultado
 import sv.edu.unicaes.hospital.data.repository.AuthRepository
 import sv.edu.unicaes.hospital.data.repository.EstadoSesion
-import sv.edu.unicaes.hospital.domain.model.Rol
-import sv.edu.unicaes.hospital.ui.navigation.DoctorRuta
 import sv.edu.unicaes.hospital.ui.navigation.LoginRuta
-import sv.edu.unicaes.hospital.ui.navigation.RecepcionRuta
-import sv.edu.unicaes.hospital.ui.navigation.SinAccesoRuta
+import sv.edu.unicaes.hospital.ui.navigation.destinoPara
 import javax.inject.Inject
 
 sealed interface SplashUiState {
@@ -31,7 +28,7 @@ sealed interface SplashUiState {
     ) : SplashUiState
 }
 
-/** Restaura la sesión guardada y consulta GET /me para decidir el inicio según el rol. */
+/** Restaura la sesión guardada y consulta GET /auth/me para decidir el inicio según el rol. */
 @HiltViewModel
 class SplashViewModel
     @Inject
@@ -60,7 +57,8 @@ class SplashViewModel
                         }
 
                         is Resultado.Fallo -> {
-                            if (resultado.error == AppError.NoAutorizado) {
+                            // Reintentar no arregla una cuenta inválida: al login, donde se ve el motivo al ingresar.
+                            if (resultado.error in ERRORES_DE_CUENTA) {
                                 authRepository.cerrarSesion()
                                 SplashUiState.Listo(LoginRuta)
                             } else {
@@ -71,10 +69,7 @@ class SplashViewModel
             }
         }
 
-        private fun destinoPara(rol: Rol): Any =
-            when {
-                rol.usaAppRecepcion -> RecepcionRuta
-                rol == Rol.DOCTOR -> DoctorRuta
-                else -> SinAccesoRuta
-            }
+        private companion object {
+            val ERRORES_DE_CUENTA = setOf(AppError.NoAutorizado, AppError.CuentaInactiva, AppError.PerfilIncompleto)
+        }
     }

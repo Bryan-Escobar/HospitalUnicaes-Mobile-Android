@@ -83,9 +83,10 @@ class AuthRepositoryImpl
             } catch (e: CancellationException) {
                 throw e
             } catch (e: Exception) {
-                // Sin red: la sesión local se borra igual y el token caduca solo.
+                // Sin red signOut no llega a borrar la sesión local: se borra aquí y el token caduca solo.
+                supabase.auth.clearSession()
             }
         }
 
-        override suspend fun usuarioActual(): Resultado<Usuario> = safeApiCall { api.me().aDominio() }
+        override suspend fun usuarioActual(): Resultado<Usuario> = safeApiCall { api.me().data.aDominio() }
     }

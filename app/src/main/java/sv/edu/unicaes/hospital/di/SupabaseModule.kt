@@ -1,8 +1,10 @@
 package sv.edu.unicaes.hospital.di
 
+import android.content.Context
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
+import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
 import io.github.jan.supabase.SupabaseClient
 import io.github.jan.supabase.auth.Auth
@@ -11,6 +13,7 @@ import io.github.jan.supabase.createSupabaseClient
 import io.github.jan.supabase.realtime.Realtime
 import io.ktor.client.engine.okhttp.OkHttp
 import sv.edu.unicaes.hospital.BuildConfig
+import sv.edu.unicaes.hospital.data.local.DataStoreSessionManager
 import sv.edu.unicaes.hospital.data.remote.TokenProvider
 import javax.inject.Singleton
 
@@ -19,7 +22,9 @@ import javax.inject.Singleton
 object SupabaseModule {
     @Provides
     @Singleton
-    fun provideSupabaseClient(): SupabaseClient {
+    fun provideSupabaseClient(
+        @ApplicationContext context: Context,
+    ): SupabaseClient {
         require(BuildConfig.SUPABASE_URL.isNotBlank() && BuildConfig.SUPABASE_KEY.isNotBlank()) {
             "Faltan <variante>.supabaseUrl / <variante>.supabaseKey en local.properties (ver local.properties.example)"
         }
@@ -29,7 +34,10 @@ object SupabaseModule {
         ) {
             // Ktor sobre OkHttp: una sola pila de red con Retrofit.
             httpEngine = OkHttp.create()
-            install(Auth)
+            install(Auth) {
+                // La sesión persiste al cerrar la app y se restaura sola al abrirla.
+                sessionManager = DataStoreSessionManager(context)
+            }
             install(Realtime)
         }
     }

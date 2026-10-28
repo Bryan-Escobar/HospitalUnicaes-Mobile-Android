@@ -1,0 +1,25 @@
+<!-- Icono de trazo del diseño (Lucide, 24 · trazo 2). Se tiñe con Icon(tint). -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="24dp"
+    android:height="24dp"
+    android:viewportWidth="24"
+    android:viewportHeight="24">
+    <path
+        android:pathData="M10 17h4V5H2v12h3M20 17h2v-3.34a4 4 0 0 0-1.17-2.83L19 9h-5M14 17h1M6 8v4M4 10h4"
+        android:strokeColor="@android:color/white"
+        android:strokeLineCap="round"
+        android:strokeLineJoin="round"
+        android:strokeWidth="2" />
+    <path
+        android:pathData="M5,17.5A2.5,2.5 0,1 1,10,17.5A2.5,2.5 0,1 1,5,17.5Z"
+        android:strokeColor="@android:color/white"
+        android:strokeLineCap="round"
+        android:strokeLineJoin="round"
+        android:strokeWidth="2" />
+    <path
+        android:pathData="M15,17.5A2.5,2.5 0,1 1,20,17.5A2.5,2.5 0,1 1,15,17.5Z"
+        android:strokeColor="@android:color/white"
+        android:strokeLineCap="round"
+        android:strokeLineJoin="round"
+        android:strokeWidth="2" />
+</vector>
