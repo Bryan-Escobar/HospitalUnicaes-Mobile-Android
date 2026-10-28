@@ -28,6 +28,9 @@
     <string name="ficha_cabecera">DUI %1$s · %2$d años · %3$s</string>
     <string name="ficha_cabecera_sin_edad">DUI %1$s · %2$s</string>
     <string name="ficha_sin_contacto">Sin contacto registrado</string>
+    <string name="ficha_datos_personales">Datos personales</string>
+    <string name="ficha_expediente">N.º de expediente</string>
+    <string name="ficha_nacimiento">Fecha de nacimiento</string>
     <string name="ficha_asignacion">Asignación de cama</string>
     <string name="ficha_cama">%1$s · Cama %2$s</string>
     <string name="ficha_desde">Desde %1$s · %2$d.ª planta</string>

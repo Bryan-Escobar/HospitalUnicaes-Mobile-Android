@@ -3,6 +3,7 @@ package sv.edu.unicaes.hospital.ui.modelo
 import sv.edu.unicaes.hospital.domain.model.EstadoAmbulancia
 import sv.edu.unicaes.hospital.domain.model.EstadoCita
 import sv.edu.unicaes.hospital.domain.model.EstadoLaboratorio
+import sv.edu.unicaes.hospital.domain.model.Sexo
 import sv.edu.unicaes.hospital.domain.model.TipoHabitacion
 
 // Modelos de presentación: lo que cada pantalla necesita ya formateado para mostrar.
@@ -84,6 +85,11 @@ data class FichaPacienteUi(
     val contactoEmergencia: String,
     val asignacion: AsignacionCamaUi?,
     val citas: List<CitaUi>,
+    val numeroExpediente: String? = null,
+    /** `dd/mm/aaaa`. */
+    val nacimiento: String? = null,
+    val sexo: Sexo? = null,
+    val direccion: String? = null,
 )
 
 data class SolicitudCitaUi(

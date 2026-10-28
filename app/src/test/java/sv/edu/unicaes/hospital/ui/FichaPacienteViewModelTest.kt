@@ -24,6 +24,7 @@ import sv.edu.unicaes.hospital.domain.model.EstadoCita
 import sv.edu.unicaes.hospital.domain.model.Hospitalizacion
 import sv.edu.unicaes.hospital.domain.model.Paciente
 import sv.edu.unicaes.hospital.domain.model.Pagina
+import sv.edu.unicaes.hospital.domain.model.Sexo
 import sv.edu.unicaes.hospital.domain.model.TipoHabitacion
 import sv.edu.unicaes.hospital.ui.modelo.FichaPacienteUi
 import sv.edu.unicaes.hospital.ui.recepcion.FichaPacienteViewModel
@@ -123,5 +124,31 @@ class FichaPacienteViewModelTest {
     fun `si el paciente no existe se muestra el error`() {
         val vm = viewModel(pacienteRes = Resultado.Fallo(AppError.NoEncontrado))
         assertEquals(UiState.Error(AppError.NoEncontrado), vm.uiState.value)
+    }
+
+    @Test
+    fun `muestra los datos personales del paciente`() {
+        val conDatos =
+            paciente.copy(
+                fechaNacimiento = "1990-05-14",
+                sexo = Sexo.MASCULINO,
+                direccion = "Santa Ana",
+                numeroExpediente = "EXP-2026-00015",
+            )
+        val ficha = viewModel(pacienteRes = Resultado.Exito(conDatos)).ficha()
+
+        assertEquals("14/05/1990", ficha.nacimiento)
+        assertEquals(Sexo.MASCULINO, ficha.sexo)
+        assertEquals("Santa Ana", ficha.direccion)
+        assertEquals("EXP-2026-00015", ficha.numeroExpediente)
+    }
+
+    @Test
+    fun `sin datos opcionales no hay filas vacias`() {
+        val ficha = viewModel().ficha()
+
+        assertNull(ficha.nacimiento)
+        assertNull(ficha.sexo)
+        assertNull(ficha.numeroExpediente)
     }
 }

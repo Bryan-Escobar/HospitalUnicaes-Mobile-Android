@@ -57,8 +57,10 @@ import sv.edu.unicaes.hospital.ui.components.EstadoPreview
 import sv.edu.unicaes.hospital.ui.components.EstadoVacio
 import sv.edu.unicaes.hospital.ui.components.EstadosPreviewProvider
 import sv.edu.unicaes.hospital.ui.components.FabHospital
+import sv.edu.unicaes.hospital.ui.components.FilaDato
 import sv.edu.unicaes.hospital.ui.components.FilaLista
 import sv.edu.unicaes.hospital.ui.components.IconoAccion
+import sv.edu.unicaes.hospital.ui.components.MascaraDigitos
 import sv.edu.unicaes.hospital.ui.components.PreviewPantalla
 import sv.edu.unicaes.hospital.ui.components.SegmentosHospital
 import sv.edu.unicaes.hospital.ui.components.TarjetaHospital
@@ -306,9 +308,10 @@ fun RegistroPacienteContent(
                 val duplicado = uiState.documentoDuplicado
                 CampoTexto(
                     etiqueta = stringResource(R.string.campo_dui),
-                    valor = form.documento,
+                    valor = form.documento.soloDigitos(),
                     onValor = { valor -> onFormChange { it.copy(documento = formatearDui(valor)) } },
                     placeholder = "00000000-0",
+                    visualTransformation = MASCARA_DUI,
                     error =
                         duplicado?.let { stringResource(R.string.pacientes_duplicado, it) }
                             ?: error(CampoPaciente.DOCUMENTO),
@@ -326,18 +329,20 @@ fun RegistroPacienteContent(
                 Row(horizontalArrangement = Arrangement.spacedBy(Espacio.sm)) {
                     CampoTexto(
                         stringResource(R.string.campo_nacimiento),
-                        form.nacimiento,
+                        form.nacimiento.soloDigitos(),
                         { valor -> onFormChange { it.copy(nacimiento = formatearFecha(valor)) } },
                         placeholder = "dd/mm/aaaa",
+                        visualTransformation = MASCARA_FECHA,
                         error = error(CampoPaciente.NACIMIENTO),
                         keyboardOptions = tecladoNumerico,
                         modifier = Modifier.weight(1f),
                     )
                     CampoTexto(
                         stringResource(R.string.campo_telefono),
-                        form.telefono,
+                        form.telefono.soloDigitos(),
                         { valor -> onFormChange { it.copy(telefono = formatearTelefono(valor)) } },
                         placeholder = "0000-0000",
+                        visualTransformation = MASCARA_TELEFONO,
                         error = error(CampoPaciente.TELEFONO),
                         keyboardOptions = tecladoTelefono,
                         modifier = Modifier.weight(1f),
@@ -369,9 +374,10 @@ fun RegistroPacienteContent(
                     )
                     CampoTexto(
                         stringResource(R.string.campo_telefono_simple),
-                        form.contactoTelefono,
+                        form.contactoTelefono.soloDigitos(),
                         { valor -> onFormChange { it.copy(contactoTelefono = formatearTelefono(valor)) } },
                         placeholder = "0000-0000",
+                        visualTransformation = MASCARA_TELEFONO,
                         error = error(CampoPaciente.CONTACTO_TELEFONO),
                         keyboardOptions = tecladoTelefono,
                         modifier = Modifier.weight(1f),
@@ -381,6 +387,13 @@ fun RegistroPacienteContent(
         }
     }
 }
+
+// El campo guarda solo dígitos y la máscara dibuja los separadores, así el cursor no salta.
+private val MASCARA_DUI = MascaraDigitos(::formatearDui)
+private val MASCARA_FECHA = MascaraDigitos(::formatearFecha)
+private val MASCARA_TELEFONO = MascaraDigitos(::formatearTelefono)
+
+private fun String.soloDigitos(): String = filter { it.isDigit() }
 
 @StringRes
 private fun Sexo.etiqueta(): Int =
@@ -455,6 +468,7 @@ fun FichaPacienteScreen(
                         onAlta = onAlta,
                     )
                 }
+                item { TarjetaDatosPersonales(ficha) }
                 item { TarjetaContacto(ficha.contactoEmergencia) }
                 item {
                     TarjetaHospital {
@@ -532,6 +546,25 @@ private fun TarjetaAsignacion(
                     modifier = Modifier.weight(1f),
                 )
             }
+        }
+    }
+}
+
+/** Datos personales que recepción puede ver (nunca los clínicos). Solo las filas con dato. */
+@Composable
+private fun TarjetaDatosPersonales(ficha: FichaPacienteUi) {
+    val filas =
+        listOfNotNull(
+            ficha.numeroExpediente?.let { stringResource(R.string.ficha_expediente) to it },
+            ficha.nacimiento?.let { stringResource(R.string.ficha_nacimiento) to it },
+            ficha.sexo?.let { stringResource(R.string.campo_sexo) to stringResource(it.etiqueta()) },
+            ficha.direccion?.let { stringResource(R.string.campo_direccion) to it },
+        )
+    if (filas.isEmpty()) return
+    TarjetaHospital {
+        Text(stringResource(R.string.ficha_datos_personales), style = EstiloTituloTarjeta)
+        filas.forEachIndexed { indice, (etiqueta, valor) ->
+            FilaDato(etiqueta = etiqueta, valor = valor, divisor = indice < filas.lastIndex)
         }
     }
 }

@@ -97,6 +97,10 @@ private fun Paciente.aFicha(
         contactoEmergencia = listOfNotNull(contactoEmergencia, telefonoEmergencia).joinToString(" · "),
         asignacion = hospitalizacion?.aUi(),
         citas = citas.map { it.aUi(paciente = nombreCompleto) },
+        numeroExpediente = numeroExpediente.ifEmpty { null },
+        nacimiento = fechaParaFormulario(fechaNacimiento).ifEmpty { null },
+        sexo = sexo,
+        direccion = direccion,
     )
 
 internal fun Hospitalizacion.aUi(): AsignacionCamaUi {
