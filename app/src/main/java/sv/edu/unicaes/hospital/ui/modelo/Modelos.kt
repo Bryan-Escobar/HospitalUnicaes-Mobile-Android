@@ -79,7 +79,7 @@ data class AsignacionCamaUi(
 
 data class FichaPacienteUi(
     val paciente: PacienteUi,
-    val edad: Int,
+    val edad: Int?,
     val telefono: String,
     val contactoEmergencia: String,
     val asignacion: AsignacionCamaUi?,
