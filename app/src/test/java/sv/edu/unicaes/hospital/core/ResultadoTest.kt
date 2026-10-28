@@ -62,4 +62,27 @@ class ResultadoTest {
         runTest {
             assertEquals(Resultado.Fallo(AppError.SinConexion), safeApiCall { throw IOException("timeout") })
         }
+
+    @Test
+    fun `los mensajes de las reglas de citas se muestran sin el codigo`() {
+        assertEquals(
+            AppError.Rechazada("El doctor ya tiene una cita el 30/10/2026 a las 10:30"),
+            rechazoDesdeMensaje("CITA_DUPLICADA: el doctor ya tiene una cita el 30/10/2026 a las 10:30"),
+        )
+        assertEquals(
+            AppError.Rechazada("El doctor no está de turno el 30/10/2026 de 16:00 a 16:30"),
+            rechazoDesdeMensaje("CITA_FUERA_DE_TURNO: el doctor no está de turno el 30/10/2026 de 16:00 a 16:30"),
+        )
+        assertEquals(
+            AppError.Rechazada("La cita no puede quedar en el pasado"),
+            rechazoDesdeMensaje("REGLA_DE_NEGOCIO: la cita no puede quedar en el pasado"),
+        )
+    }
+
+    @Test
+    fun `otros mensajes de Supabase no son rechazos`() {
+        assertEquals(null, rechazoDesdeMensaje("ACCESO_DENEGADO: solo recepción"))
+        assertEquals(null, rechazoDesdeMensaje("JWT expired"))
+        assertEquals(null, rechazoDesdeMensaje("CITA_DUPLICADA:"))
+    }
 }
