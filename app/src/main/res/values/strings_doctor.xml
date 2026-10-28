@@ -1,0 +1,70 @@
+<resources>
+    <!-- AND-D1 · Agenda -->
+    <string name="agenda_turno_en_curso">Turno en curso</string>
+    <string name="agenda_vacio_titulo">Sin citas este día</string>
+    <string name="agenda_vacio_detalle">Elige otra fecha.</string>
+    <string name="agenda_ir_hoy">Ir a hoy</string>
+
+    <!-- AND-D2 · Detalle de cita -->
+    <string name="cita_titulo">Cita %1$s</string>
+    <string name="cita_titulo_simple">Cita</string>
+    <string name="cita_edad_dui">%1$d años · %2$s</string>
+    <string name="cita_sin_alergias">Sin alergias registradas</string>
+    <string name="cita_ver_expediente">Ver expediente</string>
+    <string name="cita_iniciar_consulta">Iniciar consulta</string>
+    <string name="cita_no_disponible_titulo">Esta cita ya no está disponible</string>
+    <string name="cita_no_disponible_detalle">Pudo ser cancelada o reprogramada por recepción.</string>
+    <string name="cita_volver_agenda">Volver a la agenda</string>
+    <string name="cita_error">No se pudo cargar la cita.</string>
+
+    <!-- AND-D3 y D4 · Pacientes y expediente -->
+    <string name="doctor_mis_pacientes">Mis pacientes</string>
+    <string name="doctor_buscar_paciente">Buscar paciente</string>
+    <string name="doctor_pacientes_vacio_titulo">Aún no tienes pacientes</string>
+    <string name="doctor_pacientes_vacio_detalle">Aparecerán tras tu primera consulta.</string>
+    <string name="expediente_titulo">Expediente</string>
+    <string name="expediente_consultas">Consultas</string>
+    <string name="expediente_datos">Datos</string>
+    <string name="expediente_alergias">Alergias</string>
+    <string name="expediente_alergias_valor">Alergias: %1$s</string>
+    <string name="expediente_hospitalizacion">Hospitalización</string>
+    <string name="expediente_dato_dui">Documento (DUI)</string>
+    <string name="expediente_dato_edad">Edad</string>
+    <string name="expediente_edad_valor">%1$d años</string>
+    <string name="expediente_consulta_resumen">%1$s · %2$d receta(s) · %3$d orden(es)</string>
+    <string name="expediente_lab_preview">Laboratorio (vista previa)</string>
+    <string name="expediente_vacio_titulo">Sin consultas registradas</string>
+    <string name="expediente_vacio_detalle">Inicia una consulta desde una cita.</string>
+    <string name="expediente_error">No se pudo cargar el expediente.</string>
+
+    <!-- AND-D5 y D6 · Consulta, receta y orden -->
+    <string name="consulta_nueva">Nueva consulta</string>
+    <string name="consulta_diagnostico">Diagnóstico *</string>
+    <string name="consulta_notas">Notas</string>
+    <string name="consulta_notas_ayuda">Notas internas: el paciente no las ve.</string>
+    <string name="consulta_notas_placeholder">Notas de la consulta</string>
+    <string name="consulta_recetas">Recetas (%1$d)</string>
+    <string name="consulta_agregar_receta">+ Receta</string>
+    <string name="consulta_sin_recetas">Sin recetas</string>
+    <string name="consulta_ordenes">Órdenes de laboratorio (%1$d)</string>
+    <string name="consulta_agregar_orden">+ Orden</string>
+    <string name="consulta_guardar">Guardar consulta</string>
+    <string name="orden_titulo">Orden de laboratorio</string>
+    <string name="orden_tipo_examen">Tipo de examen *</string>
+    <string name="orden_indicaciones">Indicaciones</string>
+    <string name="orden_se_crea_en">Se crea en</string>
+    <string name="orden_agregar">Agregar orden</string>
+    <string name="receta_titulo">Receta</string>
+    <string name="receta_medicamento">Medicamento *</string>
+    <string name="receta_dosis">Dosis</string>
+    <string name="receta_frecuencia">Frecuencia</string>
+    <string name="receta_agregar">Agregar receta</string>
+
+    <!-- AND-D7 · Mis turnos -->
+    <string name="turnos_mis_turnos">Mis turnos</string>
+    <string name="turnos_esta_semana">Esta semana</string>
+    <string name="turnos_siguiente">Siguiente</string>
+    <string name="turnos_semana_siguiente">Semana siguiente</string>
+    <string name="turnos_vacio_semana_titulo">Sin turnos esta semana</string>
+    <string name="turnos_vacio_semana_detalle">Consulta la semana siguiente.</string>
+</resources>

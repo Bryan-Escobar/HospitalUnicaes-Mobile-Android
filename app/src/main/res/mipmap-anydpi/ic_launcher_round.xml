@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Versión redonda para Android 7.x: círculo vino-700 con el aro y la cruz del logo. -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="96dp"
+    android:height="96dp"
+    android:viewportWidth="96"
+    android:viewportHeight="96">
+    <path
+        android:fillColor="#FF862524"
+        android:pathData="M0,48A48,48 0,1 1,96 48A48,48 0,1 1,0 48Z" />
+    <path
+        android:strokeColor="#FFE8B840"
+        android:strokeWidth="4.32"
+        android:pathData="M12.48,48A35.52,35.52 0,1 1,83.52 48A35.52,35.52 0,1 1,12.48 48Z" />
+    <path
+        android:fillColor="#FFFFFFFF"
+        android:pathData="M42.4,30H53.6V42.4H66V53.6H53.6V66H42.4V53.6H30V42.4H42.4Z" />
+</vector>
