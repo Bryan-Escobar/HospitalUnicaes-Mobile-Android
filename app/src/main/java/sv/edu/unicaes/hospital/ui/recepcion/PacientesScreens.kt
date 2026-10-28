@@ -327,7 +327,7 @@ fun RegistroPacienteContent(
                     CampoTexto(
                         stringResource(R.string.campo_nacimiento),
                         form.nacimiento,
-                        { valor -> onFormChange { it.copy(nacimiento = valor) } },
+                        { valor -> onFormChange { it.copy(nacimiento = formatearFecha(valor)) } },
                         placeholder = "dd/mm/aaaa",
                         error = error(CampoPaciente.NACIMIENTO),
                         keyboardOptions = tecladoNumerico,
@@ -336,7 +336,7 @@ fun RegistroPacienteContent(
                     CampoTexto(
                         stringResource(R.string.campo_telefono),
                         form.telefono,
-                        { valor -> onFormChange { it.copy(telefono = valor) } },
+                        { valor -> onFormChange { it.copy(telefono = formatearTelefono(valor)) } },
                         placeholder = "0000-0000",
                         error = error(CampoPaciente.TELEFONO),
                         keyboardOptions = tecladoTelefono,
@@ -370,7 +370,7 @@ fun RegistroPacienteContent(
                     CampoTexto(
                         stringResource(R.string.campo_telefono_simple),
                         form.contactoTelefono,
-                        { valor -> onFormChange { it.copy(contactoTelefono = valor) } },
+                        { valor -> onFormChange { it.copy(contactoTelefono = formatearTelefono(valor)) } },
                         placeholder = "0000-0000",
                         error = error(CampoPaciente.CONTACTO_TELEFONO),
                         keyboardOptions = tecladoTelefono,

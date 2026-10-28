@@ -15,6 +15,8 @@ import sv.edu.unicaes.hospital.ui.recepcion.edadDesde
 import sv.edu.unicaes.hospital.ui.recepcion.fechaParaApi
 import sv.edu.unicaes.hospital.ui.recepcion.fechaParaFormulario
 import sv.edu.unicaes.hospital.ui.recepcion.formatearDui
+import sv.edu.unicaes.hospital.ui.recepcion.formatearFecha
+import sv.edu.unicaes.hospital.ui.recepcion.formatearTelefono
 import sv.edu.unicaes.hospital.ui.recepcion.validarPaciente
 import java.util.Calendar
 import java.util.GregorianCalendar
@@ -71,6 +73,48 @@ class ValidacionPacienteTest {
         assertEquals("01234567-8", formatearDui("012345678"))
         assertEquals("01234567-8", formatearDui("01234567-8"))
         assertEquals("01234567-8", formatearDui("01234567-89"))
+    }
+
+    @Test
+    fun `formatea la fecha mientras se escribe`() {
+        assertEquals("1", formatearFecha("1"))
+        assertEquals("14", formatearFecha("14"))
+        assertEquals("14/0", formatearFecha("140"))
+        assertEquals("14/05", formatearFecha("1405"))
+        assertEquals("14/05/1", formatearFecha("14051"))
+        assertEquals("14/05/1990", formatearFecha("14051990"))
+        assertEquals("14/05/1990", formatearFecha("14/05/1990"))
+        assertEquals("14/05/1990", formatearFecha("140519901"))
+        // Al borrar la barra con retroceso se va también el dígito que la seguía.
+        assertEquals("14", formatearFecha("14/"))
+    }
+
+    @Test
+    fun `formatea el telefono mientras se escribe`() {
+        assertEquals("7000", formatearTelefono("7000"))
+        assertEquals("7000-0", formatearTelefono("70000"))
+        assertEquals("7000-0000", formatearTelefono("70000000"))
+        assertEquals("7000-0000", formatearTelefono("7000-00001"))
+        assertEquals("7000", formatearTelefono("7000-"))
+    }
+
+    @Test
+    fun `conserva el codigo de pais del telefono`() {
+        assertEquals("+503 7000-0004", formatearTelefono("+503 7000-0004"))
+        assertEquals("+503 7000-000", formatearTelefono("+503 7000-000"))
+        assertEquals("+503 7000-0004", formatearTelefono("50370000004"))
+        assertEquals("+503", formatearTelefono("+503"))
+    }
+
+    @Test
+    fun `los valores formateados pasan la validacion`() {
+        val form =
+            valido.copy(
+                nacimiento = formatearFecha("14051990"),
+                telefono = formatearTelefono("70000000"),
+                contactoTelefono = formatearTelefono("+503 7000-0005"),
+            )
+        assertTrue(errores(form).isEmpty())
     }
 
     @Test

@@ -159,6 +159,38 @@ fun formatearDui(texto: String): String {
     return if (digitos.length > 8) "${digitos.take(8)}-${digitos.drop(8)}" else digitos
 }
 
+/**
+ * Inserta las barras de la fecha al escribir: `14051990` → `14/05/1990`. La barra aparece solo cuando
+ * ya hay un dígito después, así borrar con retroceso no se traba en ella.
+ */
+fun formatearFecha(texto: String): String {
+    val digitos = texto.filter { it.isDigit() }.take(8)
+    return buildString {
+        digitos.forEachIndexed { indice, digito ->
+            if (indice == 2 || indice == 4) append('/')
+            append(digito)
+        }
+    }
+}
+
+/**
+ * Inserta el guion del teléfono al escribir: `70000000` → `7000-0000`. Conserva el código de país
+ * si el número ya lo trae (`+503 7000-0000`, como los guarda la API).
+ */
+fun formatearTelefono(texto: String): String {
+    val digitos = texto.filter { it.isDigit() }
+    val conCodigo = texto.trimStart().startsWith("+") || (digitos.length > 8 && digitos.startsWith(CODIGO_PAIS))
+    val numero = (if (conCodigo) digitos.removePrefix(CODIGO_PAIS) else digitos).take(8)
+    val local = if (numero.length > 4) "${numero.take(4)}-${numero.drop(4)}" else numero
+    return when {
+        !conCodigo -> local
+        local.isEmpty() -> "+$CODIGO_PAIS"
+        else -> "+$CODIGO_PAIS $local"
+    }
+}
+
+private const val CODIGO_PAIS = "503"
+
 /** Formulario lleno con los datos actuales del paciente (modo edición). */
 fun Paciente.aFormulario(): FormularioPaciente =
     FormularioPaciente(
