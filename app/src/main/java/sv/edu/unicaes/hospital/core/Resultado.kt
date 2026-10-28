@@ -30,27 +30,37 @@ suspend fun <T> safeApiCall(llamada: suspend () -> T): Resultado<T> =
         Resultado.Fallo(AppError.Desconocido(e))
     }
 
-/** Cuerpo de error de la API: `{ statusCode, success: false, code, message }`. */
+/** Cuerpo de error de la API: `{ statusCode, success: false, code, message, errors? }`. */
 @Serializable
 private data class CuerpoError(
     val code: String? = null,
+    val errors: List<ErrorCampo> = emptyList(),
+)
+
+/** Detalle de un 400 VALIDACION: `{ field, message }`. */
+@Serializable
+private data class ErrorCampo(
+    val field: String,
+    val message: String,
 )
 
 private val jsonError = Json { ignoreUnknownKeys = true }
 
 /** Decide por el `code` de la API cuando la UI necesita distinguirlo; si no, por el status HTTP. */
 private fun errorDesdeRespuesta(e: HttpException): AppError {
-    val codigo =
+    val cuerpo =
         runCatching {
             e
                 .response()
                 ?.errorBody()
                 ?.string()
-                ?.let { jsonError.decodeFromString<CuerpoError>(it).code }
+                ?.let { jsonError.decodeFromString<CuerpoError>(it) }
         }.getOrNull()
-    return when (codigo) {
+    return when (cuerpo?.code) {
         "CUENTA_INACTIVA" -> AppError.CuentaInactiva
         "PERFIL_INCOMPLETO" -> AppError.PerfilIncompleto
+        "REGISTRO_DUPLICADO" -> AppError.Duplicado
+        "VALIDACION" -> AppError.CamposInvalidos(cuerpo.errors.associate { it.field to it.message })
         else -> errorDesdeCodigo(e.code())
     }
 }

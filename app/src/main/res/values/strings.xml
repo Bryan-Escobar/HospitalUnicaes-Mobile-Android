@@ -50,4 +50,7 @@
     <string name="error_cuenta_inactiva">Tu cuenta está desactivada. Contacta a la administración.</string>
     <string name="error_perfil_incompleto">Tu cuenta no tiene un registro de personal asociado. Contacta a la administración.</string>
     <string name="error_desconocido">Ocurrió un error inesperado.</string>
+    <string name="error_duplicado">Ya existe un registro con esos datos.</string>
+    <string name="error_no_encontrado">El registro no existe o fue desactivado.</string>
+    <string name="error_validacion">Revisa los campos marcados.</string>
 </resources>
