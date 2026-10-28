@@ -49,18 +49,14 @@
 
     <!-- Campos de formulario -->
     <string name="campo_nombre">Nombre</string>
-    <string name="campo_nombre_completo">Nombre completo *</string>
     <string name="campo_dui">Documento (DUI) *</string>
     <string name="campo_nacimiento">Fecha de nac. *</string>
     <string name="campo_telefono">Teléfono *</string>
     <string name="campo_telefono_simple">Teléfono</string>
     <string name="campo_sexo">Sexo</string>
     <string name="campo_seleccionar">Seleccionar</string>
-    <string name="campo_correo_opcional">Correo (opcional)</string>
     <string name="campo_direccion">Dirección</string>
     <string name="campo_contacto_emergencia">Contacto de emergencia</string>
-    <string name="campo_alergias">Alergias conocidas</string>
-    <string name="campo_ninguna">Ninguna</string>
     <string name="campo_paciente">Paciente *</string>
     <string name="campo_fecha">Fecha *</string>
     <string name="campo_fecha_simple">Fecha</string>
@@ -72,6 +68,19 @@
     <string name="campo_inicio">Inicio</string>
     <string name="campo_fin">Fin</string>
     <string name="campo_obligatorio">Obligatorio</string>
+    <string name="campo_nombres">Nombres *</string>
+    <string name="campo_apellidos">Apellidos *</string>
+    <string name="sexo_masculino">Masculino</string>
+    <string name="sexo_femenino">Femenino</string>
+    <string name="sexo_otro">Otro</string>
+
+    <!-- Validación de formularios -->
+    <string name="error_dui_formato">Formato de DUI: 00000000-0</string>
+    <string name="error_telefono_formato">Teléfono de 8 dígitos: 0000-0000</string>
+    <string name="error_fecha_invalida">Fecha no válida (dd/mm/aaaa)</string>
+    <string name="error_fecha_futura">La fecha no puede ser futura</string>
+    <string name="error_max_caracteres">Demasiado largo</string>
+    <string name="error_campo_invalido">Valor no válido</string>
 
     <!-- Errores de carga (§10) -->
     <string name="error_cargar_lista">No se pudo cargar la lista.</string>
