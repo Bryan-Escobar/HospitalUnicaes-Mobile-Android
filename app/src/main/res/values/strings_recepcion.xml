@@ -17,15 +17,20 @@
     <!-- AND-R2 a R4 · Pacientes -->
     <string name="pacientes_registrar">Registrar paciente</string>
     <string name="pacientes_buscar">Buscar por nombre o documento</string>
-    <string name="pacientes_registrados_hoy">Registrados hoy</string>
     <string name="pacientes_vacio_titulo">Sin resultados</string>
     <string name="pacientes_vacio_detalle">No hay pacientes con ese nombre o documento.</string>
     <string name="pacientes_duplicado">Ya existe un paciente con el documento %1$s.</string>
     <string name="pacientes_abrir_ficha">Abrir ficha</string>
-    <string name="pacientes_correo_ayuda">Para invitar a la app iOS</string>
     <string name="pacientes_direccion_placeholder">Colonia, calle, número</string>
     <string name="ficha_titulo">Ficha</string>
+    <string name="pacientes_editar">Editar paciente</string>
+    <string name="pacientes_expediente">Expediente %1$s</string>
     <string name="ficha_cabecera">DUI %1$s · %2$d años · %3$s</string>
+    <string name="ficha_cabecera_sin_edad">DUI %1$s · %2$s</string>
+    <string name="ficha_sin_contacto">Sin contacto registrado</string>
+    <string name="ficha_datos_personales">Datos personales</string>
+    <string name="ficha_expediente">N.º de expediente</string>
+    <string name="ficha_nacimiento">Fecha de nacimiento</string>
     <string name="ficha_asignacion">Asignación de cama</string>
     <string name="ficha_cama">%1$s · Cama %2$s</string>
     <string name="ficha_desde">Desde %1$s · %2$d.ª planta</string>

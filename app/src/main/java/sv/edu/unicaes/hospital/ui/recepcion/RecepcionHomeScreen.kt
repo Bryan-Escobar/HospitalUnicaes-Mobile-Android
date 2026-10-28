@@ -1,12 +1,16 @@
 package sv.edu.unicaes.hospital.ui.recepcion
 
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.PreviewScreenSizes
+import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.navigation.NavBackStackEntry
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -70,37 +74,41 @@ private fun RecepcionNavHost(
                 onCitas = { navController.irAPestana(CitasRuta) },
             )
         }
-        composable<PacientesRuta> {
+        composable<PacientesRuta> { entrada ->
+            val viewModel: PacientesViewModel = hiltViewModel()
+            RecargarAlVolver(entrada, viewModel::cargar)
             PacientesScreen(
-                estado = UiState.Exito(DatosMuestra.pacientes),
                 onPaciente = { navController.navigate(FichaPacienteRuta(it.id)) },
-                onRegistrar = { navController.navigate(RegistroPacienteRuta) },
+                onRegistrar = { navController.navigate(RegistroPacienteRuta()) },
+                viewModel = viewModel,
             )
         }
         composable<RegistroPacienteRuta> {
             RegistroPacienteScreen(
                 onCerrar = volver,
-                onGuardar = volver,
-                onAbrirFichaExistente = { navController.navigate(FichaPacienteRuta("p-2")) },
+                onGuardado = {
+                    navController.previousBackStackEntry?.savedStateHandle?.set(CLAVE_PACIENTE_GUARDADO, true)
+                    volver()
+                },
+                onAbrirFicha = { id ->
+                    navController.navigate(FichaPacienteRuta(id)) { popUpTo<RegistroPacienteRuta> { inclusive = true } }
+                },
             )
         }
         composable<FichaPacienteRuta> { entrada ->
             val id = entrada.toRoute<FichaPacienteRuta>().pacienteId
-            val paciente = DatosMuestra.pacientes.firstOrNull { it.id == id } ?: DatosMuestra.pacientes.first()
-            val ficha =
-                if (paciente.hospitalizado) {
-                    DatosMuestra.fichaLuis.copy(paciente = paciente)
-                } else {
-                    DatosMuestra.fichaLuis.copy(paciente = paciente, asignacion = null, citas = emptyList())
-                }
+            val viewModel: FichaPacienteViewModel = hiltViewModel()
+            RecargarAlVolver(entrada, viewModel::cargar)
+            val estado by viewModel.uiState.collectAsStateWithLifecycle()
             FichaPacienteScreen(
-                estado = UiState.Exito(ficha),
+                estado = estado,
                 onVolver = volver,
-                onEditar = { navController.navigate(RegistroPacienteRuta) },
+                onEditar = { navController.navigate(RegistroPacienteRuta(id)) },
                 onIngresar = { navController.navigate(IngresoCamaRuta) },
                 onTrasladar = { navController.navigate(TrasladoRuta) },
                 onAlta = { navController.navigate(AltaRuta) },
                 onAgendar = { navController.navigate(NuevaCitaRuta()) },
+                onReintentar = viewModel::cargar,
             )
         }
         composable<CitasRuta> {
@@ -217,4 +225,24 @@ private fun RecepcionNavHost(
 @Composable
 private fun RecepcionHomePreview() {
     HospitalUnicaesTheme { RecepcionHomeScreen(onCerrarSesion = {}) }
+}
+
+/** Clave del savedStateHandle con la que el formulario avisa a la pantalla anterior que guardó. */
+private const val CLAVE_PACIENTE_GUARDADO = "paciente_guardado"
+
+/** Vuelve a cargar la pantalla cuando el formulario que se abrió desde ella guardó cambios. */
+@Composable
+private fun RecargarAlVolver(
+    entrada: NavBackStackEntry,
+    recargar: () -> Unit,
+) {
+    val guardado by entrada.savedStateHandle
+        .getStateFlow(CLAVE_PACIENTE_GUARDADO, false)
+        .collectAsStateWithLifecycle()
+    LaunchedEffect(guardado) {
+        if (guardado) {
+            entrada.savedStateHandle[CLAVE_PACIENTE_GUARDADO] = false
+            recargar()
+        }
+    }
 }

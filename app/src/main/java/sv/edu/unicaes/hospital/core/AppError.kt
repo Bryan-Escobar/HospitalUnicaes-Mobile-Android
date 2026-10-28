@@ -29,8 +29,16 @@ sealed interface AppError {
     /** 409: concurrencia (cama ya asignada, ambulancia ya despachada…). */
     data object Conflicto : AppError
 
+    /** 409 REGISTRO_DUPLICADO: ya existe un registro con ese dato único (p. ej. el documento). */
+    data object Duplicado : AppError
+
     /** 422: regla de negocio o transición de estado inválida. */
     data object Validacion : AppError
+
+    /** 400 VALIDACION: campos rechazados por la API, `campo → mensaje`. */
+    data class CamposInvalidos(
+        val campos: Map<String, String>,
+    ) : AppError
 
     data class Servidor(
         val codigo: Int,
@@ -72,7 +80,19 @@ fun AppError.mensaje(): Int =
             R.string.error_conflicto
         }
 
-        AppError.NoEncontrado, AppError.Validacion, is AppError.Servidor, is AppError.Desconocido -> {
+        AppError.Duplicado -> {
+            R.string.error_duplicado
+        }
+
+        AppError.NoEncontrado -> {
+            R.string.error_no_encontrado
+        }
+
+        AppError.Validacion, is AppError.CamposInvalidos -> {
+            R.string.error_validacion
+        }
+
+        is AppError.Servidor, is AppError.Desconocido -> {
             R.string.error_desconocido
         }
     }

@@ -159,8 +159,10 @@ fun BadgeCita(
     val (colores, glifo, texto) =
         when (estado) {
             EstadoCita.PROGRAMADA -> Triple(estados.citaProgramada, null, R.string.cita_programada)
+            EstadoCita.CONFIRMADA -> Triple(estados.citaProgramada, "✓", R.string.cita_confirmada)
             EstadoCita.ATENDIDA -> Triple(estados.citaAtendida, "✓", R.string.cita_atendida)
             EstadoCita.CANCELADA -> Triple(estados.citaCancelada, "✕", R.string.cita_cancelada)
+            EstadoCita.NO_ASISTIO -> Triple(estados.citaCancelada, "✕", R.string.cita_no_asistio)
         }
     BadgeEstado(texto = stringResource(texto), colores = colores, glifo = glifo, modifier = modifier)
 }

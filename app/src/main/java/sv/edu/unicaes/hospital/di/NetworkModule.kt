@@ -24,6 +24,8 @@ object NetworkModule {
     fun provideJson(): Json =
         Json {
             ignoreUnknownKeys = true
+            // Los campos null no se envían: un PATCH solo lleva lo que cambió.
+            explicitNulls = false
         }
 
     @Provides

@@ -20,7 +20,10 @@ data object CamasRuta
 data object MasRuta
 
 @Serializable
-data object RegistroPacienteRuta
+data class RegistroPacienteRuta(
+    /** Null para registrar uno nuevo; con id, edita ese paciente. */
+    val pacienteId: String? = null,
+)
 
 @Serializable
 data class FichaPacienteRuta(

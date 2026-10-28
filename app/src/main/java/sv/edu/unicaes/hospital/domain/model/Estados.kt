@@ -23,10 +23,20 @@ enum class EstadoAmbulancia {
     val puedeDespachar: Boolean get() = this == DISPONIBLE
 }
 
-enum class EstadoCita {
-    PROGRAMADA,
-    ATENDIDA,
-    CANCELADA,
+enum class EstadoCita(
+    val valorApi: String,
+) {
+    PROGRAMADA("programada"),
+    CONFIRMADA("confirmada"),
+    ATENDIDA("atendida"),
+    CANCELADA("cancelada"),
+    NO_ASISTIO("no_asistio"),
+    ;
+
+    companion object {
+        /** Valor de la columna `citas.estado`; uno desconocido se muestra como programada. */
+        fun desdeApi(valor: String): EstadoCita = entries.firstOrNull { it.valorApi == valor } ?: PROGRAMADA
+    }
 }
 
 /** VIP: 3.ª planta, 1 cama. Semiprivada: 2.ª planta, 2 camas (context.md §3.1). */
