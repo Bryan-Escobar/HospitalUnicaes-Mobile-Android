@@ -10,6 +10,7 @@ import io.github.jan.supabase.SupabaseClient
 import io.github.jan.supabase.auth.Auth
 import io.github.jan.supabase.auth.auth
 import io.github.jan.supabase.createSupabaseClient
+import io.github.jan.supabase.postgrest.Postgrest
 import io.github.jan.supabase.realtime.Realtime
 import io.ktor.client.engine.okhttp.OkHttp
 import sv.edu.unicaes.hospital.BuildConfig
@@ -39,6 +40,8 @@ object SupabaseModule {
                 sessionManager = DataStoreSessionManager(context)
             }
             install(Realtime)
+            // Citas y turnos se leen directo de Supabase con RLS (HUNI-51).
+            install(Postgrest)
         }
     }
 

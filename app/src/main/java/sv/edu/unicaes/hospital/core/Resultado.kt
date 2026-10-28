@@ -1,5 +1,7 @@
 package sv.edu.unicaes.hospital.core
 
+import io.github.jan.supabase.exceptions.HttpRequestException
+import io.github.jan.supabase.exceptions.RestException
 import kotlinx.coroutines.CancellationException
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
@@ -25,6 +27,20 @@ suspend fun <T> safeApiCall(llamada: suspend () -> T): Resultado<T> =
     } catch (e: HttpException) {
         Resultado.Fallo(errorDesdeRespuesta(e))
     } catch (e: IOException) {
+        Resultado.Fallo(AppError.SinConexion)
+    } catch (e: Exception) {
+        Resultado.Fallo(AppError.Desconocido(e))
+    }
+
+/** Igual que [safeApiCall], para lecturas directas a Supabase (Postgrest con RLS). */
+suspend fun <T> safeSupabaseCall(llamada: suspend () -> T): Resultado<T> =
+    try {
+        Resultado.Exito(llamada())
+    } catch (e: CancellationException) {
+        throw e
+    } catch (e: RestException) {
+        Resultado.Fallo(errorDesdeCodigo(e.statusCode))
+    } catch (e: HttpRequestException) {
         Resultado.Fallo(AppError.SinConexion)
     } catch (e: Exception) {
         Resultado.Fallo(AppError.Desconocido(e))

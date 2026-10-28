@@ -7,6 +7,7 @@ import retrofit2.http.POST
 import retrofit2.http.Path
 import retrofit2.http.Query
 import sv.edu.unicaes.hospital.data.remote.dto.ApiRespuesta
+import sv.edu.unicaes.hospital.data.remote.dto.HospitalizacionDto
 import sv.edu.unicaes.hospital.data.remote.dto.PacienteBodyDto
 import sv.edu.unicaes.hospital.data.remote.dto.PacienteDto
 import sv.edu.unicaes.hospital.data.remote.dto.PaginaDto
@@ -42,4 +43,12 @@ interface HospitalApi {
         @Path("id") id: String,
         @Body body: PacienteBodyDto,
     ): ApiRespuesta<PacienteDto>
+
+    /** Hospitalizaciones filtradas por paciente y estado (`activa` o `alta`). */
+    @GET("hospitalizaciones")
+    suspend fun listarHospitalizaciones(
+        @Query("paciente_id") pacienteId: String,
+        @Query("estado") estado: String,
+        @Query("por_pagina") porPagina: Int,
+    ): ApiRespuesta<PaginaDto<HospitalizacionDto>>
 }
