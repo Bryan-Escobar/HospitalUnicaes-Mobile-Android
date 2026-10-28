@@ -30,13 +30,18 @@ data class FichaPacienteRuta(
     val pacienteId: String,
 )
 
+/**
+ * Nueva cita, o reprogramar la cita [citaId]. Los demás datos llegan precargados desde la ficha
+ * ([pacienteId]) o desde un hueco libre de la agenda ([fecha] `2026-10-29`, [hora] `10:30`, [doctorId]).
+ */
 @Serializable
 data class NuevaCitaRuta(
-    val solicitudId: String? = null,
+    val citaId: String? = null,
+    val pacienteId: String? = null,
+    val fecha: String? = null,
+    val hora: String? = null,
+    val doctorId: String? = null,
 )
-
-@Serializable
-data object SolicitudesCitasRuta
 
 @Serializable
 data object IngresoCamaRuta

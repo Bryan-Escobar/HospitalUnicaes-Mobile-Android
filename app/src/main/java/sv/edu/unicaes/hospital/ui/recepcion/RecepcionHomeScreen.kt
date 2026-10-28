@@ -69,7 +69,6 @@ private fun RecepcionNavHost(
             InicioRecepcionScreen(
                 estado = UiState.Exito(DatosMuestra.inicioRecepcion),
                 onAmbulancia = { navController.navigate(AmbulanciaRuta) },
-                onSolicitudesCitas = { navController.navigate(SolicitudesCitasRuta) },
                 onLaboratorio = { navController.navigate(LaboratorioRuta) },
                 onCitas = { navController.irAPestana(CitasRuta) },
             )
@@ -87,7 +86,7 @@ private fun RecepcionNavHost(
             RegistroPacienteScreen(
                 onCerrar = volver,
                 onGuardado = {
-                    navController.previousBackStackEntry?.savedStateHandle?.set(CLAVE_PACIENTE_GUARDADO, true)
+                    avisarGuardado(navController)
                     volver()
                 },
                 onAbrirFicha = { id ->
@@ -107,30 +106,32 @@ private fun RecepcionNavHost(
                 onIngresar = { navController.navigate(IngresoCamaRuta) },
                 onTrasladar = { navController.navigate(TrasladoRuta) },
                 onAlta = { navController.navigate(AltaRuta) },
-                onAgendar = { navController.navigate(NuevaCitaRuta()) },
+                onAgendar = { navController.navigate(NuevaCitaRuta(pacienteId = id)) },
+                onCita = { navController.navigate(NuevaCitaRuta(citaId = it)) },
                 onReintentar = viewModel::cargar,
             )
         }
-        composable<CitasRuta> {
+        composable<CitasRuta> { entrada ->
+            val viewModel: CitasViewModel = hiltViewModel()
+            RecargarAlVolver(entrada, viewModel::cargar)
             CitasScreen(
-                estado = UiState.Exito(DatosMuestra.agendasDelDia),
-                onNuevaCita = { navController.navigate(NuevaCitaRuta()) },
-                onCita = { navController.navigate(NuevaCitaRuta()) },
+                onNuevaCita = { fecha -> navController.navigate(NuevaCitaRuta(fecha = fecha)) },
+                onCita = { navController.navigate(NuevaCitaRuta(citaId = it.id)) },
+                onHueco = {
+                    navController.navigate(
+                        NuevaCitaRuta(fecha = it.fecha, hora = it.hora, doctorId = it.doctorId),
+                    )
+                },
+                viewModel = viewModel,
             )
         }
-        composable<NuevaCitaRuta> { entrada ->
-            val solicitudId = entrada.toRoute<NuevaCitaRuta>().solicitudId
+        composable<NuevaCitaRuta> {
             NuevaCitaScreen(
                 onCerrar = volver,
-                onGuardar = volver,
-                solicitud = DatosMuestra.solicitudesCitas.firstOrNull { it.id == solicitudId },
-            )
-        }
-        composable<SolicitudesCitasRuta> {
-            SolicitudesCitasScreen(
-                estado = UiState.Exito(DatosMuestra.solicitudesCitas),
-                onVolver = volver,
-                onConvertir = { navController.navigate(NuevaCitaRuta(it.id)) },
+                onTerminado = {
+                    avisarGuardado(navController)
+                    volver()
+                },
             )
         }
         composable<CamasRuta> {
@@ -227,8 +228,12 @@ private fun RecepcionHomePreview() {
     HospitalUnicaesTheme { RecepcionHomeScreen(onCerrarSesion = {}) }
 }
 
-/** Clave del savedStateHandle con la que el formulario avisa a la pantalla anterior que guardó. */
-private const val CLAVE_PACIENTE_GUARDADO = "paciente_guardado"
+/** Clave del savedStateHandle con la que un formulario avisa a la pantalla anterior que guardó. */
+private const val CLAVE_GUARDADO = "formulario_guardado"
+
+private fun avisarGuardado(navController: NavHostController) {
+    navController.previousBackStackEntry?.savedStateHandle?.set(CLAVE_GUARDADO, true)
+}
 
 /** Vuelve a cargar la pantalla cuando el formulario que se abrió desde ella guardó cambios. */
 @Composable
@@ -237,11 +242,11 @@ private fun RecargarAlVolver(
     recargar: () -> Unit,
 ) {
     val guardado by entrada.savedStateHandle
-        .getStateFlow(CLAVE_PACIENTE_GUARDADO, false)
+        .getStateFlow(CLAVE_GUARDADO, false)
         .collectAsStateWithLifecycle()
     LaunchedEffect(guardado) {
         if (guardado) {
-            entrada.savedStateHandle[CLAVE_PACIENTE_GUARDADO] = false
+            entrada.savedStateHandle[CLAVE_GUARDADO] = false
             recargar()
         }
     }

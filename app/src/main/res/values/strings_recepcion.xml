@@ -4,9 +4,6 @@
     <string name="inicio_bandeja">Bandeja</string>
     <string name="inicio_solicitud_ambulancia">Solicitud de ambulancia</string>
     <string name="inicio_una_nueva">1 nueva</string>
-    <string name="inicio_solicitudes_citas">Solicitudes de citas</string>
-    <string name="inicio_desde_ios">Desde la app iOS</string>
-    <string name="inicio_nuevas">%1$d nuevas</string>
     <string name="inicio_ordenes_por_atender">Órdenes por atender</string>
     <string name="inicio_ocupacion">Ocupación por planta</string>
     <string name="inicio_citas_hoy">Citas de hoy · %1$d</string>
@@ -38,6 +35,8 @@
     <string name="ficha_sin_citas_titulo">Sin citas registradas</string>
     <string name="ficha_sin_citas_detalle">Agenda la primera cita del paciente.</string>
     <string name="ficha_agendar">Agendar cita</string>
+    <string name="ficha_agendar_otra">Agendar otra cita</string>
+    <string name="ficha_cita_editable">%1$s · Toca para reprogramar o cancelar</string>
     <string name="ficha_nota_privacidad">El expediente clínico solo lo ven el médico tratante, el paciente y la administración.</string>
     <string name="ficha_error">No se pudo cargar la ficha.</string>
 
@@ -45,7 +44,6 @@
     <string name="citas_nueva">Nueva cita</string>
     <string name="citas_reprogramar">Reprogramar cita</string>
     <string name="citas_filtro_doctor">Doctor: Todos</string>
-    <string name="citas_filtro_especialidad">Especialidad</string>
     <string name="citas_filtro_estado">Estado</string>
     <string name="citas_libre">Libre</string>
     <string name="citas_hueco_disponible">Hueco disponible</string>
@@ -54,25 +52,24 @@
     <string name="citas_vacio_detalle">Ningún doctor de turno tiene citas.</string>
     <string name="citas_error">No se pudo cargar la agenda.</string>
     <string name="citas_ayuda_doctor">Solo doctores con turno en esa fecha y hora.</string>
-    <string name="citas_hora_ocupada">%1$s ocupada</string>
-    <string name="citas_error_choque">No se puede agendar: la Dra. Rivas ya tiene una cita a las 10:30. Elige otra hora.</string>
     <string name="citas_guardar">Guardar cita</string>
     <string name="citas_cancelar_cita">Cancelar cita</string>
     <string name="citas_cancelar_titulo">¿Cancelar esta cita?</string>
     <string name="citas_cancelar_texto">El paciente verá la cita como Cancelada en su app.</string>
-    <string name="citas_desde_solicitud">Convirtiendo la solicitud de %1$s.</string>
-    <string name="solicitudes_nuevas">Nuevas (%1$d)</string>
-    <string name="solicitudes_convertidas">Convertidas</string>
-    <string name="solicitudes_rechazadas">Rechazadas</string>
+    <string name="citas_buscar_paciente">Buscar por nombre o documento</string>
+    <string name="citas_buscar_minimo">Escribe al menos 2 letras para buscar.</string>
+    <string name="citas_sin_pacientes">No se encontró ningún paciente.</string>
+    <string name="citas_cargando_horarios">Buscando horarios libres…</string>
+    <string name="citas_sin_horarios">Ningún doctor tiene horarios libres ese día.</string>
+    <string name="citas_elige_hora">Elige una hora para ver los doctores de turno.</string>
+    <string name="citas_cargando_doctores">Buscando doctores de turno…</string>
+    <string name="citas_sin_doctores">No hay doctores de turno libres a esa hora. Elige otra.</string>
+    <string name="citas_motivo_fijo">Para cambiar el motivo, cancela y agenda una cita nueva.</string>
+    <string name="citas_error_carga">No se pudo cargar la cita.</string>
+    <string name="citas_sin_turno">Sin turno</string>
+    <string name="citas_hora_con_cita">%1$s · ya tiene cita</string>
+    <string name="citas_ayuda_hora_con_cita">Las horas bloqueadas se cruzan con otra cita del paciente.</string>
     <string name="solicitudes_rechazada">Rechazada</string>
-    <string name="solicitudes_motivo">Motivo: %1$s</string>
-    <string name="solicitudes_convertir">Convertir en cita</string>
-    <string name="solicitudes_rechazar_titulo">Rechazar solicitud</string>
-    <string name="solicitudes_motivo_rechazo">Motivo del rechazo *</string>
-    <string name="solicitudes_motivo_ayuda">El paciente verá este motivo en su app.</string>
-    <string name="solicitudes_vacio_titulo">No hay solicitudes nuevas</string>
-    <string name="solicitudes_vacio_detalle">Las solicitudes desde iOS llegarán aquí.</string>
-    <string name="solicitudes_error">No se pudieron cargar las solicitudes.</string>
 
     <!-- AND-R8 a R11 · Camas -->
     <string name="camas_tab_planta2">Planta 2 · %1$d/%2$d</string>

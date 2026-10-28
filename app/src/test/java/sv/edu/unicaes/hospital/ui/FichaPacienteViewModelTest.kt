@@ -15,7 +15,6 @@ import org.junit.Test
 import sv.edu.unicaes.hospital.core.AppError
 import sv.edu.unicaes.hospital.core.Resultado
 import sv.edu.unicaes.hospital.core.UiState
-import sv.edu.unicaes.hospital.data.repository.CitasRepository
 import sv.edu.unicaes.hospital.data.repository.HospitalizacionesRepository
 import sv.edu.unicaes.hospital.data.repository.PacientesRepository
 import sv.edu.unicaes.hospital.domain.model.Cita
@@ -81,9 +80,7 @@ class FichaPacienteViewModelTest {
         object : HospitalizacionesRepository {
             override suspend fun activaDe(pacienteId: String) = hospRes
         },
-        object : CitasRepository {
-            override suspend fun dePaciente(pacienteId: String) = citasRes
-        },
+        FakeCitasRepository(dePaciente = citasRes),
     )
 
     private fun FichaPacienteViewModel.ficha(): FichaPacienteUi = (uiState.value as UiState.Exito).datos
