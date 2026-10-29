@@ -10,14 +10,18 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.adaptive.navigationsuite.NavigationSuiteDefaults
 import androidx.compose.material3.adaptive.navigationsuite.NavigationSuiteScaffold
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.sp
+import androidx.navigation.NavDestination.Companion.hasRoute
 import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.NavHostController
+import androidx.navigation.compose.currentBackStackEntryAsState
 import sv.edu.unicaes.hospital.ui.theme.Primario100
 import sv.edu.unicaes.hospital.ui.theme.Primario900
 import sv.edu.unicaes.hospital.ui.theme.Superficie2
@@ -91,5 +95,23 @@ fun NavHostController.irAPestana(ruta: Any) {
         popUpTo(graph.findStartDestination().id) { saveState = true }
         launchSingleTop = true
         restoreState = true
+    }
+}
+
+/**
+ * Marca la pestaña cuando se llega a su ruta sin tocar la barra (por ejemplo "Ver citas" desde
+ * Inicio). En las pantallas de detalle no cambia: sigue marcada la pestaña desde la que se abrió.
+ */
+@Composable
+fun SincronizarPestana(
+    navController: NavHostController,
+    pestanas: List<Pestana>,
+    onPestana: (Int) -> Unit,
+) {
+    val entrada by navController.currentBackStackEntryAsState()
+    LaunchedEffect(entrada) {
+        val destino = entrada?.destination ?: return@LaunchedEffect
+        val indice = pestanas.indexOfFirst { destino.hasRoute(it.ruta::class) }
+        if (indice >= 0) onPestana(indice)
     }
 }

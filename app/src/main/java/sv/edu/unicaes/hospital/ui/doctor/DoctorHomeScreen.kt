@@ -8,17 +8,20 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.PreviewScreenSizes
+import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
-import androidx.navigation.toRoute
 import kotlinx.serialization.Serializable
 import sv.edu.unicaes.hospital.R
 import sv.edu.unicaes.hospital.core.UiState
 import sv.edu.unicaes.hospital.ui.components.HomeConPestanas
 import sv.edu.unicaes.hospital.ui.components.Pestana
+import sv.edu.unicaes.hospital.ui.components.SincronizarPestana
 import sv.edu.unicaes.hospital.ui.components.irAPestana
+import sv.edu.unicaes.hospital.ui.modelo.ConDatos
 import sv.edu.unicaes.hospital.ui.modelo.DatosMuestra
 import sv.edu.unicaes.hospital.ui.perfil.PerfilScreen
 import sv.edu.unicaes.hospital.ui.theme.HospitalUnicaesTheme
@@ -66,6 +69,7 @@ fun DoctorHomeScreen(onCerrarSesion: () -> Unit) {
     val navController = rememberNavController()
     var seleccionada by rememberSaveable { mutableIntStateOf(0) }
 
+    SincronizarPestana(navController, pestanasDoctor) { seleccionada = it }
     HomeConPestanas(
         pestanas = pestanasDoctor,
         seleccionada = seleccionada,
@@ -78,7 +82,7 @@ fun DoctorHomeScreen(onCerrarSesion: () -> Unit) {
     }
 }
 
-/** Grafo del Doctor. Los estados salen de [DatosMuestra] hasta conectar los ViewModels. */
+/** Grafo del Doctor. Cada pantalla tiene su ViewModel con [DatosMuestra] hasta conectar la API. */
 @Composable
 private fun DoctorNavHost(
     navController: NavHostController,
@@ -89,54 +93,59 @@ private fun DoctorNavHost(
 
     NavHost(navController = navController, startDestination = AgendaRuta, modifier = modifier) {
         composable<AgendaRuta> {
+            val viewModel: AgendaViewModel = hiltViewModel()
+            val estado by viewModel.uiState.collectAsStateWithLifecycle()
             AgendaScreen(
-                estado = UiState.Exito(DatosMuestra.agendaDoctor),
+                estado = estado,
                 onCita = { navController.navigate(DetalleCitaRuta(it)) },
+                onReintentar = viewModel::cargar,
             )
         }
-        composable<DetalleCitaRuta> { entrada ->
-            val id = entrada.toRoute<DetalleCitaRuta>().citaId
-            val cita = DatosMuestra.agendaDoctor.citas.firstOrNull { it.id == id }
-            val detalle =
-                cita?.let { DatosMuestra.detalleCita.copy(cita = it.copy(fecha = "Mié 21 oct · ${it.hora}")) }
-                    ?: DatosMuestra.detalleCita
+        composable<DetalleCitaRuta> {
+            val viewModel: DetalleCitaViewModel = hiltViewModel()
+            val estado by viewModel.uiState.collectAsStateWithLifecycle()
+            val citaId = (estado as? UiState.Exito)?.datos?.cita?.id
             DetalleCitaScreen(
-                estado = UiState.Exito(detalle),
+                estado = estado,
                 onVolver = volver,
                 onVerExpediente = { navController.navigate(ExpedienteRuta("p-6")) },
-                onIniciarConsulta = { navController.navigate(NuevaConsultaRuta(detalle.cita.id)) },
+                onIniciarConsulta = { citaId?.let { navController.navigate(NuevaConsultaRuta(it)) } },
+                onReintentar = viewModel::cargar,
             )
         }
-        composable<NuevaConsultaRuta> { entrada ->
-            val id = entrada.toRoute<NuevaConsultaRuta>().citaId
-            val cita = DatosMuestra.agendaDoctor.citas.firstOrNull { it.id == id } ?: DatosMuestra.detalleCita.cita
-            NuevaConsultaScreen(
-                paciente = cita.paciente,
-                contexto = stringResource(R.string.cita_titulo, cita.hora),
-                onCerrar = volver,
-                onGuardar = volver,
-            )
+        composable<NuevaConsultaRuta> {
+            ConDatos(hiltViewModel<NuevaConsultaViewModel>()) { cita ->
+                NuevaConsultaScreen(
+                    paciente = cita.paciente,
+                    contexto = stringResource(R.string.cita_titulo, cita.hora),
+                    onCerrar = volver,
+                    onGuardar = volver,
+                )
+            }
         }
         composable<MisPacientesRuta> {
+            val viewModel: MisPacientesViewModel = hiltViewModel()
+            val estado by viewModel.uiState.collectAsStateWithLifecycle()
             MisPacientesScreen(
-                estado = UiState.Exito(DatosMuestra.misPacientes),
+                estado = estado,
                 onPaciente = { navController.navigate(ExpedienteRuta(it.id)) },
+                onReintentar = viewModel::cargar,
             )
         }
-        composable<ExpedienteRuta> { entrada ->
-            val id = entrada.toRoute<ExpedienteRuta>().pacienteId
-            val paciente =
-                DatosMuestra.misPacientes.firstOrNull { it.id == id } ?: DatosMuestra.expedienteTomas.paciente
+        composable<ExpedienteRuta> {
+            val viewModel: ExpedienteViewModel = hiltViewModel()
+            val estado by viewModel.uiState.collectAsStateWithLifecycle()
             ExpedienteScreen(
-                estado = UiState.Exito(DatosMuestra.expedienteTomas.copy(paciente = paciente)),
+                estado = estado,
                 onVolver = volver,
                 onNuevaConsulta = { navController.navigate(NuevaConsultaRuta(DatosMuestra.detalleCita.cita.id)) },
+                onReintentar = viewModel::cargar,
             )
         }
         composable<MisTurnosRuta> {
-            MisTurnosScreen(
-                estado = UiState.Exito(DatosMuestra.turnosDoctorSemana to DatosMuestra.turnosDoctorSiguiente),
-            )
+            val viewModel: MisTurnosViewModel = hiltViewModel()
+            val estado by viewModel.uiState.collectAsStateWithLifecycle()
+            MisTurnosScreen(estado = estado, onReintentar = viewModel::cargar)
         }
         composable<PerfilDoctorRuta> {
             PerfilScreen(onCerrarSesion = onCerrarSesion)
