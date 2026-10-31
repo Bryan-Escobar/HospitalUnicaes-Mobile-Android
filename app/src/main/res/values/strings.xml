@@ -14,7 +14,6 @@
     <string name="login_ver_contrasena">Mostrar contraseña</string>
     <string name="login_ocultar_contrasena">Ocultar contraseña</string>
     <string name="login_sugerencias">Sugerencias de correo</string>
-    <string name="login_olvide">¿Olvidaste tu contraseña?</string>
     <string name="login_ingresar">Ingresar</string>
     <string name="login_ingresando">Ingresando…</string>
     <string name="login_pie">Acceso para personal de recepción, asistencia y doctores.</string>
