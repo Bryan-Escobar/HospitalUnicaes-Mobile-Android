@@ -1,8 +1,6 @@
 package sv.edu.unicaes.hospital.domain
 
 import org.junit.Assert.assertEquals
-import org.junit.Assert.assertFalse
-import org.junit.Assert.assertTrue
 import org.junit.Test
 import sv.edu.unicaes.hospital.domain.model.Rol
 
@@ -20,10 +18,16 @@ class RolTest {
     }
 
     @Test
-    fun `solo recepcion y asistente usan la app de recepcion`() {
-        assertTrue(Rol.RECEPCIONISTA.usaAppRecepcion)
-        assertTrue(Rol.ASISTENTE.usaAppRecepcion)
-        assertFalse(Rol.DOCTOR.usaAppRecepcion)
-        assertFalse(Rol.PACIENTE.usaAppRecepcion)
+    fun `desdeApi reconoce los cuatro roles de la base`() {
+        assertEquals(Rol.ADMINISTRADOR, Rol.desdeApi("administrador"))
+        assertEquals(Rol.DOCTOR, Rol.desdeApi("doctor"))
+        assertEquals(Rol.RECEPCIONISTA, Rol.desdeApi("recepcionista"))
+        assertEquals(Rol.PACIENTE, Rol.desdeApi("paciente"))
+    }
+
+    @Test
+    fun `asistente y enfermero ya no son roles`() {
+        assertEquals(Rol.DESCONOCIDO, Rol.desdeApi("asistente"))
+        assertEquals(Rol.DESCONOCIDO, Rol.desdeApi("enfermero"))
     }
 }
