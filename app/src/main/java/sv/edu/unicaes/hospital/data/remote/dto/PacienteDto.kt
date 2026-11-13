@@ -35,6 +35,8 @@ data class PaginaDto<T>(
 data class PaginacionDto(
     val pagina: Int,
     @SerialName("total_paginas") val totalPaginas: Int,
+    /** Total de registros de todas las páginas. */
+    val total: Int = 0,
 )
 
 /**
@@ -71,7 +73,12 @@ fun PacienteDto.aDominio(): Paciente =
     )
 
 fun <T, R> PaginaDto<T>.aDominio(transformar: (T) -> R): Pagina<R> =
-    Pagina(items = items.map(transformar), pagina = paginacion.pagina, totalPaginas = paginacion.totalPaginas)
+    Pagina(
+        items = items.map(transformar),
+        pagina = paginacion.pagina,
+        totalPaginas = paginacion.totalPaginas,
+        total = paginacion.total,
+    )
 
 fun DatosPaciente.aBody(): PacienteBodyDto =
     PacienteBodyDto(

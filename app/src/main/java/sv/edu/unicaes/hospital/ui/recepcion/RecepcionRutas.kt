@@ -69,8 +69,12 @@ data class DetalleOrdenRuta(
     val ordenId: String,
 )
 
+/** Formulario de resultado de un examen En Proceso de la orden [ordenId]. */
 @Serializable
-data object CargarResultadoRuta
+data class CargarResultadoRuta(
+    val ordenId: String,
+    val examenId: String,
+)
 
 @Serializable
 data object PerfilRecepcionRuta
