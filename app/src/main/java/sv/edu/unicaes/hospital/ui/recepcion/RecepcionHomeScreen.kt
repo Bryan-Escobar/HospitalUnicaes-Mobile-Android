@@ -22,11 +22,13 @@ import sv.edu.unicaes.hospital.ui.components.HomeConPestanas
 import sv.edu.unicaes.hospital.ui.components.Pestana
 import sv.edu.unicaes.hospital.ui.components.SincronizarPestana
 import sv.edu.unicaes.hospital.ui.components.irAPestana
+import sv.edu.unicaes.hospital.ui.doctor.MisTurnosScreen
 import sv.edu.unicaes.hospital.ui.modelo.ConDatos
 import sv.edu.unicaes.hospital.ui.modelo.DatosMuestra
 import sv.edu.unicaes.hospital.ui.modelo.MuestraViewModel
 import sv.edu.unicaes.hospital.ui.perfil.PerfilScreen
 import sv.edu.unicaes.hospital.ui.theme.HospitalUnicaesTheme
+import sv.edu.unicaes.hospital.ui.turnos.MisTurnosViewModel
 
 // Recepcionista · Asistente · Enfermero/a (AND-R1 a AND-R17)
 private val pestanasRecepcion =
@@ -266,10 +268,21 @@ private fun RecepcionNavHost(
                 onReintentar = viewModel::cargar,
             )
         }
+        // Turnos (HUNI-53): recepción registra y ajusta; "Mis turnos" son los propios de la semana.
         composable<TurnosPersonalRuta> {
             val viewModel: TurnosPersonalViewModel = hiltViewModel()
             val estado by viewModel.uiState.collectAsStateWithLifecycle()
-            TurnosPersonalScreen(estado = estado, onVolver = volver, onReintentar = viewModel::cargar)
+            TurnosPersonalScreen(
+                estado = estado,
+                onVolver = volver,
+                onMisTurnos = { navController.navigate(MisTurnosRecepcionRuta) },
+                acciones = viewModel,
+            )
+        }
+        composable<MisTurnosRecepcionRuta> {
+            val viewModel: MisTurnosViewModel = hiltViewModel()
+            val estado by viewModel.uiState.collectAsStateWithLifecycle()
+            MisTurnosScreen(estado = estado, onReintentar = viewModel::cargar, onVolver = volver)
         }
         composable<PerfilRecepcionRuta> {
             PerfilScreen(onCerrarSesion = onCerrarSesion, onVolver = volver)

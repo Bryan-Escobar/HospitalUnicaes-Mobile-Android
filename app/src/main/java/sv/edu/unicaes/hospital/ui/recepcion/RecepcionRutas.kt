@@ -56,6 +56,9 @@ data object AltaRuta
 data object TurnosPersonalRuta
 
 @Serializable
+data object MisTurnosRecepcionRuta
+
+@Serializable
 data object AmbulanciaRuta
 
 @Serializable

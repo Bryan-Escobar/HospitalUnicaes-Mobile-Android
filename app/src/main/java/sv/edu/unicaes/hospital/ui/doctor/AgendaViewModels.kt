@@ -7,7 +7,6 @@ import sv.edu.unicaes.hospital.ui.modelo.CitaUi
 import sv.edu.unicaes.hospital.ui.modelo.DatosMuestra
 import sv.edu.unicaes.hospital.ui.modelo.DetalleCitaUi
 import sv.edu.unicaes.hospital.ui.modelo.MuestraViewModel
-import sv.edu.unicaes.hospital.ui.modelo.TurnoUi
 import javax.inject.Inject
 
 /** AND-D1 · Agenda del doctor. */
@@ -28,15 +27,6 @@ class DetalleCitaViewModel
             citaDeMuestra(id)
                 ?.let { DatosMuestra.detalleCita.copy(cita = it.copy(fecha = "Mié 21 oct · ${it.hora}")) }
                 ?: DatosMuestra.detalleCita
-        })
-
-/** AND-D7 · Mis turnos: esta semana y la siguiente. */
-@HiltViewModel
-class MisTurnosViewModel
-    @Inject
-    constructor() :
-    MuestraViewModel<Pair<List<TurnoUi>, List<TurnoUi>>>({
-            DatosMuestra.turnosDoctorSemana to DatosMuestra.turnosDoctorSiguiente
         })
 
 internal fun citaDeMuestra(id: String): CitaUi? = DatosMuestra.agendaDoctor.citas.firstOrNull { it.id == id }
