@@ -43,14 +43,23 @@ data class NuevaCitaRuta(
     val doctorId: String? = null,
 )
 
+/** Ingreso y asignación de cama del paciente [pacienteId] (HUNI-67). */
 @Serializable
-data object IngresoCamaRuta
+data class IngresoCamaRuta(
+    val pacienteId: String,
+)
 
+/** Traslado de la hospitalización activa del paciente [pacienteId]. */
 @Serializable
-data object TrasladoRuta
+data class TrasladoRuta(
+    val pacienteId: String,
+)
 
+/** Alta de la hospitalización activa del paciente [pacienteId]. */
 @Serializable
-data object AltaRuta
+data class AltaRuta(
+    val pacienteId: String,
+)
 
 @Serializable
 data object TurnosPersonalRuta

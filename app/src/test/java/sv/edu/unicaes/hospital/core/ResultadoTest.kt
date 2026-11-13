@@ -85,4 +85,25 @@ class ResultadoTest {
         assertEquals(null, rechazoDesdeMensaje("JWT expired"))
         assertEquals(null, rechazoDesdeMensaje("CITA_DUPLICADA:"))
     }
+
+    @Test
+    fun `409 de camas devuelve el mensaje de la API con su codigo`() =
+        runTest {
+            val error =
+                httpError(
+                    409,
+                    """{"statusCode":409,"success":false,"code":"CAMA_OCUPADA","message":"La cama HAB-201-A ya está ocupada"}""",
+                )
+            assertEquals(
+                Resultado.Fallo(AppError.Rechazada("La cama HAB-201-A ya está ocupada", "CAMA_OCUPADA")),
+                safeApiCall { throw error },
+            )
+        }
+
+    @Test
+    fun `409 de camas sin mensaje cae en Conflicto`() =
+        runTest {
+            val error = httpError(409, """{"statusCode":409,"success":false,"code":"PACIENTE_YA_HOSPITALIZADO"}""")
+            assertEquals(Resultado.Fallo(AppError.Conflicto), safeApiCall { throw error })
+        }
 }

@@ -12,15 +12,14 @@ import sv.edu.unicaes.hospital.ui.modelo.DatosMuestra
 import sv.edu.unicaes.hospital.ui.modelo.MuestraViewModel
 import sv.edu.unicaes.hospital.ui.recepcion.ColaLaboratorioViewModel
 import sv.edu.unicaes.hospital.ui.recepcion.DetalleOrdenViewModel
-import sv.edu.unicaes.hospital.ui.recepcion.MapaCamasViewModel
 
-/** ViewModels con datos de ejemplo de la navegación principal (HUNI-43). */
+/** ViewModels con datos de ejemplo de la navegación principal (HUNI-43). Las camas ya usan la API (HUNI-67). */
 class MuestraViewModelsTest {
     private fun <T> MuestraViewModel<T>.datos(): T = (uiState.value as UiState.Exito).datos
 
     @Test
-    fun mapaDeCamasRespetaLaCapacidadFija() {
-        val habitaciones = MapaCamasViewModel().datos()
+    fun mapaDeCamasDeEjemploRespetaLaCapacidadFija() {
+        val habitaciones = DatosMuestra.planta2 + DatosMuestra.planta3
 
         assertEquals(11, habitaciones.size)
         assertEquals(17, habitaciones.sumOf { it.camas.size })

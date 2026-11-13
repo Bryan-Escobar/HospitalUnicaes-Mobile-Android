@@ -50,6 +50,7 @@ suspend fun <T> safeSupabaseCall(llamada: suspend () -> T): Resultado<T> =
 @Serializable
 private data class CuerpoError(
     val code: String? = null,
+    val message: String? = null,
     val errors: List<ErrorCampo> = emptyList(),
 )
 
@@ -77,9 +78,36 @@ private fun errorDesdeRespuesta(e: HttpException): AppError {
         "PERFIL_INCOMPLETO" -> AppError.PerfilIncompleto
         "REGISTRO_DUPLICADO" -> AppError.Duplicado
         "VALIDACION" -> AppError.CamposInvalidos(cuerpo.errors.associate { it.field to it.message })
+        in CODIGOS_CAMAS -> rechazoDeCama(cuerpo?.code, cuerpo?.message) ?: errorDesdeCodigo(e.code())
         else -> errorDesdeCodigo(e.code())
     }
 }
+
+/**
+ * Conflictos de asignación de camas (HUNI-66): sobrecupo, doble asignación o una cama que otra
+ * persona ganó primero. Se muestran con el texto de la API y conservan el código para que la
+ * pantalla proponga otra cama.
+ */
+val CODIGOS_CAMAS =
+    setOf(
+        "CAMA_OCUPADA",
+        "CAMA_NO_DISPONIBLE",
+        "PACIENTE_YA_HOSPITALIZADO",
+        "SIN_CAMAS_DISPONIBLES",
+        "HOSPITALIZACION_FINALIZADA",
+    )
+
+/** Códigos por los que la cama elegida ya no se puede usar: hay que elegir otra. */
+val CODIGOS_CAMA_PERDIDA = setOf("CAMA_OCUPADA", "CAMA_NO_DISPONIBLE")
+
+fun rechazoDeCama(
+    codigo: String?,
+    mensaje: String?,
+): AppError.Rechazada? =
+    mensaje
+        ?.trim()
+        ?.takeIf { codigo in CODIGOS_CAMAS && it.isNotEmpty() }
+        ?.let { AppError.Rechazada(it, codigo) }
 
 /** Códigos con los que las funciones y triggers de Supabase anteponen un mensaje legible. */
 private val CODIGOS_RECHAZO = setOf("CITA_DUPLICADA", "CITA_FUERA_DE_TURNO", "REGLA_DE_NEGOCIO", "TRANSICION_INVALIDA")

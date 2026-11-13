@@ -7,6 +7,7 @@ import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.PreviewScreenSizes
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -109,9 +110,9 @@ private fun RecepcionNavHost(
                 estado = estado,
                 onVolver = volver,
                 onEditar = { navController.navigate(RegistroPacienteRuta(id)) },
-                onIngresar = { navController.navigate(IngresoCamaRuta) },
-                onTrasladar = { navController.navigate(TrasladoRuta) },
-                onAlta = { navController.navigate(AltaRuta) },
+                onIngresar = { navController.navigate(IngresoCamaRuta(id)) },
+                onTrasladar = { navController.navigate(TrasladoRuta(id)) },
+                onAlta = { navController.navigate(AltaRuta(id)) },
                 onAgendar = { navController.navigate(NuevaCitaRuta(pacienteId = id)) },
                 onCita = { navController.navigate(NuevaCitaRuta(citaId = it)) },
                 onReintentar = viewModel::cargar,
@@ -143,40 +144,98 @@ private fun RecepcionNavHost(
         composable<CamasRuta> {
             val viewModel: MapaCamasViewModel = hiltViewModel()
             val estado by viewModel.uiState.collectAsStateWithLifecycle()
+            val aviso by viewModel.aviso.collectAsStateWithLifecycle()
             MapaCamasScreen(
                 estado = estado,
-                onIngreso = { navController.navigate(IngresoCamaRuta) },
-                onVerFicha = { navController.navigate(FichaPacienteRuta("p-1")) },
-                onTrasladar = { navController.navigate(TrasladoRuta) },
-                onAlta = { navController.navigate(AltaRuta) },
+                // El ingreso parte de un paciente: se elige en Pacientes y se ingresa desde su ficha.
+                onIngreso = { navController.irAPestana(PacientesRuta) },
+                onVerFicha = { cama -> cama.pacienteId?.let { navController.navigate(FichaPacienteRuta(it)) } },
+                onTrasladar = { cama -> cama.pacienteId?.let { navController.navigate(TrasladoRuta(it)) } },
+                onAlta = { cama -> cama.pacienteId?.let { navController.navigate(AltaRuta(it)) } },
                 onReintentar = viewModel::cargar,
+                onMarcarDisponible = viewModel::marcarDisponible,
+                aviso = aviso,
+                onCerrarAviso = viewModel::cerrarAviso,
             )
         }
         composable<IngresoCamaRuta> {
-            ConDatos(hiltViewModel<IngresoCamaViewModel>()) { ingreso ->
+            val viewModel: IngresoCamaViewModel = hiltViewModel()
+            val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+            AlTerminar(uiState.terminado) {
+                avisarGuardado(navController)
+                volver()
+            }
+            FormularioCamasConEstado(
+                titulo = stringResource(R.string.ingreso_titulo),
+                estado = uiState.estado,
+                onVolver = volver,
+                onReintentar = viewModel::cargar,
+            ) { ingreso ->
                 IngresoCamaScreen(
                     paciente = ingreso.paciente,
                     habitaciones = ingreso.habitaciones,
                     onVolver = volver,
                     onCambiarPaciente = { navController.irAPestana(PacientesRuta) },
-                    onConfirmar = { volver() },
+                    onConfirmar = viewModel::confirmar,
+                    camaEnConflicto = uiState.camaEnConflicto,
+                    doctores = ingreso.doctores,
+                    doctorId = uiState.doctorId,
+                    onDoctor = viewModel::elegirDoctor,
+                    motivo = uiState.motivo,
+                    onMotivo = viewModel::cambiarMotivo,
+                    yaHospitalizado = ingreso.yaHospitalizado,
+                    enviando = uiState.enviando,
+                    error = uiState.error,
+                    onDescartarConflicto = viewModel::descartarConflicto,
                 )
             }
         }
         composable<TrasladoRuta> {
-            ConDatos(hiltViewModel<TrasladoViewModel>()) { traslado ->
+            val viewModel: TrasladoViewModel = hiltViewModel()
+            val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+            AlTerminar(uiState.terminado) {
+                avisarGuardado(navController)
+                volver()
+            }
+            FormularioCamasConEstado(
+                titulo = stringResource(R.string.camas_trasladar),
+                estado = uiState.estado,
+                onVolver = volver,
+                onReintentar = viewModel::cargar,
+            ) { traslado ->
                 TrasladoScreen(
                     paciente = traslado.paciente,
                     asignacion = traslado.asignacion,
                     habitaciones = traslado.habitaciones,
                     onVolver = volver,
-                    onConfirmar = { volver() },
+                    onConfirmar = viewModel::confirmar,
+                    camaEnConflicto = uiState.camaEnConflicto,
+                    enviando = uiState.enviando,
+                    error = uiState.error,
+                    onDescartarConflicto = viewModel::descartarConflicto,
                 )
             }
         }
         composable<AltaRuta> {
-            ConDatos(hiltViewModel<AltaViewModel>()) { ficha ->
-                AltaScreen(ficha = ficha, onVolver = volver, onDarAlta = volver)
+            val viewModel: AltaViewModel = hiltViewModel()
+            val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+            AlTerminar(uiState.terminado) {
+                avisarGuardado(navController)
+                volver()
+            }
+            FormularioCamasConEstado(
+                titulo = stringResource(R.string.camas_dar_alta),
+                estado = uiState.estado,
+                onVolver = volver,
+                onReintentar = viewModel::cargar,
+            ) { ficha ->
+                AltaScreen(
+                    ficha = ficha,
+                    onVolver = volver,
+                    onDarAlta = viewModel::darAlta,
+                    enviando = uiState.enviando,
+                    error = uiState.error,
+                )
             }
         }
         composable<MasRuta> {
@@ -274,5 +333,16 @@ private fun RecargarAlVolver(
             entrada.savedStateHandle[CLAVE_GUARDADO] = false
             recargar()
         }
+    }
+}
+
+/** Ejecuta [accion] una sola vez cuando un formulario termina (ingreso, traslado, alta). */
+@Composable
+private fun AlTerminar(
+    terminado: Boolean,
+    accion: () -> Unit,
+) {
+    LaunchedEffect(terminado) {
+        if (terminado) accion()
     }
 }

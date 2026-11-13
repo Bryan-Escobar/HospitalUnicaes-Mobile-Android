@@ -1,6 +1,7 @@
 package sv.edu.unicaes.hospital.ui.modelo
 
 import sv.edu.unicaes.hospital.domain.model.EstadoAmbulancia
+import sv.edu.unicaes.hospital.domain.model.EstadoCama
 import sv.edu.unicaes.hospital.domain.model.EstadoCita
 import sv.edu.unicaes.hospital.domain.model.EstadoLaboratorio
 import sv.edu.unicaes.hospital.domain.model.Sexo
@@ -102,16 +103,28 @@ data class FichaPacienteUi(
 data class CamaUi(
     val id: String,
     val etiqueta: String,
+    /** Nombre abreviado del paciente (`L. Martínez`), o null si la cama no tiene ocupante. */
     val ocupante: String? = null,
+    val estado: EstadoCama = if (ocupante == null) EstadoCama.DISPONIBLE else EstadoCama.OCUPADA,
+    val pacienteId: String? = null,
+    val hospitalizacionId: String? = null,
 ) {
-    val libre: Boolean get() = ocupante == null
+    /** Solo una cama disponible se ofrece para ingresar o trasladar; en limpieza no. */
+    val libre: Boolean get() = estado == EstadoCama.DISPONIBLE
 }
 
 data class HabitacionUi(
     val codigo: String,
     val tipo: TipoHabitacion,
     val camas: List<CamaUi>,
-)
+) {
+    /** `HAB-202 · B`, o solo `VIP-303` si la habitación tiene una cama. */
+    fun codigoCama(cama: CamaUi): String = if (cama.etiqueta.isEmpty()) codigo else "$codigo · ${cama.etiqueta}"
+}
+
+/** Código para mostrar de la cama [camaId], o null si ya no está en el mapa. */
+fun List<HabitacionUi>.codigoDeCama(camaId: String): String? =
+    firstNotNullOfOrNull { h -> h.camas.firstOrNull { it.id == camaId }?.let { h.codigoCama(it) } }
 
 data class SolicitudAmbulanciaUi(
     val id: String,

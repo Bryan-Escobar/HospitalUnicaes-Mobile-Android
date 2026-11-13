@@ -74,10 +74,17 @@
     <!-- AND-R8 a R11 · Camas -->
     <string name="camas_tab_planta2">Planta 2 · %1$d/%2$d</string>
     <string name="camas_tab_planta3">Planta 3 VIP · %1$d/%2$d</string>
-    <string name="camas_leyenda">Leyenda: ○ Libre · ● Ocupada · Toca una cama</string>
+    <string name="camas_leyenda">Leyenda: ○ Libre · ● Ocupada · ◐ Limpieza · Toca una cama</string>
     <string name="camas_libre">Libre</string>
     <string name="camas_ocupada">Ocupada</string>
     <string name="camas_elegida">Elegida</string>
+    <string name="camas_limpieza">Limpieza</string>
+    <string name="camas_mantenimiento">Mantenimiento</string>
+    <string name="camas_marcar_disponible">Marcar disponible</string>
+    <string name="camas_cerrar_aviso">Cerrar</string>
+    <string name="camas_guardando">Guardando…</string>
+    <string name="camas_sin_hospitalizacion">El paciente no está hospitalizado</string>
+    <string name="camas_sin_hospitalizacion_detalle">Ya se le dio de alta o se trasladó desde otro dispositivo.</string>
     <string name="camas_ingreso">Ingreso</string>
     <string name="camas_ingresar">Ingresar</string>
     <string name="camas_ver_ficha">Ver ficha</string>
@@ -91,6 +98,12 @@
     <string name="ingreso_paso_tipo">Tipo</string>
     <string name="ingreso_paso_cama">Cama</string>
     <string name="ingreso_doc">Doc. %1$s · %2$s</string>
+    <string name="ingreso_doc_solo">Doc. %1$s</string>
+    <string name="ingreso_ya_hospitalizado">Este paciente ya tiene una cama asignada. Usa Trasladar desde su ficha.</string>
+    <string name="ingreso_medico">Médico tratante</string>
+    <string name="ingreso_sin_doctores">No hay médicos activos para asignar como tratante.</string>
+    <string name="ingreso_motivo">Motivo de ingreso (opcional)</string>
+    <string name="ingreso_motivo_ejemplo">Observación postoperatoria</string>
     <string name="ingreso_tipo">Tipo de habitación</string>
     <string name="ingreso_tipo_libres">%1$s · %2$d libres</string>
     <string name="ingreso_planta">Planta %1$d · %2$s (%3$d/%4$d ocupadas)</string>
@@ -107,8 +120,6 @@
     <string name="traslado_opcion_planta">Planta %1$d · %2$s</string>
     <string name="traslado_cama_unica">Cama única · libre</string>
     <string name="traslado_cama_libre">Cama %1$s · libre</string>
-    <string name="traslado_motivo">Motivo del traslado (opcional)</string>
-    <string name="traslado_motivo_ejemplo">Solicitud del paciente</string>
     <string name="traslado_confirmar">Confirmar traslado a %1$s</string>
     <string name="traslado_vacio_titulo">No hay otra cama libre</string>
     <string name="traslado_vacio_detalle">El traslado no es posible ahora.</string>
@@ -116,9 +127,9 @@
     <string name="alta_ingreso">Ingreso</string>
     <string name="alta_dias">Días hospitalizado</string>
     <string name="alta_medico">Médico tratante</string>
-    <string name="alta_aviso">Al dar de alta, la cama quedará Libre para todo el hospital al instante.</string>
+    <string name="alta_aviso">Al dar de alta, la cama pasa a Limpieza al instante. Márcala disponible en el mapa cuando esté lista.</string>
     <string name="alta_dialogo_titulo">¿Dar de alta a %1$s?</string>
-    <string name="alta_dialogo_texto">La cama %1$s quedará Libre para todo el hospital al instante.</string>
+    <string name="alta_dialogo_texto">La cama %1$s pasará a Limpieza y se liberará en el mapa de todo el hospital.</string>
 
     <!-- AND-R12 · Turnos del personal -->
     <string name="turnos_semana">19 – 25 oct</string>

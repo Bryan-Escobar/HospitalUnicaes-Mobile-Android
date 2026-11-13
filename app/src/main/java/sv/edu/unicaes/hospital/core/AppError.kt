@@ -36,11 +36,14 @@ sealed interface AppError {
     data object Validacion : AppError
 
     /**
-     * Regla de la base de datos con mensaje para el usuario (`CITA_DUPLICADA: el doctor ya tiene…`).
+     * Regla de negocio con mensaje para el usuario: de la base de datos (`CITA_DUPLICADA: el doctor
+     * ya tiene…`) o un 409 de camas de la API (`CAMA_OCUPADA`, con el `message` de la respuesta).
      * [detalle] ya viene sin el código y se muestra tal cual.
      */
     data class Rechazada(
         val detalle: String,
+        /** Código de la API cuando la UI necesita reaccionar a él (p. ej. `CAMA_OCUPADA`). */
+        val codigo: String? = null,
     ) : AppError
 
     /** 400 VALIDACION: campos rechazados por la API, `campo → mensaje`. */
