@@ -1,5 +1,6 @@
 package sv.edu.unicaes.hospital.ui.recepcion
 
+import androidx.activity.compose.BackHandler
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -187,33 +188,62 @@ private fun RecepcionNavHost(
                 onPerfil = { navController.navigate(PerfilRecepcionRuta) },
             )
         }
-        composable<LaboratorioRuta> {
+        // Laboratorio (HUNI-63): la cola se recarga al volver si el detalle cambió algo; además
+        // escucha Supabase Realtime para ver los cambios hechos desde otros dispositivos.
+        composable<LaboratorioRuta> { entrada ->
             val viewModel: ColaLaboratorioViewModel = hiltViewModel()
+            RecargarAlVolver(entrada, viewModel::refrescar)
             val estado by viewModel.uiState.collectAsStateWithLifecycle()
             ColaLaboratorioScreen(
                 estado = estado,
-                conteos = viewModel.conteos,
                 onVolver = volver,
+                onFiltro = viewModel::elegirFiltro,
                 onOrden = { navController.navigate(DetalleOrdenRuta(it.id)) },
+                onRefrescar = viewModel::refrescar,
                 onReintentar = viewModel::cargar,
+                onCargarMas = viewModel::cargarMas,
             )
         }
-        composable<DetalleOrdenRuta> {
+        composable<DetalleOrdenRuta> { entrada ->
+            val ordenId = entrada.toRoute<DetalleOrdenRuta>().ordenId
             val viewModel: DetalleOrdenViewModel = hiltViewModel()
+            RecargarAlVolver(entrada, viewModel::alVolverConCambios)
             val estado by viewModel.uiState.collectAsStateWithLifecycle()
+            val alSalir = {
+                if (estado.huboCambios) avisarGuardado(navController)
+                volver()
+            }
+            BackHandler(onBack = alSalir)
             DetalleOrdenScreen(
                 estado = estado,
-                onVolver = volver,
-                onPasarAEnProceso = volver,
-                onCargarResultado = { navController.navigate(CargarResultadoRuta) },
-                onCompletar = volver,
+                onVolver = alSalir,
+                onIniciarExamen = viewModel::iniciarExamen,
+                onCargarResultado = { navController.navigate(CargarResultadoRuta(ordenId, it)) },
+                onDescartarError = viewModel::descartarError,
                 onReintentar = viewModel::cargar,
             )
         }
         composable<CargarResultadoRuta> {
-            ConDatos(hiltViewModel<CargarResultadoViewModel>()) { orden ->
-                CargarResultadoScreen(orden = orden, onCerrar = volver, onGuardar = volver)
+            val viewModel: CargarResultadoViewModel = hiltViewModel()
+            val estado by viewModel.uiState.collectAsStateWithLifecycle()
+            LaunchedEffect(estado.guardado) {
+                if (estado.guardado) {
+                    avisarGuardado(navController)
+                    volver()
+                }
             }
+            CargarResultadoScreen(
+                estado = estado,
+                onCerrar = volver,
+                onValor = viewModel::cambiarValor,
+                onUnidad = viewModel::cambiarUnidad,
+                onRango = viewModel::cambiarRango,
+                onObservaciones = viewModel::cambiarObservaciones,
+                onArchivo = viewModel::adjuntar,
+                onQuitarArchivo = viewModel::quitarArchivo,
+                onGuardar = viewModel::guardar,
+                onReintentar = viewModel::cargar,
+            )
         }
         composable<AmbulanciaRuta> {
             val viewModel: AmbulanciaViewModel = hiltViewModel()

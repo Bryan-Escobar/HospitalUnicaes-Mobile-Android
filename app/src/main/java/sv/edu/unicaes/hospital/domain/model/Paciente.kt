@@ -37,6 +37,7 @@ data class Pagina<T>(
     val items: List<T>,
     val pagina: Int,
     val totalPaginas: Int,
+    val total: Int = items.size,
 ) {
     val hayMas: Boolean get() = pagina < totalPaginas
 }

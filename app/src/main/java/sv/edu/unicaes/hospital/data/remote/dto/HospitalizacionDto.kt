@@ -29,12 +29,6 @@ data class HabitacionDto(
     val tipo: String,
 )
 
-@Serializable
-data class PersonaResumenDto(
-    val nombres: String,
-    val apellidos: String,
-)
-
 fun HospitalizacionDto.aDominio(): Hospitalizacion =
     Hospitalizacion(
         id = id,

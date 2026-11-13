@@ -41,6 +41,28 @@ class ResultadoTest {
         }
 
     @Test
+    fun `422 TRANSICION_INVALIDA muestra el mensaje de la API`() =
+        runTest {
+            val error =
+                httpError(
+                    422,
+                    """{"statusCode":422,"success":false,"code":"TRANSICION_INVALIDA","message":"Otro usuario ya inició este examen"}""",
+                )
+            assertEquals(
+                Resultado.Fallo(AppError.Rechazada("Otro usuario ya inició este examen")),
+                safeApiCall { throw error },
+            )
+        }
+
+    @Test
+    fun `un codigo con mensaje pero sin texto usa el status HTTP`() =
+        runTest {
+            val error =
+                httpError(422, """{"statusCode":422,"success":false,"code":"RESULTADO_REQUERIDO","message":""}""")
+            assertEquals(Resultado.Fallo(AppError.Validacion), safeApiCall { throw error })
+        }
+
+    @Test
     fun `400 VALIDACION devuelve los campos rechazados`() =
         runTest {
             val error =

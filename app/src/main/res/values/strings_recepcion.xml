@@ -163,35 +163,52 @@
     <string name="bitacora_vacio_detalle">Cambia el filtro de fechas.</string>
     <string name="bitacora_error">No se pudo cargar la bitácora.</string>
 
-    <!-- AND-R15 a R17 · Laboratorio -->
-    <string name="lab_filtro_hoy">Hoy</string>
-    <string name="lab_vacio_titulo">Sin órdenes Pendientes</string>
+    <!-- AND-R15 a R17 · Laboratorio (HUNI-63) -->
     <string name="lab_vacio_estado">Sin órdenes en %1$s</string>
     <string name="lab_vacio_detalle">Las nuevas órdenes de los doctores aparecerán aquí.</string>
     <string name="lab_error_cola">No se pudo cargar la cola.</string>
-    <string name="lab_orden">Orden</string>
-    <string name="lab_orden_numero">Orden #%1$d</string>
+    <string name="lab_cargar_mas">Cargar más órdenes</string>
+    <string name="lab_prioridad_urgente">Urgente</string>
+    <string name="lab_prioridad_critica">Crítica</string>
+    <string name="lab_orden">Orden de laboratorio</string>
     <string name="lab_paciente">Paciente</string>
     <string name="lab_ordeno">Ordenó</string>
+    <string name="lab_solicitada">Solicitada</string>
+    <string name="lab_prioridad">Prioridad</string>
+    <string name="lab_prioridad_normal">Normal</string>
     <string name="lab_indicaciones">Indicaciones</string>
-    <string name="lab_por_ti">%1$s · por ti</string>
+    <string name="lab_examenes">Exámenes</string>
+    <string name="lab_muestra">Muestra: %1$s</string>
     <string name="lab_aun_no">Aún no</string>
     <string name="lab_requiere_resultado">Requiere resultado</string>
     <string name="lab_pasar_en_proceso">Pasar a En Proceso</string>
+    <string name="lab_pasando_en_proceso">Pasando a En Proceso…</string>
     <string name="lab_confirmar_en_proceso_titulo">¿Pasar a En Proceso?</string>
-    <string name="lab_confirmar_en_proceso_texto">El estado solo avanza hacia adelante; no se puede regresar a Pendiente.</string>
+    <string name="lab_confirmar_en_proceso_texto">%1$s pasará a En Proceso. El estado solo avanza hacia adelante; no se puede regresar a Pendiente.</string>
     <string name="lab_cargar_resultado">Cargar resultado</string>
-    <string name="lab_marcar_completado">Marcar como Completado</string>
-    <string name="lab_marcar_completado_falta">Marcar como Completado (falta resultado)</string>
-    <string name="lab_falta_resultado">Falta el resultado. Carga texto o PDF antes de marcar Completado.</string>
     <string name="lab_error_orden">No se pudo cargar la orden.</string>
     <string name="lab_resultado">Resultado</string>
-    <string name="lab_resultado_texto">Resultado (texto) *</string>
-    <string name="lab_archivo_pdf">Archivo PDF</string>
-    <string name="lab_subiendo">310 KB · subiendo %1$d %%</string>
+    <string name="lab_resultado_rango">Referencia: %1$s</string>
+    <string name="lab_resultado_registro">Registró %1$s · %2$s</string>
+    <string name="lab_adjunto_pdf">PDF adjunto</string>
+    <string name="lab_adjunto_imagen">Imagen adjunta</string>
+    <string name="lab_adjunto_privado">El archivo solo lo descargan el médico tratante, el paciente y administración.</string>
+    <string name="lab_resultado_texto">Resultado</string>
+    <string name="lab_resultado_ayuda">Escribe el resultado, adjunta un archivo o ambos.</string>
+    <string name="lab_unidad">Unidad</string>
+    <string name="lab_rango">Rango de referencia</string>
+    <string name="lab_observaciones">Observaciones</string>
+    <string name="lab_archivo">Archivo (PDF o imagen, máx. 10 MB)</string>
+    <string name="lab_elegir_imagen">Elegir imagen</string>
+    <string name="lab_elegir_pdf">Elegir PDF</string>
     <string name="lab_quitar_archivo">Quitar archivo</string>
-    <string name="lab_adjuntar_otro">Adjuntar otro PDF</string>
+    <string name="lab_archivo_tipo">Solo se aceptan PDF o imágenes JPG, PNG o WebP.</string>
+    <string name="lab_archivo_tamano">El archivo supera el máximo de 10 MB.</string>
+    <string name="lab_archivo_ilegible">No se pudo leer el archivo elegido.</string>
+    <string name="lab_examen_no_en_proceso">Este examen ya no está En Proceso (otro usuario pudo avanzarlo). Vuelve a la orden para ver su estado.</string>
     <string name="lab_guardar_completar">Guardar y marcar Completado</string>
+    <string name="lab_guardando">Guardando resultado…</string>
+    <string name="lab_error_guardar">No se pudo guardar el resultado.</string>
 
     <!-- Más -->
     <string name="mas_laboratorio">Laboratorio</string>
