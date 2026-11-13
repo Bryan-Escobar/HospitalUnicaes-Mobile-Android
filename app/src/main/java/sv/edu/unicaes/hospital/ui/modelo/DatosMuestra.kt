@@ -166,12 +166,16 @@ object DatosMuestra {
 
     val turnosPersonal =
         listOf(
-            DiaTurnosUi(
-                dia = "Mié 21",
+            AreaTurnosUi(
+                area = "Consulta externa",
+                turnos = listOf(TurnoPersonalUi("Dra. Ana Rivas", "Consulta externa", "08:00–14:00", "Alergista")),
+            ),
+            AreaTurnosUi(
+                area = "Emergencia",
                 turnos =
                     listOf(
-                        TurnoPersonalUi("Dra. Ana Rivas", "Consulta externa", "08:00–14:00", "Alergista"),
-                        TurnoPersonalUi("Dr. Jorge Peña", "Emergencias", "06:00–18:00", "Emergencia"),
+                        TurnoPersonalUi("Dr. Jorge Peña", "Emergencia", "06:00–18:00", "Emergencia", enCurso = true),
+                        TurnoPersonalUi("María Gómez", "Emergencia", "15:00–23:00", "Enfermería"),
                     ),
             ),
         )

@@ -90,7 +90,14 @@ private fun errorDesdeRespuesta(e: HttpException): AppError {
 private val CODIGOS_CON_MENSAJE = setOf("TRANSICION_INVALIDA", "RESULTADO_REQUERIDO", "SOLICITUD_INVALIDA")
 
 /** Códigos con los que las funciones y triggers de Supabase anteponen un mensaje legible. */
-private val CODIGOS_RECHAZO = setOf("CITA_DUPLICADA", "CITA_FUERA_DE_TURNO", "REGLA_DE_NEGOCIO", "TRANSICION_INVALIDA")
+private val CODIGOS_RECHAZO =
+    setOf(
+        "CITA_DUPLICADA",
+        "CITA_FUERA_DE_TURNO",
+        "REGLA_DE_NEGOCIO",
+        "TRANSICION_INVALIDA",
+        "TURNO_SOLAPADO",
+    )
 
 /** `CITA_DUPLICADA: el doctor ya tiene una cita…` → [AppError.Rechazada] con el texto después del código. */
 fun rechazoDesdeMensaje(mensaje: String): AppError.Rechazada? {

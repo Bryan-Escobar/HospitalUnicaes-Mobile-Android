@@ -16,6 +16,8 @@ import sv.edu.unicaes.hospital.data.repository.LaboratorioRepository
 import sv.edu.unicaes.hospital.data.repository.LaboratorioRepositoryImpl
 import sv.edu.unicaes.hospital.data.repository.PacientesRepository
 import sv.edu.unicaes.hospital.data.repository.PacientesRepositoryImpl
+import sv.edu.unicaes.hospital.data.repository.TurnosRepository
+import sv.edu.unicaes.hospital.data.repository.TurnosRepositoryImpl
 import javax.inject.Singleton
 
 @Module
@@ -36,6 +38,10 @@ abstract class RepositoryModule {
     @Binds
     @Singleton
     abstract fun bindCitasRepository(impl: CitasRepositoryImpl): CitasRepository
+
+    @Binds
+    @Singleton
+    abstract fun bindTurnosRepository(impl: TurnosRepositoryImpl): TurnosRepository
 
     @Binds
     @Singleton

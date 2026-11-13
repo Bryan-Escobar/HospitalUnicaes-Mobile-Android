@@ -121,13 +121,25 @@
     <string name="alta_dialogo_texto">La cama %1$s quedará Libre para todo el hospital al instante.</string>
 
     <!-- AND-R12 · Turnos del personal -->
-    <string name="turnos_semana">19 – 25 oct</string>
     <string name="turnos_ir_semana_anterior">Semana anterior</string>
     <string name="turnos_ir_semana_siguiente">Semana siguiente</string>
-    <string name="turnos_area_todas">Área: Todas</string>
-    <string name="turnos_solapa">Se solapa con su turno de 14:00–22:00 del mismo día. Ajusta el horario.</string>
-    <string name="turnos_vacio_titulo">Sin turnos esta semana</string>
+    <string name="turnos_vacio_titulo">Sin turnos este día</string>
     <string name="turnos_vacio_detalle">Registra el primer turno.</string>
+    <string name="turnos_tipo_todos">Todos</string>
+    <string name="turnos_ajustar">Ajustar turno</string>
+    <string name="turnos_area_ejemplo">Consulta externa, Emergencia…</string>
+    <string name="turnos_tipo_turno">Tipo de turno</string>
+    <string name="turnos_termina_dia_siguiente">El turno termina al día siguiente.</string>
+    <string name="turnos_notas">Notas (opcional)</string>
+    <string name="turnos_guardando">Guardando…</string>
+    <string name="turnos_cargando_personal">Cargando personal…</string>
+    <string name="turnos_elige_persona">Elige a quién asignar</string>
+    <string name="turnos_error_personal">No se pudo cargar el personal.</string>
+    <string name="turnos_hora_invalida">Usa HH:mm, distinta del inicio</string>
+    <string name="turno_tipo_manana">Mañana</string>
+    <string name="turno_tipo_tarde">Tarde</string>
+    <string name="turno_tipo_noche">Noche</string>
+    <string name="turno_tipo_guardia">Guardia</string>
 
     <!-- AND-R13 y R14 · Ambulancia -->
     <string name="ambulancia_unidad">Unidad única del hospital</string>

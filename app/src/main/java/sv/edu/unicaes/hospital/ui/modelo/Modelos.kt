@@ -24,10 +24,13 @@ data class TurnoPersonalUi(
     val area: String,
     val horario: String,
     val tipo: String,
+    val id: String = "",
+    val enCurso: Boolean = false,
 )
 
-data class DiaTurnosUi(
-    val dia: String,
+/** Turnos del día de un área (AND-R12). */
+data class AreaTurnosUi(
+    val area: String,
     val turnos: List<TurnoPersonalUi>,
 )
 
