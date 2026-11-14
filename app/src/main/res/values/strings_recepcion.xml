@@ -220,7 +220,6 @@
     <string name="lab_resultado_texto">Resultado</string>
     <string name="lab_resultado_ayuda">Escribe el resultado, adjunta un archivo o ambos.</string>
     <string name="lab_unidad">Unidad</string>
-    <string name="lab_rango">Rango de referencia</string>
     <string name="lab_observaciones">Observaciones</string>
     <string name="lab_archivo">Archivo (PDF o imagen, máx. 10 MB)</string>
     <string name="lab_elegir_imagen">Elegir imagen</string>

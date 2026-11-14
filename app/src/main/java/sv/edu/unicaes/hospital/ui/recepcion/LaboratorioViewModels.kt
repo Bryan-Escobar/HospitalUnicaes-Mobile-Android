@@ -279,7 +279,6 @@ data class CargarResultadoUi(
     val carga: UiState<ContextoResultado> = UiState.Cargando,
     val valor: String = "",
     val unidad: String = "",
-    val rangoReferencia: String = "",
     val observaciones: String = "",
     val archivo: ArchivoAdjunto? = null,
     val problemaArchivo: ProblemaArchivo? = null,
@@ -344,8 +343,6 @@ class CargarResultadoViewModel
 
         fun cambiarUnidad(texto: String) = _uiState.update { it.copy(unidad = texto) }
 
-        fun cambiarRango(texto: String) = _uiState.update { it.copy(rangoReferencia = texto) }
-
         fun cambiarObservaciones(texto: String) = _uiState.update { it.copy(observaciones = texto) }
 
         /** [uri] viene del Photo Picker o de OpenDocument; se valida tipo y tamaño antes de aceptarlo. */
@@ -380,7 +377,6 @@ class CargarResultadoViewModel
                     DatosResultado(
                         valor = estado.valor,
                         unidad = estado.unidad,
-                        rangoReferencia = estado.rangoReferencia,
                         observaciones = estado.observaciones,
                     )
                 when (val r = repositorio.registrarResultado(ordenId, examenId, datos, estado.archivo)) {
