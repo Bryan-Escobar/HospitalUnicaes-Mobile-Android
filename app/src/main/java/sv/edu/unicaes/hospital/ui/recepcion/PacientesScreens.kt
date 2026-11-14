@@ -95,10 +95,13 @@ fun PacientesScreen(
     onPaciente: (PacienteUi) -> Unit,
     onRegistrar: () -> Unit,
     viewModel: PacientesViewModel = hiltViewModel(),
+    titulo: String? = null,
+    onVolver: (() -> Unit)? = null,
+    ocultar: Set<String> = emptySet(),
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     PacientesScreen(
-        estado = uiState.estado,
+        estado = uiState.estado.sinPacientes(ocultar),
         busqueda = uiState.busqueda,
         onBusqueda = viewModel::onBusquedaChange,
         onPaciente = onPaciente,
@@ -106,7 +109,16 @@ fun PacientesScreen(
         onReintentar = viewModel::cargar,
         onCargarMas = viewModel::cargarMas,
         cargandoMas = uiState.cargandoMas,
+        titulo = titulo,
+        onVolver = onVolver,
     )
+}
+
+/** Quita de la lista a los pacientes [ocultar]; si no queda ninguno, se ve como lista vacía. */
+private fun UiState<List<PacienteUi>>.sinPacientes(ocultar: Set<String>): UiState<List<PacienteUi>> {
+    if (ocultar.isEmpty() || this !is UiState.Exito) return this
+    val visibles = datos.filterNot { it.id in ocultar }
+    return if (visibles.isEmpty()) UiState.Vacio else UiState.Exito(visibles)
 }
 
 /** AND-R2 · Pacientes: búsqueda por nombre o documento (en la API) y carga por páginas. */
@@ -120,9 +132,14 @@ fun PacientesScreen(
     onReintentar: () -> Unit = {},
     onCargarMas: () -> Unit = {},
     cargandoMas: Boolean = false,
+    // Con título y volver, la misma lista sirve para elegir a quién ingresar en una cama.
+    titulo: String? = null,
+    onVolver: (() -> Unit)? = null,
 ) {
     Scaffold(
-        topBar = { TopBarHospital(titulo = stringResource(R.string.tab_pacientes)) },
+        topBar = {
+            TopBarHospital(titulo = titulo ?: stringResource(R.string.tab_pacientes), onVolver = onVolver)
+        },
         floatingActionButton = {
             FabHospital(
                 texto = stringResource(R.string.pacientes_registrar),

@@ -55,7 +55,11 @@ import androidx.compose.ui.tooling.preview.PreviewParameter
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import sv.edu.unicaes.hospital.R
+import sv.edu.unicaes.hospital.core.AppError
 import sv.edu.unicaes.hospital.core.UiState
+import sv.edu.unicaes.hospital.core.mensaje
+import sv.edu.unicaes.hospital.domain.model.DoctorDisponible
+import sv.edu.unicaes.hospital.domain.model.EstadoCama
 import sv.edu.unicaes.hospital.domain.model.TipoHabitacion
 import sv.edu.unicaes.hospital.ui.components.AccionTexto
 import sv.edu.unicaes.hospital.ui.components.Avatar
@@ -64,6 +68,7 @@ import sv.edu.unicaes.hospital.ui.components.BotonPeligro
 import sv.edu.unicaes.hospital.ui.components.BotonPrimario
 import sv.edu.unicaes.hospital.ui.components.CabeceraPersona
 import sv.edu.unicaes.hospital.ui.components.CampoTexto
+import sv.edu.unicaes.hospital.ui.components.ChipOpcion
 import sv.edu.unicaes.hospital.ui.components.ContenidoConEstado
 import sv.edu.unicaes.hospital.ui.components.DialogoConfirmacion
 import sv.edu.unicaes.hospital.ui.components.EstadoPaso
@@ -71,6 +76,7 @@ import sv.edu.unicaes.hospital.ui.components.EstadoPreview
 import sv.edu.unicaes.hospital.ui.components.EstadoVacio
 import sv.edu.unicaes.hospital.ui.components.EstadosPreviewProvider
 import sv.edu.unicaes.hospital.ui.components.FabHospital
+import sv.edu.unicaes.hospital.ui.components.FilaChips
 import sv.edu.unicaes.hospital.ui.components.FilaDato
 import sv.edu.unicaes.hospital.ui.components.FilaLista
 import sv.edu.unicaes.hospital.ui.components.IconoAccion
@@ -96,6 +102,7 @@ import sv.edu.unicaes.hospital.ui.theme.Fondo
 import sv.edu.unicaes.hospital.ui.theme.HospitalTheme
 import sv.edu.unicaes.hospital.ui.theme.HospitalUnicaesTheme
 import sv.edu.unicaes.hospital.ui.theme.Neutro700
+import sv.edu.unicaes.hospital.ui.theme.ParColor
 import sv.edu.unicaes.hospital.ui.theme.Primario200
 import sv.edu.unicaes.hospital.ui.theme.Primario50
 import sv.edu.unicaes.hospital.ui.theme.Primario700
@@ -106,14 +113,22 @@ import sv.edu.unicaes.hospital.ui.theme.Texto3
 // Camas: mapa, ingreso, traslado y alta (AND-R8 a AND-R11). Capacidad fija de 11 habitaciones y
 // 17 camas; ninguna pantalla crea ni elimina habitaciones.
 
-private fun HabitacionUi.codigoCama(cama: CamaUi) =
-    if (cama.etiqueta.isEmpty()) codigo else "$codigo · ${cama.etiqueta}"
-
-private fun List<HabitacionUi>.ocupadas() = sumOf { h -> h.camas.count { !it.libre } }
+private fun List<HabitacionUi>.ocupadas() = sumOf { h -> h.camas.count { it.estado == EstadoCama.OCUPADA } }
 
 private fun List<HabitacionUi>.totalCamas() = sumOf { it.camas.size }
 
 private fun List<HabitacionUi>.libres() = flatMap { h -> h.camas.filter { it.libre }.map { h to it } }
+
+/**
+ * Misma regla que `GET /camas/sugerencia` de la API: primero una cama de una habitación sin
+ * pacientes (privacidad y control de infecciones); si no hay, la primera libre. [excluir] es la
+ * cama que se acaba de perder por conflicto.
+ */
+private fun List<Pair<HabitacionUi, CamaUi>>.sugerida(excluir: String?): Pair<HabitacionUi, CamaUi>? {
+    val candidatas = filter { (h, c) -> h.codigoCama(c) != excluir }
+    return candidatas.firstOrNull { (h, _) -> h.camas.none { it.estado == EstadoCama.OCUPADA } }
+        ?: candidatas.firstOrNull()
+}
 
 /** Botón de cama (alto 48, radio 10): Libre ○ · Ocupada ● · Elegida ✓. */
 @Composable
@@ -129,7 +144,8 @@ private fun CamaBoton(
         when {
             elegida -> estados.camaElegida
             cama.libre -> estados.camaLibre
-            else -> estados.camaOcupada
+            cama.estado == EstadoCama.OCUPADA -> estados.camaOcupada
+            else -> ParColor(Texto2, Fondo, BordeSuave)
         }
     val separador = if (mostrarNombre) " · " else " "
     val prefijo = if (cama.etiqueta.isEmpty()) "" else "${cama.etiqueta}$separador"
@@ -137,7 +153,9 @@ private fun CamaBoton(
         when {
             elegida -> "✓ $prefijo${stringResource(R.string.camas_elegida)}"
             cama.libre -> "○ $prefijo${stringResource(R.string.camas_libre)}"
-            mostrarNombre -> "● $prefijo${cama.ocupante}"
+            cama.estado == EstadoCama.LIMPIEZA -> "◐ $prefijo${stringResource(R.string.camas_limpieza)}"
+            cama.estado == EstadoCama.MANTENIMIENTO -> "◐ $prefijo${stringResource(R.string.camas_mantenimiento)}"
+            mostrarNombre && cama.ocupante != null -> "● $prefijo${cama.ocupante}"
             else -> "● $prefijo${stringResource(R.string.camas_ocupada)}"
         }
     Surface(
@@ -167,6 +185,7 @@ private fun SalaHabitacion(
     mostrarNombres: Boolean,
     onCama: (CamaUi) -> Unit,
     modifier: Modifier = Modifier,
+    menu: @Composable (CamaUi) -> Unit = {},
 ) {
     Column(
         modifier =
@@ -182,12 +201,16 @@ private fun SalaHabitacion(
             style = TextStyle(fontSize = 13.sp, lineHeight = 16.sp, fontWeight = FontWeight.Bold),
         )
         habitacion.camas.forEach { cama ->
-            CamaBoton(
-                cama = cama,
-                elegida = cama.id == camaElegida,
-                mostrarNombre = mostrarNombres,
-                onClick = { onCama(cama) },
-            )
+            // El menú contextual se ancla a la cama tocada, no a la pantalla.
+            Box {
+                CamaBoton(
+                    cama = cama,
+                    elegida = cama.id == camaElegida,
+                    mostrarNombre = mostrarNombres,
+                    onClick = { onCama(cama) },
+                )
+                menu(cama)
+            }
         }
     }
 }
@@ -199,6 +222,7 @@ private fun RejillaHabitaciones(
     camaElegida: String?,
     mostrarNombres: Boolean,
     onCama: (HabitacionUi, CamaUi) -> Unit,
+    menu: @Composable (CamaUi) -> Unit = {},
 ) {
     Column(verticalArrangement = Arrangement.spacedBy(Espacio.xs)) {
         habitaciones.chunked(columnas).forEach { fila ->
@@ -210,6 +234,7 @@ private fun RejillaHabitaciones(
                         mostrarNombres = mostrarNombres,
                         onCama = { onCama(habitacion, it) },
                         modifier = Modifier.weight(1f),
+                        menu = menu,
                     )
                 }
                 repeat(columnas - fila.size) { Spacer(Modifier.weight(1f)) }
@@ -231,11 +256,15 @@ private fun LeyendaCamas() {
 @Composable
 fun MapaCamasScreen(
     estado: UiState<List<HabitacionUi>>,
-    onIngreso: () -> Unit,
-    onVerFicha: () -> Unit,
-    onTrasladar: () -> Unit,
-    onAlta: () -> Unit,
+    /** Con el id de la cama libre tocada, o null desde el botón Ingreso. */
+    onIngreso: (String?) -> Unit,
+    onVerFicha: (CamaUi) -> Unit,
+    onTrasladar: (CamaUi) -> Unit,
+    onAlta: (CamaUi) -> Unit,
     onReintentar: () -> Unit = {},
+    onMarcarDisponible: (CamaUi) -> Unit = {},
+    aviso: AppError? = null,
+    onCerrarAviso: () -> Unit = {},
 ) {
     var planta by rememberSaveable { mutableIntStateOf(0) }
     var menuCama by rememberSaveable { mutableStateOf<String?>(null) }
@@ -248,7 +277,9 @@ fun MapaCamasScreen(
                 acciones = { IconoAccion(R.drawable.ic_more_vert, stringResource(R.string.accion_mas_opciones), {}) },
             )
         },
-        floatingActionButton = { FabHospital(texto = stringResource(R.string.camas_ingreso), onClick = onIngreso) },
+        floatingActionButton = {
+            FabHospital(texto = stringResource(R.string.camas_ingreso), onClick = { onIngreso(null) })
+        },
     ) { padding ->
         ContenidoConEstado(
             estado = estado,
@@ -281,29 +312,74 @@ fun MapaCamasScreen(
                     seleccionada = planta,
                     onSeleccion = { planta = it },
                 )
+                aviso?.let {
+                    Banner(
+                        tipo = TipoBanner.ERROR,
+                        texto = textoErrorCamas(it),
+                        accion = stringResource(R.string.camas_cerrar_aviso),
+                        onAccion = onCerrarAviso,
+                    )
+                }
                 LeyendaCamas()
                 RejillaHabitaciones(
                     habitaciones = if (planta == 0) p2 else p3,
                     columnas = 2,
                     camaElegida = null,
                     mostrarNombres = true,
-                    onCama = { _, cama -> if (cama.libre) onIngreso() else menuCama = cama.id },
+                    onCama = { _, cama -> if (cama.libre) onIngreso(cama.id) else menuCama = cama.id },
+                    menu = { cama ->
+                        MenuCama(
+                            cama = cama.takeIf { it.id == menuCama },
+                            onCerrar = { menuCama = null },
+                        ) { texto, accion ->
+                            when (texto) {
+                                R.string.camas_ver_ficha -> onVerFicha(accion)
+                                R.string.camas_trasladar -> onTrasladar(accion)
+                                R.string.camas_dar_alta -> onAlta(accion)
+                                else -> onMarcarDisponible(accion)
+                            }
+                        }
+                    },
                 )
-                DropdownMenu(expanded = menuCama != null, onDismissRequest = { menuCama = null }) {
-                    DropdownMenuItem(text = { Text(stringResource(R.string.camas_ver_ficha)) }, onClick = {
-                        menuCama = null
-                        onVerFicha()
-                    })
-                    DropdownMenuItem(text = { Text(stringResource(R.string.camas_trasladar)) }, onClick = {
-                        menuCama = null
-                        onTrasladar()
-                    })
-                    DropdownMenuItem(text = { Text(stringResource(R.string.camas_dar_alta)) }, onClick = {
-                        menuCama = null
-                        onAlta()
-                    })
-                }
             }
+        }
+    }
+}
+
+/**
+ * Menú de una cama del mapa: ocupada → ver ficha, trasladar o dar de alta; en limpieza o
+ * mantenimiento → marcar disponible. [onOpcion] recibe el texto elegido y la cama.
+ */
+@Composable
+private fun MenuCama(
+    cama: CamaUi?,
+    onCerrar: () -> Unit,
+    onOpcion: (Int, CamaUi) -> Unit,
+) {
+    val opciones =
+        when {
+            cama == null -> {
+                emptyList()
+            }
+
+            cama.estado == EstadoCama.OCUPADA && cama.pacienteId != null -> {
+                listOf(R.string.camas_ver_ficha, R.string.camas_trasladar, R.string.camas_dar_alta)
+            }
+
+            cama.estado == EstadoCama.LIMPIEZA || cama.estado == EstadoCama.MANTENIMIENTO -> {
+                listOf(R.string.camas_marcar_disponible)
+            }
+
+            else -> {
+                emptyList()
+            }
+        }
+    DropdownMenu(expanded = cama != null && opciones.isNotEmpty(), onDismissRequest = onCerrar) {
+        opciones.forEach { texto ->
+            DropdownMenuItem(text = { Text(stringResource(texto)) }, onClick = {
+                onCerrar()
+                cama?.let { onOpcion(texto, it) }
+            })
         }
     }
 }
@@ -364,14 +440,31 @@ fun IngresoCamaScreen(
     onCambiarPaciente: () -> Unit,
     onConfirmar: (String) -> Unit,
     camaEnConflicto: String? = null,
+    doctores: List<DoctorDisponible> = emptyList(),
+    doctorId: String? = null,
+    onDoctor: (String) -> Unit = {},
+    motivo: String = "",
+    onMotivo: (String) -> Unit = {},
+    yaHospitalizado: Boolean = false,
+    enviando: Boolean = false,
+    error: AppError? = null,
+    onDescartarConflicto: () -> Unit = {},
+    camaInicial: String? = null,
 ) {
-    var tipo by rememberSaveable { mutableStateOf(TipoHabitacion.SEMIPRIVADA) }
+    // Si se llegó tocando una cama del mapa, se abre en su tipo con esa cama elegida.
+    val tipoInicial = habitaciones.firstOrNull { h -> h.camas.any { it.id == camaInicial } }?.tipo
+    var tipo by rememberSaveable { mutableStateOf(tipoInicial ?: TipoHabitacion.SEMIPRIVADA) }
     val delTipo = habitaciones.filter { it.tipo == tipo }
     val libres = delTipo.libres()
     val libresPorTipo = TipoHabitacion.entries.associateWith { t -> habitaciones.filter { it.tipo == t }.libres().size }
-    val sugerida = libres.firstOrNull { (h, c) -> h.codigoCama(c) != camaEnConflicto }
-    var elegida by rememberSaveable(tipo) { mutableStateOf(sugerida?.second?.id) }
+    val sugerida = libres.sugerida(excluir = camaEnConflicto)
+    // Si la cama elegida deja de estar libre (otra persona la ganó), se vuelve a la sugerida.
+    var elegidaManual by rememberSaveable(tipo, camaEnConflicto) {
+        mutableStateOf(camaInicial?.takeIf { camaEnConflicto == null })
+    }
+    val elegida = elegidaManual?.takeIf { id -> libres.any { it.second.id == id } } ?: sugerida?.second?.id
     val codigoElegida = libres.firstOrNull { it.second.id == elegida }?.let { (h, c) -> h.codigoCama(c) }
+    val puedeConfirmar = codigoElegida != null && doctorId != null && !enviando && !yaHospitalizado
 
     Scaffold(
         topBar = {
@@ -392,12 +485,19 @@ fun IngresoCamaScreen(
                         SnackbarConflicto(
                             texto = stringResource(R.string.ingreso_conflicto, camaEnConflicto),
                             accion = stringResource(R.string.ingreso_elegir_otra),
+                            onAccion = onDescartarConflicto,
                         )
                     }
+                    error?.let { Banner(tipo = TipoBanner.ERROR, texto = textoErrorCamas(it)) }
                     BotonPrimario(
-                        texto = "✓ " + stringResource(R.string.ingreso_confirmar, codigoElegida.orEmpty()),
-                        onClick = { codigoElegida?.let(onConfirmar) },
-                        habilitado = codigoElegida != null,
+                        texto =
+                            if (enviando) {
+                                stringResource(R.string.camas_guardando)
+                            } else {
+                                "✓ " + stringResource(R.string.ingreso_confirmar, codigoElegida.orEmpty())
+                            },
+                        onClick = { elegida?.let(onConfirmar) },
+                        habilitado = puedeConfirmar,
                     )
                 }
             }
@@ -421,12 +521,38 @@ fun IngresoCamaScreen(
                     Avatar(iniciales(paciente.nombre))
                     TextosFila(
                         titulo = paciente.nombre,
-                        soporte = stringResource(R.string.ingreso_doc, paciente.dui, paciente.etiqueta.orEmpty()),
+                        soporte =
+                            paciente.etiqueta?.let { stringResource(R.string.ingreso_doc, paciente.dui, it) }
+                                ?: stringResource(R.string.ingreso_doc_solo, paciente.dui),
                         modifier = Modifier.weight(1f),
                     )
                     AccionTexto(texto = stringResource(R.string.accion_cambiar), onClick = onCambiarPaciente)
                 }
             }
+            if (yaHospitalizado) {
+                Banner(tipo = TipoBanner.AVISO, texto = stringResource(R.string.ingreso_ya_hospitalizado))
+            }
+            TituloSeccion(stringResource(R.string.ingreso_medico))
+            if (doctores.isEmpty()) {
+                Banner(tipo = TipoBanner.AVISO, texto = stringResource(R.string.ingreso_sin_doctores))
+            } else {
+                FilaChips {
+                    doctores.forEach { doctor ->
+                        ChipOpcion(
+                            texto = doctor.nombre,
+                            soporte = doctor.especialidad,
+                            elegida = doctor.id == doctorId,
+                            onClick = { onDoctor(doctor.id) },
+                        )
+                    }
+                }
+            }
+            CampoTexto(
+                etiqueta = stringResource(R.string.ingreso_motivo),
+                valor = motivo,
+                onValor = onMotivo,
+                placeholder = stringResource(R.string.ingreso_motivo_ejemplo),
+            )
             TituloSeccion(stringResource(R.string.ingreso_tipo))
             SelectorTipo(tipo = tipo, libresPorTipo = libresPorTipo, onTipo = { tipo = it })
             if (libres.isEmpty()) {
@@ -458,9 +584,10 @@ fun IngresoCamaScreen(
                     columnas = 3,
                     camaElegida = elegida,
                     mostrarNombres = false,
-                    onCama = { _, cama -> if (cama.libre) elegida = cama.id },
+                    onCama = { _, cama -> if (cama.libre) elegidaManual = cama.id },
                 )
-                sugerida?.let { (h, c) ->
+                // Solo cuando la elegida es la sugerida: si el usuario eligió otra, el aviso confunde.
+                sugerida?.takeIf { it.second.id == elegida }?.let { (h, c) ->
                     val codigo = h.codigoCama(c).replace(" · ", " · Cama ")
                     val texto = stringResource(R.string.ingreso_sugerida, codigo)
                     Banner(
@@ -511,6 +638,7 @@ private fun SelectorTipo(
 private fun SnackbarConflicto(
     texto: String,
     accion: String,
+    onAccion: () -> Unit,
 ) {
     Row(
         modifier =
@@ -527,7 +655,7 @@ private fun SnackbarConflicto(
             style = MaterialTheme.typography.bodyMedium,
             modifier = Modifier.weight(1f).padding(vertical = 10.dp),
         )
-        TextButton(onClick = {}) { Text(accion, color = Primario200) }
+        TextButton(onClick = onAccion) { Text(accion, color = Primario200) }
     }
 }
 
@@ -539,11 +667,16 @@ fun TrasladoScreen(
     habitaciones: List<HabitacionUi>,
     onVolver: () -> Unit,
     onConfirmar: (String) -> Unit,
+    camaEnConflicto: String? = null,
+    enviando: Boolean = false,
+    error: AppError? = null,
+    onDescartarConflicto: () -> Unit = {},
 ) {
-    var tipo by rememberSaveable { mutableStateOf(TipoHabitacion.VIP) }
+    var tipo by rememberSaveable { mutableStateOf(asignacion.tipo) }
     val libres = habitaciones.filter { it.tipo == tipo }.libres()
-    var elegida by rememberSaveable(tipo) { mutableStateOf(libres.firstOrNull()?.let { (h, c) -> h.codigoCama(c) }) }
-    var motivo by rememberSaveable { mutableStateOf("") }
+    var elegidaManual by rememberSaveable(tipo, camaEnConflicto) { mutableStateOf<String?>(null) }
+    val elegida = elegidaManual?.takeIf { id -> libres.any { it.second.id == id } } ?: libres.firstOrNull()?.second?.id
+    val codigoElegida = libres.firstOrNull { it.second.id == elegida }?.let { (h, c) -> h.codigoCama(c) }
 
     Scaffold(
         topBar = { TopBarHospital(titulo = stringResource(R.string.camas_trasladar), onVolver = onVolver) },
@@ -604,7 +737,7 @@ fun TrasladoScreen(
             }
             libres.forEach { (habitacion, cama) ->
                 val codigo = habitacion.codigoCama(cama)
-                val activa = elegida == codigo
+                val activa = elegida == cama.id
                 TarjetaLista(
                     elementos = listOf(codigo),
                     colorBorde = if (activa) Primario700 else BordeSuave,
@@ -613,7 +746,7 @@ fun TrasladoScreen(
                     modifier =
                         Modifier.selectable(
                             selected = activa,
-                            onClick = { elegida = codigo },
+                            onClick = { elegidaManual = cama.id },
                             role = Role.RadioButton,
                         ),
                 ) { _, _ ->
@@ -644,16 +777,23 @@ fun TrasladoScreen(
                     )
                 }
             }
-            CampoTexto(
-                etiqueta = stringResource(R.string.traslado_motivo),
-                valor = motivo,
-                onValor = { motivo = it },
-                placeholder = stringResource(R.string.traslado_motivo_ejemplo),
-            )
+            if (camaEnConflicto != null) {
+                SnackbarConflicto(
+                    texto = stringResource(R.string.ingreso_conflicto, camaEnConflicto),
+                    accion = stringResource(R.string.ingreso_elegir_otra),
+                    onAccion = onDescartarConflicto,
+                )
+            }
+            error?.let { Banner(tipo = TipoBanner.ERROR, texto = textoErrorCamas(it)) }
             BotonPrimario(
-                texto = stringResource(R.string.traslado_confirmar, elegida.orEmpty()),
+                texto =
+                    if (enviando) {
+                        stringResource(R.string.camas_guardando)
+                    } else {
+                        stringResource(R.string.traslado_confirmar, codigoElegida.orEmpty())
+                    },
                 onClick = { elegida?.let(onConfirmar) },
-                habilitado = elegida != null,
+                habilitado = codigoElegida != null && !enviando,
             )
         }
     }
@@ -665,6 +805,8 @@ fun AltaScreen(
     ficha: FichaPacienteUi,
     onVolver: () -> Unit,
     onDarAlta: () -> Unit,
+    enviando: Boolean = false,
+    error: AppError? = null,
 ) {
     var confirmar by rememberSaveable { mutableStateOf(false) }
     val asignacion = ficha.asignacion ?: return
@@ -690,10 +832,11 @@ fun AltaScreen(
                 texto = stringResource(R.string.alta_aviso),
                 icono = R.drawable.ic_notifications,
             )
+            error?.let { Banner(tipo = TipoBanner.ERROR, texto = textoErrorCamas(it)) }
             Spacer(Modifier.weight(1f))
             BotonPeligro(
-                texto = stringResource(R.string.camas_dar_alta),
-                onClick = { confirmar = true },
+                texto = stringResource(if (enviando) R.string.camas_guardando else R.string.camas_dar_alta),
+                onClick = { if (!enviando) confirmar = true },
                 icono = R.drawable.ic_logout,
                 alto = 52.dp,
                 modifier = Modifier.fillMaxWidth(),
@@ -713,6 +856,44 @@ fun AltaScreen(
             onCancelar = { confirmar = false },
             destructivo = true,
         )
+    }
+}
+
+/** El texto de un 409 de camas ya viene redactado por la API; los demás errores usan su texto genérico. */
+@Composable
+private fun textoErrorCamas(error: AppError): String =
+    (error as? AppError.Rechazada)?.detalle ?: stringResource(error.mensaje())
+
+/**
+ * Ingreso, traslado y alta cargan datos antes del formulario: mientras tanto (o si falla) se muestra
+ * la barra con volver y el estado de carga; con datos, se dibuja [contenido].
+ */
+@Composable
+fun <T> FormularioCamasConEstado(
+    titulo: String,
+    estado: UiState<T>,
+    onVolver: () -> Unit,
+    onReintentar: () -> Unit,
+    contenido: @Composable (T) -> Unit,
+) {
+    if (estado is UiState.Exito) {
+        contenido(estado.datos)
+        return
+    }
+    Scaffold(topBar = { TopBarHospital(titulo = titulo, onVolver = onVolver) }) { padding ->
+        ContenidoConEstado(
+            estado = estado,
+            mensajeError = stringResource(R.string.camas_error),
+            onReintentar = onReintentar,
+            modifier = Modifier.padding(padding),
+            vacio = {
+                EstadoVacio(
+                    titulo = stringResource(R.string.camas_sin_hospitalizacion),
+                    detalle = stringResource(R.string.camas_sin_hospitalizacion_detalle),
+                    icono = R.drawable.ic_bed,
+                )
+            },
+        ) { contenido(it) }
     }
 }
 
