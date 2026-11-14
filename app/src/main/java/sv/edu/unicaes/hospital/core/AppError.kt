@@ -60,6 +60,12 @@ sealed interface AppError {
     ) : AppError
 }
 
+/**
+ * 409 en los que la cama elegida ya no se puede asignar. El paciente hospitalizado o el alta
+ * repetida no entran: esos se muestran como error, sin recargar el mapa.
+ */
+val CODIGOS_CAMA_PERDIDA = setOf("CAMA_OCUPADA", "CAMA_NO_DISPONIBLE")
+
 @StringRes
 fun AppError.mensaje(): Int =
     when (this) {

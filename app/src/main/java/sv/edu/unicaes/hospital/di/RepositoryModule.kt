@@ -44,6 +44,9 @@ abstract class RepositoryModule {
     @Binds
     @Singleton
     abstract fun bindCamasRepository(impl: CamasRepositoryImpl): CamasRepository
+
+    @Binds
+    @Singleton
     abstract fun bindTurnosRepository(impl: TurnosRepositoryImpl): TurnosRepository
 
     @Binds

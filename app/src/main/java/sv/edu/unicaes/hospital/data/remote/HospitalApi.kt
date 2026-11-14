@@ -14,9 +14,9 @@ import retrofit2.http.Query
 import sv.edu.unicaes.hospital.data.remote.dto.AltaBody
 import sv.edu.unicaes.hospital.data.remote.dto.ApiRespuesta
 import sv.edu.unicaes.hospital.data.remote.dto.CambiarEstadoCamaBody
+import sv.edu.unicaes.hospital.data.remote.dto.CambiarEstadoExamenDto
 import sv.edu.unicaes.hospital.data.remote.dto.CrearHospitalizacionBody
 import sv.edu.unicaes.hospital.data.remote.dto.HabitacionMapaDto
-import sv.edu.unicaes.hospital.data.remote.dto.CambiarEstadoExamenDto
 import sv.edu.unicaes.hospital.data.remote.dto.HospitalizacionDto
 import sv.edu.unicaes.hospital.data.remote.dto.OrdenExamenDto
 import sv.edu.unicaes.hospital.data.remote.dto.OrdenLaboratorioDto
