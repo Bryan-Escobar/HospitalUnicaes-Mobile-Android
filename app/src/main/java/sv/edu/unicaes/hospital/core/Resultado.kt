@@ -78,39 +78,26 @@ private fun errorDesdeRespuesta(e: HttpException): AppError {
         "PERFIL_INCOMPLETO" -> AppError.PerfilIncompleto
         "REGISTRO_DUPLICADO" -> AppError.Duplicado
         "VALIDACION" -> AppError.CamposInvalidos(cuerpo.errors.associate { it.field to it.message })
-        in CODIGOS_CAMAS -> rechazoDeCama(cuerpo?.code, cuerpo?.message) ?: errorDesdeCodigo(e.code())
-        else -> errorDesdeCodigo(e.code())
-    }
+        in CODIGOS_CON_MENSAJE -> cuerpo?.message?.takeIf { it.isNotBlank() }?.let(AppError::Rechazada)
+        else -> null
+    } ?: errorDesdeCodigo(e.code())
 }
 
 /**
- * Conflictos de asignación de camas (HUNI-66): sobrecupo, doble asignación o una cama que otra
- * persona ganó primero. Se muestran con el texto de la API y conservan el código para que la
- * pantalla proponga otra cama.
+ * Códigos de la API cuyo `message` ya está redactado para el usuario (p. ej. "Otro usuario ya inició
+ * este examen; actualiza la orden"): se muestran tal cual como [AppError.Rechazada].
  */
-val CODIGOS_CAMAS =
-    setOf(
-        "CAMA_OCUPADA",
-        "CAMA_NO_DISPONIBLE",
-        "PACIENTE_YA_HOSPITALIZADO",
-        "SIN_CAMAS_DISPONIBLES",
-        "HOSPITALIZACION_FINALIZADA",
-    )
-
-/** Códigos por los que la cama elegida ya no se puede usar: hay que elegir otra. */
-val CODIGOS_CAMA_PERDIDA = setOf("CAMA_OCUPADA", "CAMA_NO_DISPONIBLE")
-
-fun rechazoDeCama(
-    codigo: String?,
-    mensaje: String?,
-): AppError.Rechazada? =
-    mensaje
-        ?.trim()
-        ?.takeIf { codigo in CODIGOS_CAMAS && it.isNotEmpty() }
-        ?.let { AppError.Rechazada(it, codigo) }
+private val CODIGOS_CON_MENSAJE = setOf("TRANSICION_INVALIDA", "RESULTADO_REQUERIDO", "SOLICITUD_INVALIDA")
 
 /** Códigos con los que las funciones y triggers de Supabase anteponen un mensaje legible. */
-private val CODIGOS_RECHAZO = setOf("CITA_DUPLICADA", "CITA_FUERA_DE_TURNO", "REGLA_DE_NEGOCIO", "TRANSICION_INVALIDA")
+private val CODIGOS_RECHAZO =
+    setOf(
+        "CITA_DUPLICADA",
+        "CITA_FUERA_DE_TURNO",
+        "REGLA_DE_NEGOCIO",
+        "TRANSICION_INVALIDA",
+        "TURNO_SOLAPADO",
+    )
 
 /** `CITA_DUPLICADA: el doctor ya tiene una cita…` → [AppError.Rechazada] con el texto después del código. */
 fun rechazoDesdeMensaje(mensaje: String): AppError.Rechazada? {

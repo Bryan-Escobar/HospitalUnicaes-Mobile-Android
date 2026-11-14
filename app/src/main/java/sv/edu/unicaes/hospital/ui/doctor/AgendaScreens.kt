@@ -238,14 +238,20 @@ private fun FilaDatoConBadge(
     }
 }
 
-/** AND-D7 · Mis turnos (solo lectura): esta semana y la siguiente; el turno en curso va aparte. */
+/**
+ * AND-D7 · Mis turnos (solo lectura): esta semana y la siguiente; el turno en curso va aparte. Es pestaña del
+ * Doctor y, con [onVolver], pantalla de Recepción desde "Turnos del personal".
+ */
 @Composable
 fun MisTurnosScreen(
     estado: UiState<Pair<List<TurnoUi>, List<TurnoUi>>>,
     onReintentar: () -> Unit = {},
+    onVolver: (() -> Unit)? = null,
 ) {
     var semana by rememberSaveable { mutableIntStateOf(0) }
-    Scaffold(topBar = { TopBarHospital(titulo = stringResource(R.string.turnos_mis_turnos)) }) { padding ->
+    Scaffold(
+        topBar = { TopBarHospital(titulo = stringResource(R.string.turnos_mis_turnos), onVolver = onVolver) },
+    ) { padding ->
         Column(
             modifier = Modifier.padding(padding).padding(RellenoCuerpo),
             verticalArrangement = Arrangement.spacedBy(Espacio.sm),

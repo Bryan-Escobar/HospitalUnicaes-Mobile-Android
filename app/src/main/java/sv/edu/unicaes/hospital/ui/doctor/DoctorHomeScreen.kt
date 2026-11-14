@@ -25,6 +25,7 @@ import sv.edu.unicaes.hospital.ui.modelo.ConDatos
 import sv.edu.unicaes.hospital.ui.modelo.DatosMuestra
 import sv.edu.unicaes.hospital.ui.perfil.PerfilScreen
 import sv.edu.unicaes.hospital.ui.theme.HospitalUnicaesTheme
+import sv.edu.unicaes.hospital.ui.turnos.MisTurnosViewModel
 
 // Rutas internas del Doctor (handoff §11.2 · Doctor).
 

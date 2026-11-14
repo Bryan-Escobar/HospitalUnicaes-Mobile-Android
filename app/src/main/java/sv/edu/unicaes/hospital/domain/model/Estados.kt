@@ -1,15 +1,22 @@
 package sv.edu.unicaes.hospital.domain.model
 
 /** Pendiente → En Proceso → Completado, solo hacia adelante (context.md §3.3). */
-enum class EstadoLaboratorio {
-    PENDIENTE,
-    EN_PROCESO,
-    COMPLETADO,
+enum class EstadoLaboratorio(
+    val valorApi: String,
+) {
+    PENDIENTE("pendiente"),
+    EN_PROCESO("en_proceso"),
+    COMPLETADO("completado"),
     ;
 
     /** Siguiente estado permitido, o null si la orden ya está completada. */
     val siguiente: EstadoLaboratorio?
         get() = entries.getOrNull(ordinal + 1)
+
+    companion object {
+        /** Valor de `estado_laboratorio` en la API; uno desconocido se muestra como pendiente. */
+        fun desdeApi(valor: String): EstadoLaboratorio = entries.firstOrNull { it.valorApi == valor } ?: PENDIENTE
+    }
 }
 
 /** Estados de la única ambulancia del hospital (context.md §3.5). */

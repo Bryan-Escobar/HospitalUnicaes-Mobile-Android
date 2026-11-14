@@ -166,12 +166,16 @@ object DatosMuestra {
 
     val turnosPersonal =
         listOf(
-            DiaTurnosUi(
-                dia = "Mié 21",
+            AreaTurnosUi(
+                area = "Consulta externa",
+                turnos = listOf(TurnoPersonalUi("Dra. Ana Rivas", "Consulta externa", "08:00–14:00", "Alergista")),
+            ),
+            AreaTurnosUi(
+                area = "Emergencia",
                 turnos =
                     listOf(
-                        TurnoPersonalUi("Dra. Ana Rivas", "Consulta externa", "08:00–14:00", "Alergista"),
-                        TurnoPersonalUi("Dr. Jorge Peña", "Emergencias", "06:00–18:00", "Emergencia"),
+                        TurnoPersonalUi("Dr. Jorge Peña", "Emergencia", "06:00–18:00", "Emergencia", enCurso = true),
+                        TurnoPersonalUi("María Gómez", "Emergencia", "15:00–23:00", "Enfermería"),
                     ),
             ),
         )
@@ -215,70 +219,6 @@ object DatosMuestra {
             kilometraje = 12,
             observaciones = "paciente estable al llegar.",
         )
-
-    val ordenOrina =
-        OrdenLabUi(
-            id = "o-1042",
-            numero = 1042,
-            examen = "Examen general de orina",
-            paciente = "Luis Martínez",
-            dui = "01234567-8",
-            doctor = "Dr. Carlos Molina",
-            hora = "hace 2 min",
-            estado = EstadoLaboratorio.EN_PROCESO,
-            indicaciones = "primera orina de la mañana",
-            ordenada = "21 oct 10:41",
-            enProcesoDesde = "10:55",
-            nueva = true,
-        )
-
-    val colaLaboratorio =
-        listOf(
-            ordenOrina.copy(paciente = "L. Martínez", doctor = "Dr. Molina", estado = EstadoLaboratorio.PENDIENTE),
-            OrdenLabUi(
-                "o-1041",
-                1041,
-                "Hemograma completo",
-                "M. López",
-                "04512378-9",
-                "Dr. Peña",
-                "09:40",
-                EstadoLaboratorio.PENDIENTE,
-            ),
-            OrdenLabUi(
-                "o-1040",
-                1040,
-                "Química sanguínea",
-                "E. Cruz",
-                "03344556-1",
-                "Dr. Molina",
-                "09:15",
-                EstadoLaboratorio.PENDIENTE,
-            ),
-            OrdenLabUi(
-                "o-1039",
-                1039,
-                "Prueba cutánea",
-                "P. Alas",
-                "05566778-2",
-                "Dra. Rivas",
-                "08:50",
-                EstadoLaboratorio.PENDIENTE,
-            ),
-            OrdenLabUi(
-                "o-1038",
-                1038,
-                "Perfil lipídico",
-                "R. Méndez",
-                "02233445-6",
-                "Dr. Molina",
-                "ayer",
-                EstadoLaboratorio.PENDIENTE,
-            ),
-        )
-
-    /** Conteos por pestaña de la cola: Pendiente 7 · En Proceso 4. */
-    val conteoLaboratorio = mapOf(EstadoLaboratorio.PENDIENTE to 7, EstadoLaboratorio.EN_PROCESO to 4)
 
     // Doctor ---------------------------------------------------------------------------------
 
