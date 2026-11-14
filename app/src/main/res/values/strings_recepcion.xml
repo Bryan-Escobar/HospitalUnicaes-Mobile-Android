@@ -99,6 +99,7 @@
     <string name="ingreso_paso_cama">Cama</string>
     <string name="ingreso_doc">Doc. %1$s · %2$s</string>
     <string name="ingreso_doc_solo">Doc. %1$s</string>
+    <string name="ingreso_elegir_paciente">Elegir paciente</string>
     <string name="ingreso_ya_hospitalizado">Este paciente ya tiene una cama asignada. Usa Trasladar desde su ficha.</string>
     <string name="ingreso_medico">Médico tratante</string>
     <string name="ingreso_sin_doctores">No hay médicos activos para asignar como tratante.</string>
@@ -107,7 +108,7 @@
     <string name="ingreso_tipo">Tipo de habitación</string>
     <string name="ingreso_tipo_libres">%1$s · %2$d libres</string>
     <string name="ingreso_planta">Planta %1$d · %2$s (%3$d/%4$d ocupadas)</string>
-    <string name="ingreso_sugerida">%1$s es la sugerida: primera libre de la planta. Puedes elegir otra.</string>
+    <string name="ingreso_sugerida">%1$s es la sugerida: prioriza habitaciones vacías. Puedes elegir otra.</string>
     <string name="ingreso_conflicto">%1$s ya fue asignada por otra persona. Elegimos la siguiente libre.</string>
     <string name="ingreso_elegir_otra">Elegir otra</string>
     <string name="ingreso_confirmar">Confirmar ingreso en %1$s</string>

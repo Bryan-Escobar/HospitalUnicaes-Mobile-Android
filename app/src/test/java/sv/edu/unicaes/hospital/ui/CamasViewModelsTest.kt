@@ -30,6 +30,7 @@ import sv.edu.unicaes.hospital.domain.model.Paciente
 import sv.edu.unicaes.hospital.domain.model.Pagina
 import sv.edu.unicaes.hospital.domain.model.TipoHabitacion
 import sv.edu.unicaes.hospital.ui.recepcion.AltaViewModel
+import sv.edu.unicaes.hospital.ui.recepcion.ElegirPacienteCamaViewModel
 import sv.edu.unicaes.hospital.ui.recepcion.IngresoCamaViewModel
 import sv.edu.unicaes.hospital.ui.recepcion.MapaCamasViewModel
 import sv.edu.unicaes.hospital.ui.recepcion.TrasladoViewModel
@@ -186,6 +187,22 @@ class CamasViewModelsTest {
         assertEquals(listOf("c1"), camas.disponibles)
         assertNull(viewModel.aviso.value)
     }
+
+    // Elegir paciente
+
+    @Test
+    fun `al elegir paciente se ocultan los que ya estan internados y se actualiza en vivo`() =
+        runTest {
+            val camas = FakeCamasRepository(habitaciones = Resultado.Exito(listOf(semiprivada(EstadoCama.OCUPADA))))
+            val viewModel = ElegirPacienteCamaViewModel(camas)
+
+            assertEquals(setOf("p9"), viewModel.internados.value)
+
+            camas.habitaciones = Resultado.Exito(listOf(semiprivada(EstadoCama.DISPONIBLE)))
+            camas.cambiosRealtime.emit(Unit)
+
+            assertTrue(viewModel.internados.value.isEmpty())
+        }
 
     // Ingreso
 

@@ -147,8 +147,8 @@ private fun RecepcionNavHost(
             val aviso by viewModel.aviso.collectAsStateWithLifecycle()
             MapaCamasScreen(
                 estado = estado,
-                // El ingreso parte de un paciente: se elige en Pacientes y se ingresa desde su ficha.
-                onIngreso = { navController.irAPestana(PacientesRuta) },
+                // Primero se elige al paciente; la cama tocada (si hay) viaja hasta el ingreso.
+                onIngreso = { camaId -> navController.navigate(ElegirPacienteCamaRuta(camaId)) },
                 onVerFicha = { cama -> cama.pacienteId?.let { navController.navigate(FichaPacienteRuta(it)) } },
                 onTrasladar = { cama -> cama.pacienteId?.let { navController.navigate(TrasladoRuta(it)) } },
                 onAlta = { cama -> cama.pacienteId?.let { navController.navigate(AltaRuta(it)) } },
@@ -158,7 +158,24 @@ private fun RecepcionNavHost(
                 onCerrarAviso = viewModel::cerrarAviso,
             )
         }
-        composable<IngresoCamaRuta> {
+        composable<ElegirPacienteCamaRuta> { entrada ->
+            val camaId = entrada.toRoute<ElegirPacienteCamaRuta>().camaId
+            val elegir: ElegirPacienteCamaViewModel = hiltViewModel()
+            val internados by elegir.internados.collectAsStateWithLifecycle()
+            PacientesScreen(
+                ocultar = internados,
+                titulo = stringResource(R.string.ingreso_elegir_paciente),
+                onVolver = volver,
+                onPaciente = { paciente ->
+                    navController.navigate(IngresoCamaRuta(paciente.id, camaId)) {
+                        popUpTo<ElegirPacienteCamaRuta> { inclusive = true }
+                    }
+                },
+                onRegistrar = { navController.navigate(RegistroPacienteRuta()) },
+            )
+        }
+        composable<IngresoCamaRuta> { entrada ->
+            val camaId = entrada.toRoute<IngresoCamaRuta>().camaId
             val viewModel: IngresoCamaViewModel = hiltViewModel()
             val uiState by viewModel.uiState.collectAsStateWithLifecycle()
             AlTerminar(uiState.terminado) {
@@ -175,7 +192,11 @@ private fun RecepcionNavHost(
                     paciente = ingreso.paciente,
                     habitaciones = ingreso.habitaciones,
                     onVolver = volver,
-                    onCambiarPaciente = { navController.irAPestana(PacientesRuta) },
+                    onCambiarPaciente = {
+                        navController.navigate(ElegirPacienteCamaRuta(camaId)) {
+                            popUpTo<IngresoCamaRuta> { inclusive = true }
+                        }
+                    },
                     onConfirmar = viewModel::confirmar,
                     camaEnConflicto = uiState.camaEnConflicto,
                     doctores = ingreso.doctores,
@@ -187,6 +208,7 @@ private fun RecepcionNavHost(
                     enviando = uiState.enviando,
                     error = uiState.error,
                     onDescartarConflicto = viewModel::descartarConflicto,
+                    camaInicial = viewModel.camaInicial,
                 )
             }
         }

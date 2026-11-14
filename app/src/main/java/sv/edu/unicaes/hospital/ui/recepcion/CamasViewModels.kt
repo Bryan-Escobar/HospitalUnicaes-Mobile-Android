@@ -103,6 +103,36 @@ class MapaCamasViewModel
         }
     }
 
+/**
+ * Elegir paciente para una cama: los que ya están internados no se ofrecen (sin doble asignación).
+ * Sale del mapa de camas, que trae al ocupante de cada una, y se actualiza en vivo.
+ */
+@HiltViewModel
+class ElegirPacienteCamaViewModel
+    @Inject
+    constructor(
+        private val camasRepository: CamasRepository,
+    ) : ViewModel() {
+        private val _internados = MutableStateFlow<Set<String>>(emptySet())
+        val internados: StateFlow<Set<String>> = _internados.asStateFlow()
+
+        init {
+            viewModelScope.launch {
+                cargar()
+                camasRepository.cambios().collect { cargar() }
+            }
+        }
+
+        private suspend fun cargar() {
+            val r = camasRepository.habitaciones() as? Resultado.Exito ?: return
+            _internados.value =
+                r.datos
+                    .flatMap { it.camas }
+                    .mapNotNull { it.ocupante?.pacienteId }
+                    .toSet()
+        }
+    }
+
 data class IngresoCamaUi(
     val paciente: PacienteUi,
     val habitaciones: List<HabitacionUi>,
@@ -133,6 +163,9 @@ class IngresoCamaViewModel
         private val camasRepository: CamasRepository,
     ) : ViewModel() {
         private val pacienteId: String = checkNotNull(savedStateHandle["pacienteId"])
+
+        /** Cama tocada en el mapa antes de elegir al paciente; la pantalla la deja elegida. */
+        val camaInicial: String? = savedStateHandle["camaId"]
 
         private val _uiState = MutableStateFlow(IngresoCamaUiState())
         val uiState: StateFlow<IngresoCamaUiState> = _uiState.asStateFlow()

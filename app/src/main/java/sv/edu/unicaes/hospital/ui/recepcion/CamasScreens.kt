@@ -119,6 +119,17 @@ private fun List<HabitacionUi>.totalCamas() = sumOf { it.camas.size }
 
 private fun List<HabitacionUi>.libres() = flatMap { h -> h.camas.filter { it.libre }.map { h to it } }
 
+/**
+ * Misma regla que `GET /camas/sugerencia` de la API: primero una cama de una habitación sin
+ * pacientes (privacidad y control de infecciones); si no hay, la primera libre. [excluir] es la
+ * cama que se acaba de perder por conflicto.
+ */
+private fun List<Pair<HabitacionUi, CamaUi>>.sugerida(excluir: String?): Pair<HabitacionUi, CamaUi>? {
+    val candidatas = filter { (h, c) -> h.codigoCama(c) != excluir }
+    return candidatas.firstOrNull { (h, _) -> h.camas.none { it.estado == EstadoCama.OCUPADA } }
+        ?: candidatas.firstOrNull()
+}
+
 /** Botón de cama (alto 48, radio 10): Libre ○ · Ocupada ● · Elegida ✓. */
 @Composable
 private fun CamaBoton(
@@ -174,6 +185,7 @@ private fun SalaHabitacion(
     mostrarNombres: Boolean,
     onCama: (CamaUi) -> Unit,
     modifier: Modifier = Modifier,
+    menu: @Composable (CamaUi) -> Unit = {},
 ) {
     Column(
         modifier =
@@ -189,12 +201,16 @@ private fun SalaHabitacion(
             style = TextStyle(fontSize = 13.sp, lineHeight = 16.sp, fontWeight = FontWeight.Bold),
         )
         habitacion.camas.forEach { cama ->
-            CamaBoton(
-                cama = cama,
-                elegida = cama.id == camaElegida,
-                mostrarNombre = mostrarNombres,
-                onClick = { onCama(cama) },
-            )
+            // El menú contextual se ancla a la cama tocada, no a la pantalla.
+            Box {
+                CamaBoton(
+                    cama = cama,
+                    elegida = cama.id == camaElegida,
+                    mostrarNombre = mostrarNombres,
+                    onClick = { onCama(cama) },
+                )
+                menu(cama)
+            }
         }
     }
 }
@@ -206,6 +222,7 @@ private fun RejillaHabitaciones(
     camaElegida: String?,
     mostrarNombres: Boolean,
     onCama: (HabitacionUi, CamaUi) -> Unit,
+    menu: @Composable (CamaUi) -> Unit = {},
 ) {
     Column(verticalArrangement = Arrangement.spacedBy(Espacio.xs)) {
         habitaciones.chunked(columnas).forEach { fila ->
@@ -217,6 +234,7 @@ private fun RejillaHabitaciones(
                         mostrarNombres = mostrarNombres,
                         onCama = { onCama(habitacion, it) },
                         modifier = Modifier.weight(1f),
+                        menu = menu,
                     )
                 }
                 repeat(columnas - fila.size) { Spacer(Modifier.weight(1f)) }
@@ -238,7 +256,8 @@ private fun LeyendaCamas() {
 @Composable
 fun MapaCamasScreen(
     estado: UiState<List<HabitacionUi>>,
-    onIngreso: () -> Unit,
+    /** Con el id de la cama libre tocada, o null desde el botón Ingreso. */
+    onIngreso: (String?) -> Unit,
     onVerFicha: (CamaUi) -> Unit,
     onTrasladar: (CamaUi) -> Unit,
     onAlta: (CamaUi) -> Unit,
@@ -258,7 +277,9 @@ fun MapaCamasScreen(
                 acciones = { IconoAccion(R.drawable.ic_more_vert, stringResource(R.string.accion_mas_opciones), {}) },
             )
         },
-        floatingActionButton = { FabHospital(texto = stringResource(R.string.camas_ingreso), onClick = onIngreso) },
+        floatingActionButton = {
+            FabHospital(texto = stringResource(R.string.camas_ingreso), onClick = { onIngreso(null) })
+        },
     ) { padding ->
         ContenidoConEstado(
             estado = estado,
@@ -305,17 +326,21 @@ fun MapaCamasScreen(
                     columnas = 2,
                     camaElegida = null,
                     mostrarNombres = true,
-                    onCama = { _, cama -> if (cama.libre) onIngreso() else menuCama = cama.id },
+                    onCama = { _, cama -> if (cama.libre) onIngreso(cama.id) else menuCama = cama.id },
+                    menu = { cama ->
+                        MenuCama(
+                            cama = cama.takeIf { it.id == menuCama },
+                            onCerrar = { menuCama = null },
+                        ) { texto, accion ->
+                            when (texto) {
+                                R.string.camas_ver_ficha -> onVerFicha(accion)
+                                R.string.camas_trasladar -> onTrasladar(accion)
+                                R.string.camas_dar_alta -> onAlta(accion)
+                                else -> onMarcarDisponible(accion)
+                            }
+                        }
+                    },
                 )
-                val elegida = habitaciones.flatMap { it.camas }.firstOrNull { it.id == menuCama }
-                MenuCama(cama = elegida, onCerrar = { menuCama = null }) { texto, accion ->
-                    when (texto) {
-                        R.string.camas_ver_ficha -> onVerFicha(accion)
-                        R.string.camas_trasladar -> onTrasladar(accion)
-                        R.string.camas_dar_alta -> onAlta(accion)
-                        else -> onMarcarDisponible(accion)
-                    }
-                }
             }
         }
     }
@@ -424,14 +449,19 @@ fun IngresoCamaScreen(
     enviando: Boolean = false,
     error: AppError? = null,
     onDescartarConflicto: () -> Unit = {},
+    camaInicial: String? = null,
 ) {
-    var tipo by rememberSaveable { mutableStateOf(TipoHabitacion.SEMIPRIVADA) }
+    // Si se llegó tocando una cama del mapa, se abre en su tipo con esa cama elegida.
+    val tipoInicial = habitaciones.firstOrNull { h -> h.camas.any { it.id == camaInicial } }?.tipo
+    var tipo by rememberSaveable { mutableStateOf(tipoInicial ?: TipoHabitacion.SEMIPRIVADA) }
     val delTipo = habitaciones.filter { it.tipo == tipo }
     val libres = delTipo.libres()
     val libresPorTipo = TipoHabitacion.entries.associateWith { t -> habitaciones.filter { it.tipo == t }.libres().size }
-    val sugerida = libres.firstOrNull { (h, c) -> h.codigoCama(c) != camaEnConflicto }
+    val sugerida = libres.sugerida(excluir = camaEnConflicto)
     // Si la cama elegida deja de estar libre (otra persona la ganó), se vuelve a la sugerida.
-    var elegidaManual by rememberSaveable(tipo, camaEnConflicto) { mutableStateOf<String?>(null) }
+    var elegidaManual by rememberSaveable(tipo, camaEnConflicto) {
+        mutableStateOf(camaInicial?.takeIf { camaEnConflicto == null })
+    }
     val elegida = elegidaManual?.takeIf { id -> libres.any { it.second.id == id } } ?: sugerida?.second?.id
     val codigoElegida = libres.firstOrNull { it.second.id == elegida }?.let { (h, c) -> h.codigoCama(c) }
     val puedeConfirmar = codigoElegida != null && doctorId != null && !enviando && !yaHospitalizado
@@ -509,7 +539,8 @@ fun IngresoCamaScreen(
                 FilaChips {
                     doctores.forEach { doctor ->
                         ChipOpcion(
-                            texto = listOfNotNull(doctor.nombre, doctor.especialidad).joinToString(" · "),
+                            texto = doctor.nombre,
+                            soporte = doctor.especialidad,
                             elegida = doctor.id == doctorId,
                             onClick = { onDoctor(doctor.id) },
                         )
@@ -555,7 +586,8 @@ fun IngresoCamaScreen(
                     mostrarNombres = false,
                     onCama = { _, cama -> if (cama.libre) elegidaManual = cama.id },
                 )
-                sugerida?.let { (h, c) ->
+                // Solo cuando la elegida es la sugerida: si el usuario eligió otra, el aviso confunde.
+                sugerida?.takeIf { it.second.id == elegida }?.let { (h, c) ->
                     val codigo = h.codigoCama(c).replace(" · ", " · Cama ")
                     val texto = stringResource(R.string.ingreso_sugerida, codigo)
                     Banner(

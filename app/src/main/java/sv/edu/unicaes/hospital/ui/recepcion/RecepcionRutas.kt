@@ -43,10 +43,20 @@ data class NuevaCitaRuta(
     val doctorId: String? = null,
 )
 
-/** Ingreso y asignación de cama del paciente [pacienteId] (HUNI-67). */
+/**
+ * Ingreso y asignación de cama del paciente [pacienteId] (HUNI-67). [camaId] llega preelegida
+ * cuando el ingreso empezó tocando una cama libre del mapa.
+ */
 @Serializable
 data class IngresoCamaRuta(
     val pacienteId: String,
+    val camaId: String? = null,
+)
+
+/** Elegir al paciente que se va a ingresar, desde el mapa de camas, conservando la cama tocada. */
+@Serializable
+data class ElegirPacienteCamaRuta(
+    val camaId: String? = null,
 )
 
 /** Traslado de la hospitalización activa del paciente [pacienteId]. */

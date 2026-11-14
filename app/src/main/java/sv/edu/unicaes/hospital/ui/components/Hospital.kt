@@ -404,7 +404,11 @@ fun ChipsFiltro(
     }
 }
 
-/** Chip de opción (`.chip`): "✓" en negrita si está elegido; deshabilitado se ve gris y tachado. */
+/**
+ * Chip de opción (`.chip`): "✓" en negrita si está elegido; deshabilitado se ve gris y tachado.
+ * Con [soporte] (p. ej. la especialidad de un médico) muestra una segunda línea más pequeña y el
+ * alto crece con el contenido en lugar de cortar el texto.
+ */
 @Composable
 fun ChipOpcion(
     texto: String,
@@ -412,22 +416,42 @@ fun ChipOpcion(
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
     habilitada: Boolean = true,
+    soporte: String? = null,
 ) {
+    val estiloTexto =
+        if (habilitada) estiloChip else estiloChip.copy(textDecoration = TextDecoration.LineThrough)
     FilterChip(
         selected = elegida,
         enabled = habilitada,
         onClick = onClick,
         label = {
-            Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+            Row(
+                horizontalArrangement = Arrangement.spacedBy(6.dp),
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
                 if (elegida) Text(text = "✓", style = estiloChip.copy(fontWeight = FontWeight.Bold))
-                Text(
-                    text = texto,
-                    style =
-                        if (habilitada) estiloChip else estiloChip.copy(textDecoration = TextDecoration.LineThrough),
-                )
+                if (soporte == null) {
+                    Text(text = texto, style = estiloTexto)
+                } else {
+                    Column(modifier = Modifier.padding(vertical = 4.dp)) {
+                        Text(
+                            text = texto,
+                            style = estiloTexto.copy(lineHeight = 16.sp),
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis,
+                        )
+                        Text(
+                            text = soporte,
+                            style = TextStyle(fontSize = 12.sp, lineHeight = 14.sp),
+                            color = Texto2,
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis,
+                        )
+                    }
+                }
             }
         },
-        modifier = modifier.height(36.dp),
+        modifier = if (soporte == null) modifier.height(36.dp) else modifier.heightIn(min = 36.dp),
         shape = RoundedCornerShape(8.dp),
         colors = coloresChip(),
         border =
