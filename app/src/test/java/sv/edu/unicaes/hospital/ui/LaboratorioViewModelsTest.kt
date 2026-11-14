@@ -337,7 +337,7 @@ class LaboratorioViewModelsTest {
 
         assertTrue(viewModel.uiState.value.guardado)
         assertEquals(
-            DatosResultado(valor = "13.8", unidad = "g/dL", rangoReferencia = "", observaciones = ""),
+            DatosResultado(valor = "13.8", unidad = "g/dL", rangoReferencia = null, observaciones = ""),
             repo.registrado?.first,
         )
         assertEquals(pdf, repo.registrado?.second)

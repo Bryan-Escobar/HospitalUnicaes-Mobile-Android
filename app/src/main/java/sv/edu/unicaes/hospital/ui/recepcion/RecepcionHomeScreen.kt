@@ -320,7 +320,6 @@ private fun RecepcionNavHost(
                 onCerrar = volver,
                 onValor = viewModel::cambiarValor,
                 onUnidad = viewModel::cambiarUnidad,
-                onRango = viewModel::cambiarRango,
                 onObservaciones = viewModel::cambiarObservaciones,
                 onArchivo = viewModel::adjuntar,
                 onQuitarArchivo = viewModel::quitarArchivo,

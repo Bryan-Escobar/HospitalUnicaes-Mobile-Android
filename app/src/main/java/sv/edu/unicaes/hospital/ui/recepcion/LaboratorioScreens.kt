@@ -469,7 +469,6 @@ fun CargarResultadoScreen(
     onCerrar: () -> Unit,
     onValor: (String) -> Unit,
     onUnidad: (String) -> Unit,
-    onRango: (String) -> Unit,
     onObservaciones: (String) -> Unit,
     onArchivo: (String) -> Unit,
     onQuitarArchivo: () -> Unit,
@@ -519,22 +518,12 @@ fun CargarResultadoScreen(
                     minLines = 3,
                     soloLectura = !editable,
                 )
-                Row(horizontalArrangement = Arrangement.spacedBy(Espacio.sm)) {
-                    CampoTexto(
-                        etiqueta = stringResource(R.string.lab_unidad),
-                        valor = estado.unidad,
-                        onValor = onUnidad,
-                        modifier = Modifier.weight(1f),
-                        soloLectura = !editable,
-                    )
-                    CampoTexto(
-                        etiqueta = stringResource(R.string.lab_rango),
-                        valor = estado.rangoReferencia,
-                        onValor = onRango,
-                        modifier = Modifier.weight(1.4f),
-                        soloLectura = !editable,
-                    )
-                }
+                CampoTexto(
+                    etiqueta = stringResource(R.string.lab_unidad),
+                    valor = estado.unidad,
+                    onValor = onUnidad,
+                    soloLectura = !editable,
+                )
                 CampoTexto(
                     etiqueta = stringResource(R.string.lab_observaciones),
                     valor = estado.observaciones,
@@ -755,7 +744,6 @@ private fun CargarResultadoPreview() {
             onCerrar = {},
             onValor = {},
             onUnidad = {},
-            onRango = {},
             onObservaciones = {},
             onArchivo = {},
             onQuitarArchivo = {},
