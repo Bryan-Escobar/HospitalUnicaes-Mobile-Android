@@ -34,7 +34,6 @@ import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.TextStyle
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
@@ -83,7 +82,6 @@ private fun LoginContent(
     onCorreoChange: (String) -> Unit,
     onContrasenaChange: (String) -> Unit,
     onIngresar: () -> Unit,
-    onOlvideContrasena: () -> Unit = {},
 ) {
     var verContrasena by rememberSaveable { mutableStateOf(false) }
     Surface(color = MaterialTheme.colorScheme.background) {
@@ -144,16 +142,6 @@ private fun LoginContent(
                             )
                         }
                     },
-                )
-                Text(
-                    text = stringResource(R.string.login_olvide),
-                    style = TextStyle(fontSize = 14.sp, lineHeight = 20.sp, fontWeight = FontWeight.Medium),
-                    color = MaterialTheme.colorScheme.primary,
-                    modifier =
-                        Modifier
-                            .align(Alignment.End)
-                            .clickable(role = Role.Button, onClick = onOlvideContrasena)
-                            .padding(vertical = Espacio.sm),
                 )
                 BotonPrimario(
                     texto =

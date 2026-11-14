@@ -71,7 +71,7 @@ private fun Usuario.aPerfilUi(): PerfilUi {
     val rolTexto =
         stringResource(
             when {
-                rol.usaAppRecepcion -> R.string.rol_recepcion
+                rol == Rol.RECEPCIONISTA -> R.string.rol_recepcion
                 rol == Rol.DOCTOR -> R.string.rol_doctor
                 rol == Rol.ADMINISTRADOR -> R.string.rol_administrador
                 else -> R.string.rol_paciente

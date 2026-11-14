@@ -35,6 +35,14 @@ sealed interface AppError {
     /** 422: regla de negocio o transición de estado inválida. */
     data object Validacion : AppError
 
+    /**
+     * Regla de la base de datos con mensaje para el usuario (`CITA_DUPLICADA: el doctor ya tiene…`).
+     * [detalle] ya viene sin el código y se muestra tal cual.
+     */
+    data class Rechazada(
+        val detalle: String,
+    ) : AppError
+
     /** 400 VALIDACION: campos rechazados por la API, `campo → mensaje`. */
     data class CamposInvalidos(
         val campos: Map<String, String>,
@@ -88,7 +96,7 @@ fun AppError.mensaje(): Int =
             R.string.error_no_encontrado
         }
 
-        AppError.Validacion, is AppError.CamposInvalidos -> {
+        AppError.Validacion, is AppError.CamposInvalidos, is AppError.Rechazada -> {
             R.string.error_validacion
         }
 

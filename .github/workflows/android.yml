@@ -1,0 +1,91 @@
+name: Android CI
+
+on:
+  push:
+    branches: [development, staging, prod]
+  pull_request:
+    branches: [development, staging, prod]
+  workflow_dispatch:
+
+concurrency:
+  group: android-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+  pull-requests: read
+
+jobs:
+  # Filtro de rutas a nivel de job (no en `on.paths`): si el workflow entero se
+  # salta, un check requerido queda "pending" y bloquea el PR. Un job saltado por
+  # `if` cuenta como exitoso, así los PRs que solo tocan docs se pueden mergear.
+  cambios:
+    name: Detectar cambios
+    runs-on: ubuntu-latest
+    outputs:
+      app: ${{ steps.filtro.outputs.app }}
+    steps:
+      - uses: actions/checkout@v7
+      - uses: dorny/paths-filter@v4
+        id: filtro
+        if: github.event_name != 'workflow_dispatch'
+        with:
+          filters: |
+            app:
+              - 'app/**'
+              - 'gradle/**'
+              - '*.gradle.kts'
+              - 'gradle.properties'
+              - 'gradlew'
+              - '.editorconfig'
+              - '.github/workflows/android.yml'
+
+  build:
+    name: Lint, tests y APK (Android)
+    needs: cambios
+    if: github.event_name == 'workflow_dispatch' || needs.cambios.outputs.app == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v7
+
+      # gradle/gradle-daemon-jvm.properties pide JDK 21.
+      - uses: actions/setup-java@v6
+        with:
+          distribution: temurin
+          java-version: 21
+
+      - uses: gradle/actions/setup-gradle@v6
+
+      # Sin secretos (p. ej. PRs desde forks) las claves quedan vacías: compila,
+      # pero la app de la variante dev se detiene al abrir pidiendo la config.
+      - name: Crear local.properties
+        env:
+          DEV_API_BASE_URL: ${{ vars.DEV_API_BASE_URL }}
+          DEV_SUPABASE_URL: ${{ vars.DEV_SUPABASE_URL }}
+          DEV_SUPABASE_KEY: ${{ secrets.DEV_SUPABASE_KEY }}
+        run: |
+          {
+            echo "dev.apiBaseUrl=$DEV_API_BASE_URL"
+            echo "dev.supabaseUrl=$DEV_SUPABASE_URL"
+            echo "dev.supabaseKey=$DEV_SUPABASE_KEY"
+          } > local.properties
+
+      - name: Lint, ktlint, tests y build debug
+        run: ./gradlew lint ktlintCheck test assembleDebug --console=plain
+
+      - name: Subir APK de debug
+        uses: actions/upload-artifact@v7
+        with:
+          name: hospitalunicaes-dev-debug-apk
+          path: app/build/outputs/apk/dev/debug/*.apk
+          if-no-files-found: error
+          retention-days: 14
+
+      - name: Subir reportes
+        if: failure()
+        uses: actions/upload-artifact@v7
+        with:
+          name: android-reportes
+          path: app/build/reports/
+          retention-days: 7

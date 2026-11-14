@@ -24,10 +24,13 @@ data class TurnoPersonalUi(
     val area: String,
     val horario: String,
     val tipo: String,
+    val id: String = "",
+    val enCurso: Boolean = false,
 )
 
-data class DiaTurnosUi(
-    val dia: String,
+/** Turnos del día de un área (AND-R12). */
+data class AreaTurnosUi(
+    val area: String,
     val turnos: List<TurnoPersonalUi>,
 )
 
@@ -55,6 +58,13 @@ data class AgendaDoctorUi(
     val horario: String,
     val citas: List<CitaUi>,
     val horasLibres: List<String> = emptyList(),
+    val doctorId: String = "",
+)
+
+/** Chip de día: [clave] `2026-10-29` (ver `claveDia`) y [etiqueta] `Jue 29`. */
+data class DiaUi(
+    val clave: String,
+    val etiqueta: String,
 )
 
 data class PacienteUi(
@@ -90,15 +100,6 @@ data class FichaPacienteUi(
     val nacimiento: String? = null,
     val sexo: Sexo? = null,
     val direccion: String? = null,
-)
-
-data class SolicitudCitaUi(
-    val id: String,
-    val paciente: String,
-    val hace: String,
-    val motivo: String,
-    val especialidad: String,
-    val preferencia: String,
 )
 
 data class CamaUi(
@@ -170,7 +171,6 @@ data class OrdenLabUi(
 data class InicioRecepcionUi(
     val turno: TurnoUi,
     val solicitudAmbulancia: SolicitudAmbulanciaUi?,
-    val solicitudesCitas: Int,
     val laboratorioPendiente: Int,
     val ocupacion: List<OcupacionUi>,
     val citasHoyTotal: Int,

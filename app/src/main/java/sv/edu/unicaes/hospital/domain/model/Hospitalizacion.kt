@@ -13,13 +13,3 @@ data class Hospitalizacion(
     val fechaIngreso: String,
     val medicoTratante: String,
 )
-
-/** Cita de un paciente leída de la vista `v_citas` de Supabase (HUNI-51). */
-data class Cita(
-    val id: String,
-    /** Fecha y hora ISO 8601 con zona. */
-    val fechaHora: String,
-    val doctor: String,
-    val motivo: String?,
-    val estado: EstadoCita,
-)

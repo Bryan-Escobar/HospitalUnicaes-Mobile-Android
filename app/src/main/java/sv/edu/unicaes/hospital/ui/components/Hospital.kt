@@ -714,11 +714,14 @@ fun FilaDato(
             modifier = Modifier.fillMaxWidth().padding(vertical = 9.dp),
             horizontalArrangement = Arrangement.spacedBy(Espacio.sm),
         ) {
-            Text(text = etiqueta, style = estilo, color = Texto2, modifier = Modifier.weight(1f))
+            // La etiqueta (corta) conserva su ancho; un valor largo se parte en líneas a la derecha
+            // en vez de aplastar la etiqueta letra por letra.
+            Text(text = etiqueta, style = estilo, color = Texto2)
             Text(
                 text = valor,
                 style = estilo.copy(fontWeight = FontWeight.SemiBold, textAlign = TextAlign.End),
                 color = MaterialTheme.colorScheme.onSurface,
+                modifier = Modifier.weight(1f),
             )
         }
         if (divisor) HorizontalDivider(color = Superficie2)

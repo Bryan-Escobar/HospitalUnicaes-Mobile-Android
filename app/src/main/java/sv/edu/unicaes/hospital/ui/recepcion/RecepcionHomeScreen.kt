@@ -1,5 +1,6 @@
 package sv.edu.unicaes.hospital.ui.recepcion
 
+import androidx.activity.compose.BackHandler
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -17,13 +18,17 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.toRoute
 import sv.edu.unicaes.hospital.R
-import sv.edu.unicaes.hospital.core.UiState
 import sv.edu.unicaes.hospital.ui.components.HomeConPestanas
 import sv.edu.unicaes.hospital.ui.components.Pestana
+import sv.edu.unicaes.hospital.ui.components.SincronizarPestana
 import sv.edu.unicaes.hospital.ui.components.irAPestana
+import sv.edu.unicaes.hospital.ui.doctor.MisTurnosScreen
+import sv.edu.unicaes.hospital.ui.modelo.ConDatos
 import sv.edu.unicaes.hospital.ui.modelo.DatosMuestra
+import sv.edu.unicaes.hospital.ui.modelo.MuestraViewModel
 import sv.edu.unicaes.hospital.ui.perfil.PerfilScreen
 import sv.edu.unicaes.hospital.ui.theme.HospitalUnicaesTheme
+import sv.edu.unicaes.hospital.ui.turnos.MisTurnosViewModel
 
 // Recepcionista · Asistente · Enfermero/a (AND-R1 a AND-R17)
 private val pestanasRecepcion =
@@ -40,6 +45,7 @@ fun RecepcionHomeScreen(onCerrarSesion: () -> Unit) {
     val navController = rememberNavController()
     var seleccionada by rememberSaveable { mutableIntStateOf(0) }
 
+    SincronizarPestana(navController, pestanasRecepcion) { seleccionada = it }
     HomeConPestanas(
         pestanas = pestanasRecepcion,
         seleccionada = seleccionada,
@@ -53,8 +59,8 @@ fun RecepcionHomeScreen(onCerrarSesion: () -> Unit) {
 }
 
 /**
- * Grafo de Recepción (handoff §11.2). Mientras no existan los ViewModels de cada pantalla,
- * los estados salen de [DatosMuestra]; cada pantalla ya recibe su UiState listo para conectarse.
+ * Grafo de Recepción (handoff §11.2). Cada pantalla tiene su ViewModel; los que todavía no
+ * tienen endpoint extienden [MuestraViewModel] y sirven [DatosMuestra].
  */
 @Composable
 private fun RecepcionNavHost(
@@ -66,12 +72,14 @@ private fun RecepcionNavHost(
 
     NavHost(navController = navController, startDestination = InicioRuta, modifier = modifier) {
         composable<InicioRuta> {
+            val viewModel: InicioRecepcionViewModel = hiltViewModel()
+            val estado by viewModel.uiState.collectAsStateWithLifecycle()
             InicioRecepcionScreen(
-                estado = UiState.Exito(DatosMuestra.inicioRecepcion),
+                estado = estado,
                 onAmbulancia = { navController.navigate(AmbulanciaRuta) },
-                onSolicitudesCitas = { navController.navigate(SolicitudesCitasRuta) },
                 onLaboratorio = { navController.navigate(LaboratorioRuta) },
                 onCitas = { navController.irAPestana(CitasRuta) },
+                onReintentar = viewModel::cargar,
             )
         }
         composable<PacientesRuta> { entrada ->
@@ -87,7 +95,7 @@ private fun RecepcionNavHost(
             RegistroPacienteScreen(
                 onCerrar = volver,
                 onGuardado = {
-                    navController.previousBackStackEntry?.savedStateHandle?.set(CLAVE_PACIENTE_GUARDADO, true)
+                    avisarGuardado(navController)
                     volver()
                 },
                 onAbrirFicha = { id ->
@@ -107,61 +115,72 @@ private fun RecepcionNavHost(
                 onIngresar = { navController.navigate(IngresoCamaRuta) },
                 onTrasladar = { navController.navigate(TrasladoRuta) },
                 onAlta = { navController.navigate(AltaRuta) },
-                onAgendar = { navController.navigate(NuevaCitaRuta()) },
+                onAgendar = { navController.navigate(NuevaCitaRuta(pacienteId = id)) },
+                onCita = { navController.navigate(NuevaCitaRuta(citaId = it)) },
                 onReintentar = viewModel::cargar,
             )
         }
-        composable<CitasRuta> {
+        composable<CitasRuta> { entrada ->
+            val viewModel: CitasViewModel = hiltViewModel()
+            RecargarAlVolver(entrada, viewModel::cargar)
             CitasScreen(
-                estado = UiState.Exito(DatosMuestra.agendasDelDia),
-                onNuevaCita = { navController.navigate(NuevaCitaRuta()) },
-                onCita = { navController.navigate(NuevaCitaRuta()) },
+                onNuevaCita = { fecha -> navController.navigate(NuevaCitaRuta(fecha = fecha)) },
+                onCita = { navController.navigate(NuevaCitaRuta(citaId = it.id)) },
+                onHueco = {
+                    navController.navigate(
+                        NuevaCitaRuta(fecha = it.fecha, hora = it.hora, doctorId = it.doctorId),
+                    )
+                },
+                viewModel = viewModel,
             )
         }
-        composable<NuevaCitaRuta> { entrada ->
-            val solicitudId = entrada.toRoute<NuevaCitaRuta>().solicitudId
+        composable<NuevaCitaRuta> {
             NuevaCitaScreen(
                 onCerrar = volver,
-                onGuardar = volver,
-                solicitud = DatosMuestra.solicitudesCitas.firstOrNull { it.id == solicitudId },
-            )
-        }
-        composable<SolicitudesCitasRuta> {
-            SolicitudesCitasScreen(
-                estado = UiState.Exito(DatosMuestra.solicitudesCitas),
-                onVolver = volver,
-                onConvertir = { navController.navigate(NuevaCitaRuta(it.id)) },
+                onTerminado = {
+                    avisarGuardado(navController)
+                    volver()
+                },
             )
         }
         composable<CamasRuta> {
+            val viewModel: MapaCamasViewModel = hiltViewModel()
+            val estado by viewModel.uiState.collectAsStateWithLifecycle()
             MapaCamasScreen(
-                estado = UiState.Exito(DatosMuestra.planta2 + DatosMuestra.planta3),
+                estado = estado,
                 onIngreso = { navController.navigate(IngresoCamaRuta) },
                 onVerFicha = { navController.navigate(FichaPacienteRuta("p-1")) },
                 onTrasladar = { navController.navigate(TrasladoRuta) },
                 onAlta = { navController.navigate(AltaRuta) },
+                onReintentar = viewModel::cargar,
             )
         }
         composable<IngresoCamaRuta> {
-            IngresoCamaScreen(
-                paciente = DatosMuestra.pacienteIngreso,
-                habitaciones = DatosMuestra.planta2 + DatosMuestra.planta3,
-                onVolver = volver,
-                onCambiarPaciente = { navController.irAPestana(PacientesRuta) },
-                onConfirmar = { volver() },
-            )
+            ConDatos(hiltViewModel<IngresoCamaViewModel>()) { ingreso ->
+                IngresoCamaScreen(
+                    paciente = ingreso.paciente,
+                    habitaciones = ingreso.habitaciones,
+                    onVolver = volver,
+                    onCambiarPaciente = { navController.irAPestana(PacientesRuta) },
+                    onConfirmar = { volver() },
+                )
+            }
         }
         composable<TrasladoRuta> {
-            TrasladoScreen(
-                paciente = DatosMuestra.fichaLuis.paciente.nombre,
-                asignacion = DatosMuestra.asignacionLuis,
-                habitaciones = DatosMuestra.planta2 + DatosMuestra.planta3,
-                onVolver = volver,
-                onConfirmar = { volver() },
-            )
+            ConDatos(hiltViewModel<TrasladoViewModel>()) { traslado ->
+                TrasladoScreen(
+                    paciente = traslado.paciente,
+                    asignacion = traslado.asignacion,
+                    habitaciones = traslado.habitaciones,
+                    onVolver = volver,
+                    onConfirmar = { volver() },
+                )
+            }
         }
         composable<AltaRuta> {
-            AltaScreen(ficha = DatosMuestra.fichaLuis, onVolver = volver, onDarAlta = volver)
+            ConDatos(hiltViewModel<AltaViewModel>()) { ficha ->
+                AltaScreen(ficha = ficha, onVolver = volver, onDarAlta = volver)
+            }
         }
         composable<MasRuta> {
             MasScreen(
@@ -171,49 +190,99 @@ private fun RecepcionNavHost(
                 onPerfil = { navController.navigate(PerfilRecepcionRuta) },
             )
         }
-        composable<LaboratorioRuta> {
+        // Laboratorio (HUNI-63): la cola se recarga al volver si el detalle cambió algo; además
+        // escucha Supabase Realtime para ver los cambios hechos desde otros dispositivos.
+        composable<LaboratorioRuta> { entrada ->
+            val viewModel: ColaLaboratorioViewModel = hiltViewModel()
+            RecargarAlVolver(entrada, viewModel::refrescar)
+            val estado by viewModel.uiState.collectAsStateWithLifecycle()
             ColaLaboratorioScreen(
-                estado = UiState.Exito(DatosMuestra.colaLaboratorio),
-                conteos = DatosMuestra.conteoLaboratorio,
+                estado = estado,
                 onVolver = volver,
+                onFiltro = viewModel::elegirFiltro,
                 onOrden = { navController.navigate(DetalleOrdenRuta(it.id)) },
+                onRefrescar = viewModel::refrescar,
+                onReintentar = viewModel::cargar,
+                onCargarMas = viewModel::cargarMas,
             )
         }
         composable<DetalleOrdenRuta> { entrada ->
-            val id = entrada.toRoute<DetalleOrdenRuta>().ordenId
-            val orden =
-                DatosMuestra.colaLaboratorio
-                    .firstOrNull { it.id == id }
-                    ?.let { if (it.numero == DatosMuestra.ordenOrina.numero) DatosMuestra.ordenOrina else it }
-                    ?: DatosMuestra.ordenOrina
+            val ordenId = entrada.toRoute<DetalleOrdenRuta>().ordenId
+            val viewModel: DetalleOrdenViewModel = hiltViewModel()
+            RecargarAlVolver(entrada, viewModel::alVolverConCambios)
+            val estado by viewModel.uiState.collectAsStateWithLifecycle()
+            val alSalir = {
+                if (estado.huboCambios) avisarGuardado(navController)
+                volver()
+            }
+            BackHandler(onBack = alSalir)
             DetalleOrdenScreen(
-                estado = UiState.Exito(orden),
-                onVolver = volver,
-                onPasarAEnProceso = volver,
-                onCargarResultado = { navController.navigate(CargarResultadoRuta) },
-                onCompletar = volver,
+                estado = estado,
+                onVolver = alSalir,
+                onIniciarExamen = viewModel::iniciarExamen,
+                onCargarResultado = { navController.navigate(CargarResultadoRuta(ordenId, it)) },
+                onDescartarError = viewModel::descartarError,
+                onReintentar = viewModel::cargar,
             )
         }
         composable<CargarResultadoRuta> {
-            CargarResultadoScreen(orden = DatosMuestra.ordenOrina, onCerrar = volver, onGuardar = volver)
+            val viewModel: CargarResultadoViewModel = hiltViewModel()
+            val estado by viewModel.uiState.collectAsStateWithLifecycle()
+            LaunchedEffect(estado.guardado) {
+                if (estado.guardado) {
+                    avisarGuardado(navController)
+                    volver()
+                }
+            }
+            CargarResultadoScreen(
+                estado = estado,
+                onCerrar = volver,
+                onValor = viewModel::cambiarValor,
+                onUnidad = viewModel::cambiarUnidad,
+                onRango = viewModel::cambiarRango,
+                onObservaciones = viewModel::cambiarObservaciones,
+                onArchivo = viewModel::adjuntar,
+                onQuitarArchivo = viewModel::quitarArchivo,
+                onGuardar = viewModel::guardar,
+                onReintentar = viewModel::cargar,
+            )
         }
         composable<AmbulanciaRuta> {
+            val viewModel: AmbulanciaViewModel = hiltViewModel()
+            val estado by viewModel.uiState.collectAsStateWithLifecycle()
             AmbulanciaScreen(
-                estado = UiState.Exito(DatosMuestra.ambulancia),
+                estado = estado,
                 onVolver = volver,
                 onDespachar = {},
                 onBitacora = { navController.navigate(BitacoraRuta) },
+                onReintentar = viewModel::cargar,
             )
         }
         composable<BitacoraRuta> {
+            val viewModel: BitacoraViewModel = hiltViewModel()
+            val estado by viewModel.uiState.collectAsStateWithLifecycle()
             BitacoraScreen(
-                estado = UiState.Exito(DatosMuestra.bitacora),
-                detalle = DatosMuestra.detalleServicio,
+                estado = estado,
+                detalle = viewModel.detalle,
                 onVolver = volver,
+                onReintentar = viewModel::cargar,
             )
         }
+        // Turnos (HUNI-53): recepción registra y ajusta; "Mis turnos" son los propios de la semana.
         composable<TurnosPersonalRuta> {
-            TurnosPersonalScreen(estado = UiState.Exito(DatosMuestra.turnosPersonal), onVolver = volver)
+            val viewModel: TurnosPersonalViewModel = hiltViewModel()
+            val estado by viewModel.uiState.collectAsStateWithLifecycle()
+            TurnosPersonalScreen(
+                estado = estado,
+                onVolver = volver,
+                onMisTurnos = { navController.navigate(MisTurnosRecepcionRuta) },
+                acciones = viewModel,
+            )
+        }
+        composable<MisTurnosRecepcionRuta> {
+            val viewModel: MisTurnosViewModel = hiltViewModel()
+            val estado by viewModel.uiState.collectAsStateWithLifecycle()
+            MisTurnosScreen(estado = estado, onReintentar = viewModel::cargar, onVolver = volver)
         }
         composable<PerfilRecepcionRuta> {
             PerfilScreen(onCerrarSesion = onCerrarSesion, onVolver = volver)
@@ -227,8 +296,12 @@ private fun RecepcionHomePreview() {
     HospitalUnicaesTheme { RecepcionHomeScreen(onCerrarSesion = {}) }
 }
 
-/** Clave del savedStateHandle con la que el formulario avisa a la pantalla anterior que guardó. */
-private const val CLAVE_PACIENTE_GUARDADO = "paciente_guardado"
+/** Clave del savedStateHandle con la que un formulario avisa a la pantalla anterior que guardó. */
+private const val CLAVE_GUARDADO = "formulario_guardado"
+
+private fun avisarGuardado(navController: NavHostController) {
+    navController.previousBackStackEntry?.savedStateHandle?.set(CLAVE_GUARDADO, true)
+}
 
 /** Vuelve a cargar la pantalla cuando el formulario que se abrió desde ella guardó cambios. */
 @Composable
@@ -237,11 +310,11 @@ private fun RecargarAlVolver(
     recargar: () -> Unit,
 ) {
     val guardado by entrada.savedStateHandle
-        .getStateFlow(CLAVE_PACIENTE_GUARDADO, false)
+        .getStateFlow(CLAVE_GUARDADO, false)
         .collectAsStateWithLifecycle()
     LaunchedEffect(guardado) {
         if (guardado) {
-            entrada.savedStateHandle[CLAVE_PACIENTE_GUARDADO] = false
+            entrada.savedStateHandle[CLAVE_GUARDADO] = false
             recargar()
         }
     }

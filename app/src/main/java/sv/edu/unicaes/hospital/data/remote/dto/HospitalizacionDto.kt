@@ -2,8 +2,6 @@ package sv.edu.unicaes.hospital.data.remote.dto
 
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
-import sv.edu.unicaes.hospital.domain.model.Cita
-import sv.edu.unicaes.hospital.domain.model.EstadoCita
 import sv.edu.unicaes.hospital.domain.model.Hospitalizacion
 import sv.edu.unicaes.hospital.domain.model.TipoHabitacion
 
@@ -31,23 +29,6 @@ data class HabitacionDto(
     val tipo: String,
 )
 
-@Serializable
-data class PersonaResumenDto(
-    val nombres: String,
-    val apellidos: String,
-)
-
-/** Fila de la vista `v_citas` de Supabase (citas con los nombres del paciente y del doctor). */
-@Serializable
-data class CitaDto(
-    val id: String,
-    @SerialName("doctor_nombres") val doctorNombres: String,
-    @SerialName("doctor_apellidos") val doctorApellidos: String,
-    @SerialName("fecha_hora") val fechaHora: String,
-    val motivo: String? = null,
-    val estado: String,
-)
-
 fun HospitalizacionDto.aDominio(): Hospitalizacion =
     Hospitalizacion(
         id = id,
@@ -57,13 +38,4 @@ fun HospitalizacionDto.aDominio(): Hospitalizacion =
         planta = cama.habitacion.planta,
         fechaIngreso = fechaIngreso,
         medicoTratante = "${doctorTratante.nombres} ${doctorTratante.apellidos}".trim(),
-    )
-
-fun CitaDto.aDominio(): Cita =
-    Cita(
-        id = id,
-        fechaHora = fechaHora,
-        doctor = "$doctorNombres $doctorApellidos".trim(),
-        motivo = motivo,
-        estado = EstadoCita.desdeApi(estado),
     )

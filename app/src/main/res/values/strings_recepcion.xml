@@ -4,9 +4,6 @@
     <string name="inicio_bandeja">Bandeja</string>
     <string name="inicio_solicitud_ambulancia">Solicitud de ambulancia</string>
     <string name="inicio_una_nueva">1 nueva</string>
-    <string name="inicio_solicitudes_citas">Solicitudes de citas</string>
-    <string name="inicio_desde_ios">Desde la app iOS</string>
-    <string name="inicio_nuevas">%1$d nuevas</string>
     <string name="inicio_ordenes_por_atender">Órdenes por atender</string>
     <string name="inicio_ocupacion">Ocupación por planta</string>
     <string name="inicio_citas_hoy">Citas de hoy · %1$d</string>
@@ -38,6 +35,8 @@
     <string name="ficha_sin_citas_titulo">Sin citas registradas</string>
     <string name="ficha_sin_citas_detalle">Agenda la primera cita del paciente.</string>
     <string name="ficha_agendar">Agendar cita</string>
+    <string name="ficha_agendar_otra">Agendar otra cita</string>
+    <string name="ficha_cita_editable">%1$s · Toca para reprogramar o cancelar</string>
     <string name="ficha_nota_privacidad">El expediente clínico solo lo ven el médico tratante, el paciente y la administración.</string>
     <string name="ficha_error">No se pudo cargar la ficha.</string>
 
@@ -45,7 +44,6 @@
     <string name="citas_nueva">Nueva cita</string>
     <string name="citas_reprogramar">Reprogramar cita</string>
     <string name="citas_filtro_doctor">Doctor: Todos</string>
-    <string name="citas_filtro_especialidad">Especialidad</string>
     <string name="citas_filtro_estado">Estado</string>
     <string name="citas_libre">Libre</string>
     <string name="citas_hueco_disponible">Hueco disponible</string>
@@ -54,25 +52,24 @@
     <string name="citas_vacio_detalle">Ningún doctor de turno tiene citas.</string>
     <string name="citas_error">No se pudo cargar la agenda.</string>
     <string name="citas_ayuda_doctor">Solo doctores con turno en esa fecha y hora.</string>
-    <string name="citas_hora_ocupada">%1$s ocupada</string>
-    <string name="citas_error_choque">No se puede agendar: la Dra. Rivas ya tiene una cita a las 10:30. Elige otra hora.</string>
     <string name="citas_guardar">Guardar cita</string>
     <string name="citas_cancelar_cita">Cancelar cita</string>
     <string name="citas_cancelar_titulo">¿Cancelar esta cita?</string>
     <string name="citas_cancelar_texto">El paciente verá la cita como Cancelada en su app.</string>
-    <string name="citas_desde_solicitud">Convirtiendo la solicitud de %1$s.</string>
-    <string name="solicitudes_nuevas">Nuevas (%1$d)</string>
-    <string name="solicitudes_convertidas">Convertidas</string>
-    <string name="solicitudes_rechazadas">Rechazadas</string>
+    <string name="citas_buscar_paciente">Buscar por nombre o documento</string>
+    <string name="citas_buscar_minimo">Escribe al menos 2 letras para buscar.</string>
+    <string name="citas_sin_pacientes">No se encontró ningún paciente.</string>
+    <string name="citas_cargando_horarios">Buscando horarios libres…</string>
+    <string name="citas_sin_horarios">Ningún doctor tiene horarios libres ese día.</string>
+    <string name="citas_elige_hora">Elige una hora para ver los doctores de turno.</string>
+    <string name="citas_cargando_doctores">Buscando doctores de turno…</string>
+    <string name="citas_sin_doctores">No hay doctores de turno libres a esa hora. Elige otra.</string>
+    <string name="citas_motivo_fijo">Para cambiar el motivo, cancela y agenda una cita nueva.</string>
+    <string name="citas_error_carga">No se pudo cargar la cita.</string>
+    <string name="citas_sin_turno">Sin turno</string>
+    <string name="citas_hora_con_cita">%1$s · ya tiene cita</string>
+    <string name="citas_ayuda_hora_con_cita">Las horas bloqueadas se cruzan con otra cita del paciente.</string>
     <string name="solicitudes_rechazada">Rechazada</string>
-    <string name="solicitudes_motivo">Motivo: %1$s</string>
-    <string name="solicitudes_convertir">Convertir en cita</string>
-    <string name="solicitudes_rechazar_titulo">Rechazar solicitud</string>
-    <string name="solicitudes_motivo_rechazo">Motivo del rechazo *</string>
-    <string name="solicitudes_motivo_ayuda">El paciente verá este motivo en su app.</string>
-    <string name="solicitudes_vacio_titulo">No hay solicitudes nuevas</string>
-    <string name="solicitudes_vacio_detalle">Las solicitudes desde iOS llegarán aquí.</string>
-    <string name="solicitudes_error">No se pudieron cargar las solicitudes.</string>
 
     <!-- AND-R8 a R11 · Camas -->
     <string name="camas_tab_planta2">Planta 2 · %1$d/%2$d</string>
@@ -124,13 +121,25 @@
     <string name="alta_dialogo_texto">La cama %1$s quedará Libre para todo el hospital al instante.</string>
 
     <!-- AND-R12 · Turnos del personal -->
-    <string name="turnos_semana">19 – 25 oct</string>
     <string name="turnos_ir_semana_anterior">Semana anterior</string>
     <string name="turnos_ir_semana_siguiente">Semana siguiente</string>
-    <string name="turnos_area_todas">Área: Todas</string>
-    <string name="turnos_solapa">Se solapa con su turno de 14:00–22:00 del mismo día. Ajusta el horario.</string>
-    <string name="turnos_vacio_titulo">Sin turnos esta semana</string>
+    <string name="turnos_vacio_titulo">Sin turnos este día</string>
     <string name="turnos_vacio_detalle">Registra el primer turno.</string>
+    <string name="turnos_tipo_todos">Todos</string>
+    <string name="turnos_ajustar">Ajustar turno</string>
+    <string name="turnos_area_ejemplo">Consulta externa, Emergencia…</string>
+    <string name="turnos_tipo_turno">Tipo de turno</string>
+    <string name="turnos_termina_dia_siguiente">El turno termina al día siguiente.</string>
+    <string name="turnos_notas">Notas (opcional)</string>
+    <string name="turnos_guardando">Guardando…</string>
+    <string name="turnos_cargando_personal">Cargando personal…</string>
+    <string name="turnos_elige_persona">Elige a quién asignar</string>
+    <string name="turnos_error_personal">No se pudo cargar el personal.</string>
+    <string name="turnos_hora_invalida">Usa HH:mm, distinta del inicio</string>
+    <string name="turno_tipo_manana">Mañana</string>
+    <string name="turno_tipo_tarde">Tarde</string>
+    <string name="turno_tipo_noche">Noche</string>
+    <string name="turno_tipo_guardia">Guardia</string>
 
     <!-- AND-R13 y R14 · Ambulancia -->
     <string name="ambulancia_unidad">Unidad única del hospital</string>
@@ -166,35 +175,52 @@
     <string name="bitacora_vacio_detalle">Cambia el filtro de fechas.</string>
     <string name="bitacora_error">No se pudo cargar la bitácora.</string>
 
-    <!-- AND-R15 a R17 · Laboratorio -->
-    <string name="lab_filtro_hoy">Hoy</string>
-    <string name="lab_vacio_titulo">Sin órdenes Pendientes</string>
+    <!-- AND-R15 a R17 · Laboratorio (HUNI-63) -->
     <string name="lab_vacio_estado">Sin órdenes en %1$s</string>
     <string name="lab_vacio_detalle">Las nuevas órdenes de los doctores aparecerán aquí.</string>
     <string name="lab_error_cola">No se pudo cargar la cola.</string>
-    <string name="lab_orden">Orden</string>
-    <string name="lab_orden_numero">Orden #%1$d</string>
+    <string name="lab_cargar_mas">Cargar más órdenes</string>
+    <string name="lab_prioridad_urgente">Urgente</string>
+    <string name="lab_prioridad_critica">Crítica</string>
+    <string name="lab_orden">Orden de laboratorio</string>
     <string name="lab_paciente">Paciente</string>
     <string name="lab_ordeno">Ordenó</string>
+    <string name="lab_solicitada">Solicitada</string>
+    <string name="lab_prioridad">Prioridad</string>
+    <string name="lab_prioridad_normal">Normal</string>
     <string name="lab_indicaciones">Indicaciones</string>
-    <string name="lab_por_ti">%1$s · por ti</string>
+    <string name="lab_examenes">Exámenes</string>
+    <string name="lab_muestra">Muestra: %1$s</string>
     <string name="lab_aun_no">Aún no</string>
     <string name="lab_requiere_resultado">Requiere resultado</string>
     <string name="lab_pasar_en_proceso">Pasar a En Proceso</string>
+    <string name="lab_pasando_en_proceso">Pasando a En Proceso…</string>
     <string name="lab_confirmar_en_proceso_titulo">¿Pasar a En Proceso?</string>
-    <string name="lab_confirmar_en_proceso_texto">El estado solo avanza hacia adelante; no se puede regresar a Pendiente.</string>
+    <string name="lab_confirmar_en_proceso_texto">%1$s pasará a En Proceso. El estado solo avanza hacia adelante; no se puede regresar a Pendiente.</string>
     <string name="lab_cargar_resultado">Cargar resultado</string>
-    <string name="lab_marcar_completado">Marcar como Completado</string>
-    <string name="lab_marcar_completado_falta">Marcar como Completado (falta resultado)</string>
-    <string name="lab_falta_resultado">Falta el resultado. Carga texto o PDF antes de marcar Completado.</string>
     <string name="lab_error_orden">No se pudo cargar la orden.</string>
     <string name="lab_resultado">Resultado</string>
-    <string name="lab_resultado_texto">Resultado (texto) *</string>
-    <string name="lab_archivo_pdf">Archivo PDF</string>
-    <string name="lab_subiendo">310 KB · subiendo %1$d %%</string>
+    <string name="lab_resultado_rango">Referencia: %1$s</string>
+    <string name="lab_resultado_registro">Registró %1$s · %2$s</string>
+    <string name="lab_adjunto_pdf">PDF adjunto</string>
+    <string name="lab_adjunto_imagen">Imagen adjunta</string>
+    <string name="lab_adjunto_privado">El archivo solo lo descargan el médico tratante, el paciente y administración.</string>
+    <string name="lab_resultado_texto">Resultado</string>
+    <string name="lab_resultado_ayuda">Escribe el resultado, adjunta un archivo o ambos.</string>
+    <string name="lab_unidad">Unidad</string>
+    <string name="lab_rango">Rango de referencia</string>
+    <string name="lab_observaciones">Observaciones</string>
+    <string name="lab_archivo">Archivo (PDF o imagen, máx. 10 MB)</string>
+    <string name="lab_elegir_imagen">Elegir imagen</string>
+    <string name="lab_elegir_pdf">Elegir PDF</string>
     <string name="lab_quitar_archivo">Quitar archivo</string>
-    <string name="lab_adjuntar_otro">Adjuntar otro PDF</string>
+    <string name="lab_archivo_tipo">Solo se aceptan PDF o imágenes JPG, PNG o WebP.</string>
+    <string name="lab_archivo_tamano">El archivo supera el máximo de 10 MB.</string>
+    <string name="lab_archivo_ilegible">No se pudo leer el archivo elegido.</string>
+    <string name="lab_examen_no_en_proceso">Este examen ya no está En Proceso (otro usuario pudo avanzarlo). Vuelve a la orden para ver su estado.</string>
     <string name="lab_guardar_completar">Guardar y marcar Completado</string>
+    <string name="lab_guardando">Guardando resultado…</string>
+    <string name="lab_error_guardar">No se pudo guardar el resultado.</string>
 
     <!-- Más -->
     <string name="mas_laboratorio">Laboratorio</string>

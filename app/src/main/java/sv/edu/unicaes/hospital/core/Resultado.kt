@@ -39,7 +39,7 @@ suspend fun <T> safeSupabaseCall(llamada: suspend () -> T): Resultado<T> =
     } catch (e: CancellationException) {
         throw e
     } catch (e: RestException) {
-        Resultado.Fallo(errorDesdeCodigo(e.statusCode))
+        Resultado.Fallo(rechazoDesdeMensaje(e.error) ?: errorDesdeCodigo(e.statusCode))
     } catch (e: HttpRequestException) {
         Resultado.Fallo(AppError.SinConexion)
     } catch (e: Exception) {
@@ -50,6 +50,7 @@ suspend fun <T> safeSupabaseCall(llamada: suspend () -> T): Resultado<T> =
 @Serializable
 private data class CuerpoError(
     val code: String? = null,
+    val message: String? = null,
     val errors: List<ErrorCampo> = emptyList(),
 )
 
@@ -77,8 +78,33 @@ private fun errorDesdeRespuesta(e: HttpException): AppError {
         "PERFIL_INCOMPLETO" -> AppError.PerfilIncompleto
         "REGISTRO_DUPLICADO" -> AppError.Duplicado
         "VALIDACION" -> AppError.CamposInvalidos(cuerpo.errors.associate { it.field to it.message })
-        else -> errorDesdeCodigo(e.code())
-    }
+        in CODIGOS_CON_MENSAJE -> cuerpo?.message?.takeIf { it.isNotBlank() }?.let(AppError::Rechazada)
+        else -> null
+    } ?: errorDesdeCodigo(e.code())
+}
+
+/**
+ * Códigos de la API cuyo `message` ya está redactado para el usuario (p. ej. "Otro usuario ya inició
+ * este examen; actualiza la orden"): se muestran tal cual como [AppError.Rechazada].
+ */
+private val CODIGOS_CON_MENSAJE = setOf("TRANSICION_INVALIDA", "RESULTADO_REQUERIDO", "SOLICITUD_INVALIDA")
+
+/** Códigos con los que las funciones y triggers de Supabase anteponen un mensaje legible. */
+private val CODIGOS_RECHAZO =
+    setOf(
+        "CITA_DUPLICADA",
+        "CITA_FUERA_DE_TURNO",
+        "REGLA_DE_NEGOCIO",
+        "TRANSICION_INVALIDA",
+        "TURNO_SOLAPADO",
+    )
+
+/** `CITA_DUPLICADA: el doctor ya tiene una cita…` → [AppError.Rechazada] con el texto después del código. */
+fun rechazoDesdeMensaje(mensaje: String): AppError.Rechazada? {
+    val codigo = mensaje.substringBefore(':', missingDelimiterValue = "").trim()
+    if (codigo !in CODIGOS_RECHAZO) return null
+    val detalle = mensaje.substringAfter(':').trim()
+    return detalle.takeIf { it.isNotEmpty() }?.let { AppError.Rechazada(it.replaceFirstChar(Char::uppercase)) }
 }
 
 fun errorDesdeCodigo(codigo: Int): AppError =
