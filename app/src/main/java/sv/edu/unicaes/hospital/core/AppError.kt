@@ -66,6 +66,9 @@ sealed interface AppError {
  */
 val CODIGOS_CAMA_PERDIDA = setOf("CAMA_OCUPADA", "CAMA_NO_DISPONIBLE")
 
+/** 409 al despachar: otro usuario ganó la ambulancia, o está en mantenimiento. */
+const val CODIGO_AMBULANCIA_NO_DISPONIBLE = "AMBULANCIA_NO_DISPONIBLE"
+
 @StringRes
 fun AppError.mensaje(): Int =
     when (this) {

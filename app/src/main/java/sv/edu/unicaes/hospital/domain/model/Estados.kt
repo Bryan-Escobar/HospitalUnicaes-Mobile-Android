@@ -20,14 +20,24 @@ enum class EstadoLaboratorio(
 }
 
 /** Estados de la única ambulancia del hospital (context.md §3.5). */
-enum class EstadoAmbulancia {
-    DISPONIBLE,
-    EN_SERVICIO,
-    EN_MANTENIMIENTO,
+enum class EstadoAmbulancia(
+    val valorApi: String,
+) {
+    DISPONIBLE("disponible"),
+    EN_SERVICIO("en_servicio"),
+    EN_MANTENIMIENTO("en_mantenimiento"),
     ;
 
     /** Solo se despacha si está Disponible. */
     val puedeDespachar: Boolean get() = this == DISPONIBLE
+
+    companion object {
+        /**
+         * Valor de `ambulancias.estado`. Uno desconocido se trata como en mantenimiento: así nunca se
+         * ofrece el despacho si la API manda un estado que esta versión no entiende.
+         */
+        fun desdeApi(valor: String): EstadoAmbulancia = entries.firstOrNull { it.valorApi == valor } ?: EN_MANTENIMIENTO
+    }
 }
 
 enum class EstadoCita(

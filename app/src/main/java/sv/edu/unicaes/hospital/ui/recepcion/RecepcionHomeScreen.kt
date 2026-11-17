@@ -329,23 +329,37 @@ private fun RecepcionNavHost(
         }
         composable<AmbulanciaRuta> {
             val viewModel: AmbulanciaViewModel = hiltViewModel()
-            val estado by viewModel.uiState.collectAsStateWithLifecycle()
+            val ui by viewModel.uiState.collectAsStateWithLifecycle()
             AmbulanciaScreen(
-                estado = estado,
+                estado = ui.ambulancia,
                 onVolver = volver,
-                onDespachar = {},
+                onDespachar = viewModel::despachar,
+                onRechazar = viewModel::rechazar,
+                onCerrarServicio = viewModel::cerrar,
                 onBitacora = { navController.navigate(BitacoraRuta) },
                 onReintentar = viewModel::cargar,
+                conflicto = ui.conflicto,
+                error = ui.error,
+                enviando = ui.enviando,
             )
         }
         composable<BitacoraRuta> {
             val viewModel: BitacoraViewModel = hiltViewModel()
-            val estado by viewModel.uiState.collectAsStateWithLifecycle()
+            val ui by viewModel.uiState.collectAsStateWithLifecycle()
             BitacoraScreen(
-                estado = estado,
-                detalle = viewModel.detalle,
+                estado = ui.servicios,
+                detalle = ui.detalle,
                 onVolver = volver,
                 onReintentar = viewModel::cargar,
+                rango = ui.rango,
+                filtroEstado = ui.filtroEstado,
+                filtroTipo = ui.filtroTipo,
+                seleccionado = ui.seleccionado,
+                onRango = viewModel::elegirRango,
+                onFiltroEstado = viewModel::elegirEstado,
+                onFiltroTipo = viewModel::elegirTipo,
+                onSeleccionar = viewModel::seleccionar,
+                onQuitarFiltros = viewModel::quitarFiltros,
             )
         }
         // Turnos (HUNI-53): recepción registra y ajusta; "Mis turnos" son los propios de la semana.

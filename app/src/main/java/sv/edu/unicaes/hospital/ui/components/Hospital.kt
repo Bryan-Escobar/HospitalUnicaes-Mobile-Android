@@ -873,9 +873,11 @@ fun BotonPeligro(
     modifier: Modifier = Modifier,
     @DrawableRes icono: Int? = null,
     alto: Dp = 48.dp,
+    habilitado: Boolean = true,
 ) {
     Button(
         onClick = onClick,
+        enabled = habilitado,
         modifier = modifier.height(alto),
         shape = CircleShape,
         colors = ButtonDefaults.buttonColors(containerColor = Error, contentColor = Superficie),

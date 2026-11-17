@@ -6,6 +6,8 @@ import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
 import sv.edu.unicaes.hospital.data.local.ArchivosLocales
 import sv.edu.unicaes.hospital.data.local.ArchivosLocalesImpl
+import sv.edu.unicaes.hospital.data.repository.AmbulanciaRepository
+import sv.edu.unicaes.hospital.data.repository.AmbulanciaRepositoryImpl
 import sv.edu.unicaes.hospital.data.repository.AuthRepository
 import sv.edu.unicaes.hospital.data.repository.AuthRepositoryImpl
 import sv.edu.unicaes.hospital.data.repository.CamasRepository
@@ -52,6 +54,10 @@ abstract class RepositoryModule {
     @Binds
     @Singleton
     abstract fun bindLaboratorioRepository(impl: LaboratorioRepositoryImpl): LaboratorioRepository
+
+    @Binds
+    @Singleton
+    abstract fun bindAmbulanciaRepository(impl: AmbulanciaRepositoryImpl): AmbulanciaRepository
 
     @Binds
     @Singleton

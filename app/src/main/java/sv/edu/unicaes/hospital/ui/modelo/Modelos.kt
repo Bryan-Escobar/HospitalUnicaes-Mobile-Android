@@ -161,7 +161,12 @@ data class DetalleServicioUi(
     val fecha: String,
     val despacho: String,
     val destino: String,
-    val kilometraje: Int,
+    val observaciones: String,
+)
+
+/** Lo que recepción escribe al cerrar. Destino va en su campo; observaciones, en `descripcion`. */
+data class CierreServicioUi(
+    val destino: String,
     val observaciones: String,
 )
 

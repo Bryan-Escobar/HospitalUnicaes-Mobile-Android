@@ -237,7 +237,6 @@ object DatosMuestra {
             fecha = "21 oct",
             despacho = "Recepción (Karla)",
             destino = "Emergencias HUC",
-            kilometraje = 12,
             observaciones = "paciente estable al llegar.",
         )
 
