@@ -24,7 +24,8 @@ import sv.edu.unicaes.hospital.ui.modelo.claveDia
 import sv.edu.unicaes.hospital.ui.modelo.etiquetaClave
 import sv.edu.unicaes.hospital.ui.modelo.etiquetaSemana
 import sv.edu.unicaes.hospital.ui.modelo.etiquetaTipoPersonal
-import sv.edu.unicaes.hospital.ui.modelo.horaValida
+import sv.edu.unicaes.hospital.ui.modelo.hora12
+import sv.edu.unicaes.hospital.ui.modelo.hora24Desde12
 import sv.edu.unicaes.hospital.ui.modelo.horarioSugerido
 import sv.edu.unicaes.hospital.ui.modelo.semanaDe
 import java.util.Date
@@ -36,8 +37,9 @@ data class HojaTurnoUiState(
     val turnoId: String? = null,
     val personalId: String? = null,
     val area: String = "",
-    val inicio: String = horarioSugerido(TipoTurno.MANANA).first,
-    val fin: String = horarioSugerido(TipoTurno.MANANA).second,
+    /** Lo que se ve en el campo, en 12 horas (`7:00 a. m.`); [inicio24] y [fin24] son lo que va a la API. */
+    val inicio: String = hora12(horarioSugerido(TipoTurno.MANANA).first),
+    val fin: String = hora12(horarioSugerido(TipoTurno.MANANA).second),
     val tipoTurno: TipoTurno = TipoTurno.MANANA,
     val notas: String = "",
     val guardando: Boolean = false,
@@ -46,9 +48,22 @@ data class HojaTurnoUiState(
 ) {
     val ajustando: Boolean get() = turnoId != null
 
-    val inicioValido: Boolean get() = horaValida(inicio)
+    /** `HH:mm` de [inicio], o null si no es una hora de 12 horas válida. */
+    val inicio24: String? get() = hora24Desde12(inicio)
 
-    val finValido: Boolean get() = horaValida(fin) && fin != inicio
+    val fin24: String? get() = hora24Desde12(fin)
+
+    val inicioValido: Boolean get() = inicio24 != null
+
+    val finValido: Boolean get() = fin24 != null && fin24 != inicio24
+
+    /** El turno termina al día siguiente (p. ej. `7:00 p. m.` a `7:00 a. m.`). */
+    val terminaDiaSiguiente: Boolean
+        get() {
+            val desde = inicio24 ?: return false
+            val hasta = fin24 ?: return false
+            return hasta < desde
+        }
 
     val puedeGuardar: Boolean
         get() = personalId != null && area.isNotBlank() && inicioValido && finValido && !guardando
@@ -181,8 +196,8 @@ class TurnosPersonalViewModel
                             turnoId = turno.id,
                             personalId = turno.personalId,
                             area = turno.area,
-                            inicio = turno.horaInicio,
-                            fin = turno.horaFin,
+                            inicio = hora12(turno.horaInicio),
+                            fin = hora12(turno.horaFin),
                             tipoTurno = turno.tipoTurno,
                             notas = turno.notas.orEmpty(),
                         ),
@@ -233,7 +248,7 @@ class TurnosPersonalViewModel
                     hoja.copy(tipoTurno = tipo)
                 } else {
                     val (inicio, fin) = horarioSugerido(tipo)
-                    hoja.copy(tipoTurno = tipo, inicio = inicio, fin = fin)
+                    hoja.copy(tipoTurno = tipo, inicio = hora12(inicio), fin = hora12(fin))
                 }
             }
 
@@ -241,13 +256,15 @@ class TurnosPersonalViewModel
             val hoja = _uiState.value.hoja ?: return
             if (!hoja.puedeGuardar) return
             val personalId = hoja.personalId ?: return
+            val horaInicio = hoja.inicio24 ?: return
+            val horaFin = hoja.fin24 ?: return
             val datos =
                 DatosTurno(
                     personalId = personalId,
                     area = hoja.area.trim(),
                     fecha = hoja.fecha,
-                    horaInicio = hoja.inicio,
-                    horaFin = hoja.fin,
+                    horaInicio = horaInicio,
+                    horaFin = horaFin,
                     tipoTurno = hoja.tipoTurno,
                     notas = hoja.notas.trim().ifEmpty { null },
                 )
@@ -275,6 +292,7 @@ class TurnosPersonalViewModel
         }
 
         private companion object {
-            const val LARGO_HORA = 5
+            /** Cabe `12:00 a. m.` (11) con un espacio de más. */
+            const val LARGO_HORA = 12
         }
     }

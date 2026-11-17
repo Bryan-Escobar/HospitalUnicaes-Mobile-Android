@@ -14,13 +14,19 @@ object DatosMuestra {
     // Recepción ------------------------------------------------------------------------------
 
     val turnoRecepcion =
-        TurnoUi(dia = "Hoy", horario = "07:00–15:00", area = "Recepción", tipo = "Recepcionista", enCurso = true)
+        TurnoUi(
+            dia = "Hoy",
+            horario = "7:00 a. m. – 3:00 p. m.",
+            area = "Recepción",
+            tipo = "Recepcionista",
+            enCurso = true,
+        )
 
     val solicitudAmbulancia =
         SolicitudAmbulanciaUi(
             id = "amb-1",
             paciente = "Luis Martínez",
-            hora = "10:12",
+            hora = "10:12 a. m.",
             hace = "hace 1 min",
             tipo = "Dolor de pecho",
             ubicacion = "Col. Escalón, San Salvador (GPS ±20 m)",
@@ -105,7 +111,7 @@ object DatosMuestra {
             AgendaDoctorUi(
                 doctor = "Dra. Ana Rivas",
                 especialidad = "Alergista",
-                horario = "08:00–14:00",
+                horario = "8:00 a. m. – 2:00 p. m.",
                 citas =
                     listOf(
                         CitaUi(
@@ -122,7 +128,7 @@ object DatosMuestra {
             AgendaDoctorUi(
                 doctor = "Dr. Carlos Molina",
                 especialidad = "General",
-                horario = "07:00–15:00",
+                horario = "7:00 a. m. – 3:00 p. m.",
                 citas = listOf(CitaUi("c-3", "09:00", "Pedro Alas", "Dr. Molina", "Fiebre", EstadoCita.ATENDIDA)),
                 horasLibres = listOf("13:00"),
             ),
@@ -168,14 +174,23 @@ object DatosMuestra {
         listOf(
             AreaTurnosUi(
                 area = "Consulta externa",
-                turnos = listOf(TurnoPersonalUi("Dra. Ana Rivas", "Consulta externa", "08:00–14:00", "Alergista")),
+                turnos =
+                    listOf(
+                        TurnoPersonalUi("Dra. Ana Rivas", "Consulta externa", "8:00 a. m. – 2:00 p. m.", "Alergista"),
+                    ),
             ),
             AreaTurnosUi(
                 area = "Emergencia",
                 turnos =
                     listOf(
-                        TurnoPersonalUi("Dr. Jorge Peña", "Emergencia", "06:00–18:00", "Emergencia", enCurso = true),
-                        TurnoPersonalUi("María Gómez", "Emergencia", "15:00–23:00", "Enfermería"),
+                        TurnoPersonalUi(
+                            "Dr. Jorge Peña",
+                            "Emergencia",
+                            "6:00 a. m. – 6:00 p. m.",
+                            "Emergencia",
+                            enCurso = true,
+                        ),
+                        TurnoPersonalUi("María Gómez", "Emergencia", "3:00 p. m. – 11:00 p. m.", "Enfermería"),
                     ),
             ),
         )
@@ -187,7 +202,7 @@ object DatosMuestra {
             ServicioBitacoraUi(
                 "b-1",
                 "21 oct",
-                "10:14 – 11:02",
+                "10:14 a. m. – 11:02 a. m.",
                 "Dolor de pecho",
                 "L. Martínez",
                 "48 min",
@@ -196,16 +211,22 @@ object DatosMuestra {
             ServicioBitacoraUi(
                 "b-2",
                 "19 oct",
-                "22:40 – 23:35",
+                "10:40 p. m. – 11:35 p. m.",
                 "Accidente de tránsito",
                 duracion = "55 min",
                 estado = EstadoServicio.FINALIZADO,
             ),
-            ServicioBitacoraUi("b-3", "18 oct", "07:10", "Dificultad respiratoria", estado = EstadoServicio.RECHAZADA),
+            ServicioBitacoraUi(
+                "b-3",
+                "18 oct",
+                "7:10 a. m.",
+                "Dificultad respiratoria",
+                estado = EstadoServicio.RECHAZADA,
+            ),
             ServicioBitacoraUi(
                 "b-4",
                 "15 oct",
-                "08:00 – 12:00",
+                "8:00 a. m. – 12:00 p. m.",
                 "Mantenimiento preventivo",
                 estado = EstadoServicio.EN_MANTENIMIENTO,
             ),
@@ -223,7 +244,13 @@ object DatosMuestra {
     // Doctor ---------------------------------------------------------------------------------
 
     val turnoDoctor =
-        TurnoUi(dia = "Hoy", horario = "06:00–18:00", area = "Emergencias", tipo = "Emergencia", enCurso = true)
+        TurnoUi(
+            dia = "Hoy",
+            horario = "6:00 a. m. – 6:00 p. m.",
+            area = "Emergencias",
+            tipo = "Emergencia",
+            enCurso = true,
+        )
 
     val agendaDoctor =
         AgendaUi(
@@ -241,7 +268,7 @@ object DatosMuestra {
 
     val detalleCita =
         DetalleCitaUi(
-            cita = agendaDoctor.citas[1].copy(fecha = "Mié 21 oct · 10:00"),
+            cita = agendaDoctor.citas[1].copy(fecha = "Mié 21 oct · 10:00 a. m."),
             edad = 41,
             dui = "04512378-9",
             alergias = null,
@@ -311,17 +338,17 @@ object DatosMuestra {
 
     val turnosDoctorSemana =
         listOf(
-            TurnoUi("Lun 19", "06:00–18:00", "Emergencias", terminado = true),
+            TurnoUi("Lun 19", "6:00 a. m. – 6:00 p. m.", "Emergencias", terminado = true),
             TurnoUi("Mar 20", "", "", sinTurno = true),
-            TurnoUi("Mié 21", "06:00–18:00", "Emergencias", enCurso = true),
-            TurnoUi("Vie 23", "18:00–06:00", "Emergencias · nocturno", tipo = "Emergencia"),
+            TurnoUi("Mié 21", "6:00 a. m. – 6:00 p. m.", "Emergencias", enCurso = true),
+            TurnoUi("Vie 23", "6:00 p. m. – 6:00 a. m.", "Emergencias · nocturno", tipo = "Emergencia"),
             TurnoUi("Sáb 24 – Dom 25", "", "", sinTurno = true),
         )
 
     val turnosDoctorSiguiente =
         listOf(
-            TurnoUi("Lun 26", "06:00–18:00", "Emergencias"),
-            TurnoUi("Mié 28", "06:00–18:00", "Emergencias"),
+            TurnoUi("Lun 26", "6:00 a. m. – 6:00 p. m.", "Emergencias"),
+            TurnoUi("Mié 28", "6:00 a. m. – 6:00 p. m.", "Emergencias"),
         )
 
     val perfilDoctor =

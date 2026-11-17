@@ -8,6 +8,8 @@ import sv.edu.unicaes.hospital.ui.modelo.diaMesNumerico
 import sv.edu.unicaes.hospital.ui.modelo.diasEntre
 import sv.edu.unicaes.hospital.ui.modelo.fechaDesdeIso
 import sv.edu.unicaes.hospital.ui.modelo.hora
+import sv.edu.unicaes.hospital.ui.modelo.hora12
+import sv.edu.unicaes.hospital.ui.modelo.horaClave
 import java.util.TimeZone
 
 class FechasTest {
@@ -18,7 +20,18 @@ class FechasTest {
         val api = fechaDesdeIso("2026-10-19T22:40:00.000Z")!!
         val supabase = fechaDesdeIso("2026-10-19T22:40:00+00:00")!!
         assertEquals(api, supabase)
-        assertEquals("16:40", hora(api, elSalvador))
+        assertEquals("4:40 p. m.", hora(api, elSalvador))
+        assertEquals("16:40", horaClave(api, elSalvador))
+    }
+
+    @Test
+    fun `muestra las horas en 12 horas y distingue medianoche de mediodia`() {
+        assertEquals("12:00 a. m.", hora12("00:00"))
+        assertEquals("12:00 p. m.", hora12("12:00"))
+        assertEquals("7:00 a. m.", hora12("07:00"))
+        assertEquals("3:00 p. m.", hora12("15:00"))
+        assertEquals("11:59 p. m.", hora12("23:59"))
+        assertEquals("", hora12(""))
     }
 
     @Test

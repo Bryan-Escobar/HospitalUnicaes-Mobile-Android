@@ -39,9 +39,6 @@ fun etiquetaSemana(dias: List<String>): String {
 /** `Lun 26` para los chips y las filas de la semana. */
 fun etiquetaClave(clave: String): String = fechaHoraHospital(clave)?.let { etiquetaDia(it) } ?: clave
 
-/** `07:00` o `7:5` → válido solo `HH:mm` de 00:00 a 23:59. */
-fun horaValida(hora: String): Boolean = Regex("""([01]\d|2[0-3]):[0-5]\d""").matches(hora)
-
 /** Horario sugerido al elegir el tipo de turno en el formulario. */
 fun horarioSugerido(tipo: TipoTurno): Pair<String, String> =
     when (tipo) {
@@ -67,8 +64,8 @@ fun Turno.enCurso(ahora: Date = Date()): Boolean {
 
 fun Turno.terminado(ahora: Date = Date()): Boolean = fechaDesdeIso(fin)?.let { !ahora.before(it) } ?: false
 
-/** `07:00–15:00`. */
-val Turno.horario: String get() = "$horaInicio–$horaFin"
+/** `7:00 a. m. – 3:00 p. m.` */
+val Turno.horario: String get() = "${hora12(horaInicio)} – ${hora12(horaFin)}"
 
 /** Turnos de un día agrupados por área (alfabético) y, dentro de cada área, por tipo de personal y hora. */
 fun agruparPorArea(

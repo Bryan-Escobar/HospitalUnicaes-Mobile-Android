@@ -59,6 +59,7 @@ import sv.edu.unicaes.hospital.ui.modelo.CitaUi
 import sv.edu.unicaes.hospital.ui.modelo.DatosMuestra
 import sv.edu.unicaes.hospital.ui.modelo.DiaUi
 import sv.edu.unicaes.hospital.ui.modelo.PacienteUi
+import sv.edu.unicaes.hospital.ui.modelo.hora12
 import sv.edu.unicaes.hospital.ui.theme.Espacio
 import sv.edu.unicaes.hospital.ui.theme.HospitalUnicaesTheme
 import sv.edu.unicaes.hospital.ui.theme.Texto2
@@ -181,7 +182,7 @@ private fun TarjetaAgenda(
 
             is EntradaAgenda.Libre -> {
                 FilaLista(
-                    titulo = "${entrada.hora} ${stringResource(R.string.citas_libre)}",
+                    titulo = "${hora12(entrada.hora)} ${stringResource(R.string.citas_libre)}",
                     soporte = stringResource(R.string.citas_hueco_disponible),
                     divisor = !ultima,
                     enTarjeta = true,
@@ -425,7 +426,15 @@ private fun SeccionHoras(
                 horas.datos.forEach { opcion ->
                     val conCita = opcion in uiState.horasConCitaPaciente
                     ChipOpcion(
-                        texto = if (conCita) stringResource(R.string.citas_hora_con_cita, opcion) else opcion,
+                        texto =
+                            if (conCita) {
+                                stringResource(
+                                    R.string.citas_hora_con_cita,
+                                    hora12(opcion),
+                                )
+                            } else {
+                                hora12(opcion)
+                            },
                         elegida = opcion == uiState.hora,
                         habilitada = !conCita,
                         onClick = { acciones.onHora(opcion) },

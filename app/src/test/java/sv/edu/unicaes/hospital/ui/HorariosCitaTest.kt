@@ -11,7 +11,7 @@ import sv.edu.unicaes.hospital.ui.modelo.ZONA_HOSPITAL
 import sv.edu.unicaes.hospital.ui.modelo.agruparAgenda
 import sv.edu.unicaes.hospital.ui.modelo.fechaDesdeIso
 import sv.edu.unicaes.hospital.ui.modelo.fechaHoraHospital
-import sv.edu.unicaes.hospital.ui.modelo.hora
+import sv.edu.unicaes.hospital.ui.modelo.horaClave
 import sv.edu.unicaes.hospital.ui.modelo.horasDisponibles
 import sv.edu.unicaes.hospital.ui.modelo.huecosLibres
 import java.util.Date
@@ -43,7 +43,7 @@ class HorariosCitaTest {
         duracionMinutos = minutos,
     )
 
-    private fun List<Date>.horas() = map { hora(it, ZONA_HOSPITAL) }
+    private fun List<Date>.horas() = map { horaClave(it, ZONA_HOSPITAL) }
 
     @Test
     fun `huecos de 30 minutos sin la hora ocupada`() {
@@ -93,7 +93,7 @@ class HorariosCitaTest {
         val ana = agendas.first()
         assertEquals("Ana Rivas", ana.doctor)
         assertEquals("Alergista", ana.especialidad)
-        assertEquals("08:00–10:00", ana.horario)
+        assertEquals("8:00 a. m. – 10:00 a. m.", ana.horario)
         assertEquals("09:00", ana.citas.single().hora)
         assertEquals("Luis Martínez", ana.citas.single().paciente)
         assertEquals(listOf("08:00", "08:30", "09:30"), ana.horasLibres)

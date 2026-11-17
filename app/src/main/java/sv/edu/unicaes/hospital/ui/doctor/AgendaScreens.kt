@@ -57,6 +57,7 @@ import sv.edu.unicaes.hospital.ui.modelo.AgendaUi
 import sv.edu.unicaes.hospital.ui.modelo.DatosMuestra
 import sv.edu.unicaes.hospital.ui.modelo.DetalleCitaUi
 import sv.edu.unicaes.hospital.ui.modelo.TurnoUi
+import sv.edu.unicaes.hospital.ui.modelo.hora12
 import sv.edu.unicaes.hospital.ui.recepcion.RellenoCuerpo
 import sv.edu.unicaes.hospital.ui.theme.AmbarTexto
 import sv.edu.unicaes.hospital.ui.theme.Espacio
@@ -137,7 +138,12 @@ fun DetalleCitaScreen(
     onIniciarConsulta: () -> Unit,
     onReintentar: () -> Unit = {},
 ) {
-    val hora = (estado as? UiState.Exito)?.datos?.cita?.hora
+    val hora =
+        (estado as? UiState.Exito)
+            ?.datos
+            ?.cita
+            ?.hora
+            ?.let(::hora12)
     Scaffold(
         topBar = {
             TopBarHospital(

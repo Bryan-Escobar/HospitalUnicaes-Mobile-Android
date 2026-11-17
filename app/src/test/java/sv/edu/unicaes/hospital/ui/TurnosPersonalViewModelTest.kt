@@ -139,12 +139,12 @@ class TurnosPersonalViewModelTest {
                 .puedeGuardar,
         )
         vm.onPersona("p-1")
-        vm.onFin("25:00")
+        vm.onFin("13:00 p. m.")
         assertFalse(
             vm.uiState.value.hoja!!
                 .puedeGuardar,
         )
-        vm.onFin("07:00")
+        vm.onFin("7:00 a. m.")
         assertFalse(
             "inicio y fin iguales",
             vm.uiState.value.hoja!!
@@ -166,7 +166,7 @@ class TurnosPersonalViewModelTest {
         val hoja = vm.uiState.value.hoja!!
         assertEquals(solape, hoja.error)
         assertFalse(hoja.guardando)
-        vm.onInicio("08:00")
+        vm.onInicio("8:00 a. m.")
         assertNull(
             "al corregir se limpia el aviso",
             vm.uiState.value.hoja!!
@@ -181,7 +181,7 @@ class TurnosPersonalViewModelTest {
         val vm = vmEnLunes(repo)
         vm.abrirAjuste("1")
         vm.onTipoTurno(TipoTurno.GUARDIA)
-        vm.onFin("16:00")
+        vm.onFin("4:00 p. m.")
 
         vm.guardar()
 

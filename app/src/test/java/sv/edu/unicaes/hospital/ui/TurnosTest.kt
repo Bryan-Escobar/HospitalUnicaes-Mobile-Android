@@ -8,6 +8,7 @@ import kotlinx.coroutines.test.setMain
 import org.junit.After
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
+import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
@@ -17,7 +18,7 @@ import sv.edu.unicaes.hospital.core.rechazoDesdeMensaje
 import sv.edu.unicaes.hospital.domain.model.TipoTurno
 import sv.edu.unicaes.hospital.ui.modelo.etiquetaSemana
 import sv.edu.unicaes.hospital.ui.modelo.fechaHoraHospital
-import sv.edu.unicaes.hospital.ui.modelo.horaValida
+import sv.edu.unicaes.hospital.ui.modelo.hora24Desde12
 import sv.edu.unicaes.hospital.ui.modelo.misTurnosSemana
 import sv.edu.unicaes.hospital.ui.modelo.semanaDe
 import sv.edu.unicaes.hospital.ui.turnos.MisTurnosViewModel
@@ -56,12 +57,22 @@ class TurnosTest {
     }
 
     @Test
-    fun `valida horas HH mm`() {
-        assertTrue(horaValida("07:00"))
-        assertTrue(horaValida("23:59"))
-        assertFalse(horaValida("24:00"))
-        assertFalse(horaValida("7:00"))
-        assertFalse(horaValida("07:60"))
+    fun `convierte horas de 12 a 24 horas`() {
+        assertEquals("07:00", hora24Desde12("7:00 a. m."))
+        assertEquals("15:00", hora24Desde12("3:00 p. m."))
+        assertEquals("23:59", hora24Desde12("11:59 PM"))
+        assertEquals("19:00", hora24Desde12("7pm"))
+        assertEquals("00:00", hora24Desde12("12:00 a. m."))
+        assertEquals("12:00", hora24Desde12("12:00 p. m."))
+    }
+
+    @Test
+    fun `rechaza horas que no son de 12 horas`() {
+        assertNull(hora24Desde12("07:00"))
+        assertNull(hora24Desde12("13:00 p. m."))
+        assertNull(hora24Desde12("0:30 a. m."))
+        assertNull(hora24Desde12("7:60 a. m."))
+        assertNull(hora24Desde12(""))
     }
 
     @Test
@@ -90,7 +101,7 @@ class TurnosTest {
         assertTrue(semana[1].sinTurno)
         assertTrue(semana[2].enCurso)
         assertEquals("Emergencia · nocturno", semana[4].area)
-        assertEquals("19:00–07:00", semana[4].horario)
+        assertEquals("7:00 p. m. – 7:00 a. m.", semana[4].horario)
     }
 
     @Test

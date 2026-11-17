@@ -245,7 +245,7 @@ private fun FilaTurnoPersonal(
     )
 }
 
-/** Hoja "Nuevo turno" / "Ajustar turno". Guardar se habilita con persona, área y horas `HH:mm` distintas. */
+/** Hoja "Nuevo turno" / "Ajustar turno". Guardar se habilita con persona, área y horas distintas, escritas en 12 horas (`7:00 a. m.`) y enviadas como `HH:mm`. */
 @Composable
 private fun HojaTurno(
     hoja: HojaTurnoUiState,
@@ -312,7 +312,7 @@ private fun HojaTurno(
                     modifier = Modifier.weight(1f),
                 )
             }
-            if (hoja.inicioValido && hoja.finValido && hoja.fin < hoja.inicio) {
+            if (hoja.inicioValido && hoja.finValido && hoja.terminaDiaSiguiente) {
                 Banner(tipo = TipoBanner.INFO, texto = stringResource(R.string.turnos_termina_dia_siguiente))
             }
             CampoTexto(
@@ -393,9 +393,9 @@ private fun CampoHora(
         etiqueta = etiqueta,
         valor = valor,
         onValor = onValor,
-        placeholder = "07:00",
+        placeholder = stringResource(R.string.turnos_hora_ejemplo),
         error = if (valido || valor.isEmpty()) null else stringResource(R.string.turnos_hora_invalida),
-        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Text),
         modifier = modifier,
     )
 }
@@ -490,8 +490,8 @@ private fun HojaTurnoSolapePreview() {
                             fecha = "2026-10-22",
                             personalId = "e1",
                             area = "Consulta externa",
-                            inicio = "12:00",
-                            fin = "20:00",
+                            inicio = "12:00 p. m.",
+                            fin = "8:00 p. m.",
                             error =
                                 AppError.Rechazada(
                                     "El empleado ya tiene un turno el 22/10/2026 de 14:00 a 22:00",

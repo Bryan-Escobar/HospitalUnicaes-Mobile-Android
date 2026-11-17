@@ -147,7 +147,8 @@
     <string name="turnos_cargando_personal">Cargando personal…</string>
     <string name="turnos_elige_persona">Elige a quién asignar</string>
     <string name="turnos_error_personal">No se pudo cargar el personal.</string>
-    <string name="turnos_hora_invalida">Usa HH:mm, distinta del inicio</string>
+    <string name="turnos_hora_invalida">Usa h:mm a. m. o p. m., distinta del inicio</string>
+    <string name="turnos_hora_ejemplo">7:00 a. m.</string>
     <string name="turno_tipo_manana">Mañana</string>
     <string name="turno_tipo_tarde">Tarde</string>
     <string name="turno_tipo_noche">Noche</string>

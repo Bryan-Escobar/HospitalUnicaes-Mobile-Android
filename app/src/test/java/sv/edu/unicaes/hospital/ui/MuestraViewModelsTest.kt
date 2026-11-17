@@ -10,6 +10,7 @@ import sv.edu.unicaes.hospital.ui.doctor.ExpedienteViewModel
 import sv.edu.unicaes.hospital.ui.doctor.NuevaConsultaViewModel
 import sv.edu.unicaes.hospital.ui.modelo.DatosMuestra
 import sv.edu.unicaes.hospital.ui.modelo.MuestraViewModel
+import sv.edu.unicaes.hospital.ui.modelo.hora12
 import sv.edu.unicaes.hospital.ui.recepcion.ColaLaboratorioViewModel
 import sv.edu.unicaes.hospital.ui.recepcion.DetalleOrdenViewModel
 import sv.edu.unicaes.hospital.ui.recepcion.MapaCamasViewModel
@@ -35,7 +36,7 @@ class MuestraViewModelsTest {
         val consulta = NuevaConsultaViewModel(ruta).datos()
 
         assertEquals(cita.id, detalle.cita.id)
-        assertTrue(detalle.cita.fecha.endsWith(cita.hora))
+        assertTrue(detalle.cita.fecha.endsWith(hora12(cita.hora)))
         assertEquals(cita, consulta)
     }
 
