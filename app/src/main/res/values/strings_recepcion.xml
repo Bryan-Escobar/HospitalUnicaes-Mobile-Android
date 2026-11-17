@@ -220,6 +220,12 @@
     <string name="lab_resultado_texto">Resultado</string>
     <string name="lab_resultado_ayuda">Escribe el resultado, adjunta un archivo o ambos.</string>
     <string name="lab_unidad">Unidad</string>
+    <string name="lab_unidad_mas">Más unidades</string>
+    <string name="lab_unidad_ayuda">Opcional. Toca la unidad elegida otra vez para quitarla.</string>
+    <string name="lab_unidad_ninguna">Sin unidad</string>
+    <string name="lab_unidad_titulo_hoja">Elegir unidad</string>
+    <string name="lab_unidad_buscar">Buscar: mg, mmol, UI…</string>
+    <string name="lab_unidad_sin_coincidencias">Ninguna unidad coincide con la búsqueda.</string>
     <string name="lab_observaciones">Observaciones</string>
     <string name="lab_archivo">Archivo (PDF o imagen, máx. 10 MB)</string>
     <string name="lab_elegir_imagen">Elegir imagen</string>

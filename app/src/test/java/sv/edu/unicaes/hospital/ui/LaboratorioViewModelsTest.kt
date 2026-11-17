@@ -27,6 +27,7 @@ import sv.edu.unicaes.hospital.domain.model.ExamenOrden
 import sv.edu.unicaes.hospital.domain.model.OrdenLaboratorio
 import sv.edu.unicaes.hospital.domain.model.Pagina
 import sv.edu.unicaes.hospital.domain.model.PrioridadLaboratorio
+import sv.edu.unicaes.hospital.domain.model.UnidadesLaboratorio
 import sv.edu.unicaes.hospital.ui.recepcion.CargarResultadoViewModel
 import sv.edu.unicaes.hospital.ui.recepcion.ColaLaboratorioViewModel
 import sv.edu.unicaes.hospital.ui.recepcion.DetalleOrdenViewModel
@@ -341,6 +342,28 @@ class LaboratorioViewModelsTest {
             repo.registrado?.first,
         )
         assertEquals(pdf, repo.registrado?.second)
+    }
+
+    @Test
+    fun `la unidad se filtra y solo se envia si esta en el catalogo`() {
+        assertEquals(listOf("mg/dL", "mg/L"), UnidadesLaboratorio.coincidencias("mg"))
+        assertEquals("células/µL", UnidadesLaboratorio.coincidencias("celulas").single())
+        assertEquals("mg/dL", UnidadesLaboratorio.canonica("MG/dl"))
+        assertNull(UnidadesLaboratorio.canonica("mg"))
+
+        val repo = repoEnProceso()
+        repo.registrar = Resultado.Exito(examen("e-o1", EstadoLaboratorio.COMPLETADO))
+        val suelta = formulario(repo)
+        suelta.cambiarValor("92")
+        suelta.cambiarUnidad("mg")
+        suelta.guardar()
+        assertNull(repo.registrado?.first?.unidad)
+
+        val elegida = formulario(repo)
+        elegida.cambiarValor("92")
+        elegida.cambiarUnidad("g/dl")
+        elegida.guardar()
+        assertEquals("g/dL", repo.registrado?.first?.unidad)
     }
 
     @Test
