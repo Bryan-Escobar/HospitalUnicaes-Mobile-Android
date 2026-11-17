@@ -78,7 +78,8 @@ private fun errorDesdeRespuesta(e: HttpException): AppError {
         "PERFIL_INCOMPLETO" -> AppError.PerfilIncompleto
         "REGISTRO_DUPLICADO" -> AppError.Duplicado
         "VALIDACION" -> AppError.CamposInvalidos(cuerpo.errors.associate { it.field to it.message })
-        in CODIGOS_CON_MENSAJE -> cuerpo?.message?.takeIf { it.isNotBlank() }?.let(AppError::Rechazada)
+        in CODIGOS_CON_MENSAJE -> cuerpo?.message?.takeIf { it.isNotBlank() }?.let { AppError.Rechazada(it) }
+        in CODIGOS_CAMAS -> cuerpo?.message?.takeIf { it.isNotBlank() }?.let { AppError.Rechazada(it, cuerpo.code) }
         else -> null
     } ?: errorDesdeCodigo(e.code())
 }
@@ -88,6 +89,13 @@ private fun errorDesdeRespuesta(e: HttpException): AppError {
  * este examen; actualiza la orden"): se muestran tal cual como [AppError.Rechazada].
  */
 private val CODIGOS_CON_MENSAJE = setOf("TRANSICION_INVALIDA", "RESULTADO_REQUERIDO", "SOLICITUD_INVALIDA")
+
+/**
+ * 409 de camas con `message` para el usuario. Se conserva el código en [AppError.Rechazada.codigo]
+ * porque la pantalla de camas recarga el mapa cuando la cama elegida ya no se puede asignar.
+ */
+private val CODIGOS_CAMAS =
+    setOf("CAMA_OCUPADA", "CAMA_NO_DISPONIBLE", "PACIENTE_YA_HOSPITALIZADO", "SIN_CAMAS_DISPONIBLES")
 
 /** Códigos con los que las funciones y triggers de Supabase anteponen un mensaje legible. */
 private val CODIGOS_RECHAZO =
