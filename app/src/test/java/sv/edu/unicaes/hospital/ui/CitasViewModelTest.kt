@@ -79,7 +79,7 @@ class CitasViewModelTest {
         vm.onDia(1)
 
         val agenda = (vm.uiState.value.estado as UiState.Exito).datos.single()
-        assertEquals("08:00–09:30", agenda.horario)
+        assertEquals("8:00 a. m. – 9:30 a. m.", agenda.horario)
         assertEquals("08:30", agenda.citas.single().hora)
         assertEquals(listOf("08:00", "09:00"), agenda.horasLibres)
     }

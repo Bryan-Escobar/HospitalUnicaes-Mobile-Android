@@ -23,6 +23,7 @@ import sv.edu.unicaes.hospital.ui.components.SincronizarPestana
 import sv.edu.unicaes.hospital.ui.components.irAPestana
 import sv.edu.unicaes.hospital.ui.modelo.ConDatos
 import sv.edu.unicaes.hospital.ui.modelo.DatosMuestra
+import sv.edu.unicaes.hospital.ui.modelo.hora12
 import sv.edu.unicaes.hospital.ui.perfil.PerfilScreen
 import sv.edu.unicaes.hospital.ui.theme.HospitalUnicaesTheme
 import sv.edu.unicaes.hospital.ui.turnos.MisTurnosViewModel
@@ -118,7 +119,7 @@ private fun DoctorNavHost(
             ConDatos(hiltViewModel<NuevaConsultaViewModel>()) { cita ->
                 NuevaConsultaScreen(
                     paciente = cita.paciente,
-                    contexto = stringResource(R.string.cita_titulo, cita.hora),
+                    contexto = stringResource(R.string.cita_titulo, hora12(cita.hora)),
                     onCerrar = volver,
                     onGuardar = volver,
                 )

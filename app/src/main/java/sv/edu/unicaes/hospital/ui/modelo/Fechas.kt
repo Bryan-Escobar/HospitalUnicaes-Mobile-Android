@@ -35,11 +35,46 @@ fun diaMesNumerico(
     zona: TimeZone = TimeZone.getDefault(),
 ): String = formato("dd/MM", zona).format(fecha)
 
-/** `16:40`, en 24 horas. */
+/** `4:40 p. m.`, para mostrar. */
 fun hora(
     fecha: Date,
     zona: TimeZone = TimeZone.getDefault(),
+): String = hora12(horaClave(fecha, zona))
+
+/** `16:40`, en 24 horas: es el formato interno y el que recibe la API. Para mostrar usar [hora] o [hora12]. */
+fun horaClave(
+    fecha: Date,
+    zona: TimeZone = TimeZone.getDefault(),
 ): String = formato("HH:mm", zona).format(fecha)
+
+private val HORA_24 = Regex("""([01]\d|2[0-3]):([0-5]\d)""")
+
+/** `16:40` → `4:40 p. m.`, `00:00` → `12:00 a. m.`. Lo que no sea `HH:mm` se devuelve igual. */
+fun hora12(hora24: String): String {
+    val partes = HORA_24.matchEntire(hora24.trim()) ?: return hora24
+    val horas = partes.groupValues[1].toInt()
+    val sufijo = if (horas < MEDIODIA) "a. m." else "p. m."
+    val horas12 = if (horas % MEDIODIA == 0) MEDIODIA else horas % MEDIODIA
+    return "$horas12:${partes.groupValues[2]} $sufijo"
+}
+
+private const val MEDIODIA = 12
+
+private val HORA_12 = Regex("""(\d{1,2})(?::([0-5]\d))?\s*([ap])\.?\s*m\.?""", RegexOption.IGNORE_CASE)
+
+/**
+ * Lo que escribe el usuario (`7:00 a. m.`, `7:00am`, `3 PM`) → `HH:mm` para la API, o null si no es una hora de
+ * 12 horas válida. Sin a. m. / p. m. no se acepta: `7:00` podría ser de la mañana o de la noche.
+ */
+fun hora24Desde12(texto: String): String? {
+    val partes = HORA_12.matchEntire(texto.trim()) ?: return null
+    val horas = partes.groupValues[1].toInt()
+    if (horas !in 1..MEDIODIA) return null
+    val minutos = partes.groupValues[2].ifEmpty { "00" }
+    val tarde = partes.groupValues[3].equals("p", ignoreCase = true)
+    val horas24 = horas % MEDIODIA + if (tarde) MEDIODIA else 0
+    return "%02d:%s".format(Locale.US, horas24, minutos)
+}
 
 /** Días completos desde [desde] hasta [hasta]. */
 fun diasEntre(

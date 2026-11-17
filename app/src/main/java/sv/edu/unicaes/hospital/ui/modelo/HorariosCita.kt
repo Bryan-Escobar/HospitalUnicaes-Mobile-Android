@@ -59,9 +59,10 @@ fun agruparAgenda(
             doctorId = doctorId,
             doctor = susTurnos.firstOrNull()?.doctor ?: referencia?.doctor.orEmpty(),
             especialidad = susTurnos.firstNotNullOfOrNull { it.especialidad } ?: referencia?.especialidad.orEmpty(),
-            horario = susTurnos.joinToString(" · ") { "${horaHospital(it.inicio)}–${horaHospital(it.fin)}" },
+            horario =
+                susTurnos.joinToString(" · ") { "${hora12(horaHospital(it.inicio))} – ${hora12(horaHospital(it.fin))}" },
             citas = susCitas.map { it.aAgendaUi() },
-            horasLibres = huecosLibres(susTurnos, susCitas, desde, hasta, ahora).map { hora(it, ZONA_HOSPITAL) },
+            horasLibres = huecosLibres(susTurnos, susCitas, desde, hasta, ahora).map { horaClave(it, ZONA_HOSPITAL) },
         )
     }
 }
@@ -70,7 +71,8 @@ fun agruparAgenda(
 fun horasDisponibles(agendas: List<AgendaDoctorUi>): List<String> =
     agendas.flatMap { it.horasLibres }.distinct().sorted()
 
-private fun horaHospital(iso: String): String = fechaDesdeIso(iso)?.let { hora(it, ZONA_HOSPITAL) }.orEmpty()
+/** `HH:mm` (24 h) de [iso] en la zona del hospital; las vistas la muestran con [hora12]. */
+private fun horaHospital(iso: String): String = fechaDesdeIso(iso)?.let { horaClave(it, ZONA_HOSPITAL) }.orEmpty()
 
 private fun Cita.aAgendaUi(): CitaUi =
     CitaUi(

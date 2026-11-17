@@ -29,6 +29,7 @@ import sv.edu.unicaes.hospital.domain.model.TipoHabitacion
 import sv.edu.unicaes.hospital.ui.modelo.CitaUi
 import sv.edu.unicaes.hospital.ui.modelo.OcupacionUi
 import sv.edu.unicaes.hospital.ui.modelo.TurnoUi
+import sv.edu.unicaes.hospital.ui.modelo.hora12
 import sv.edu.unicaes.hospital.ui.theme.BordeSuave
 import sv.edu.unicaes.hospital.ui.theme.Espacio
 import sv.edu.unicaes.hospital.ui.theme.HospitalTheme
@@ -176,7 +177,7 @@ fun FilaCita(
     onClick: (() -> Unit)? = null,
 ) {
     FilaLista(
-        titulo = "${cita.hora} ${cita.paciente}",
+        titulo = "${hora12(cita.hora)} ${cita.paciente}",
         soporte = if (mostrarDoctor) cita.doctor else cita.motivo,
         modifier = modifier,
         onClick = onClick,

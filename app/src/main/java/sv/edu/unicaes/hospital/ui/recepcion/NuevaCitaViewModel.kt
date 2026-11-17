@@ -32,7 +32,7 @@ import sv.edu.unicaes.hospital.ui.modelo.claveDia
 import sv.edu.unicaes.hospital.ui.modelo.etiquetaDia
 import sv.edu.unicaes.hospital.ui.modelo.fechaDesdeIso
 import sv.edu.unicaes.hospital.ui.modelo.fechaHoraHospital
-import sv.edu.unicaes.hospital.ui.modelo.hora
+import sv.edu.unicaes.hospital.ui.modelo.horaClave
 import sv.edu.unicaes.hospital.ui.modelo.horasConCita
 import sv.edu.unicaes.hospital.ui.modelo.horasDisponibles
 import sv.edu.unicaes.hospital.ui.modelo.isoConZona
@@ -176,7 +176,7 @@ class NuevaCitaViewModel
                 it.copy(
                     cargandoCita = false,
                     paciente = PacienteUi(id = cita.pacienteId, nombre = cita.paciente, dui = ""),
-                    hora = fechaCita?.let { f -> hora(f, ZONA_HOSPITAL) },
+                    hora = fechaCita?.let { f -> horaClave(f, ZONA_HOSPITAL) },
                     doctorId = cita.doctorId,
                     motivo = cita.motivo.orEmpty(),
                 )
