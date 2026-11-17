@@ -5,31 +5,36 @@ package sv.edu.unicaes.hospital.ui.recepcion
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.PickVisualMediaRequest
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
+import androidx.compose.foundation.layout.imePadding
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.KeyboardActions
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.ExposedDropdownMenuAnchorType
-import androidx.compose.material3.ExposedDropdownMenuBox
-import androidx.compose.material3.ExposedDropdownMenuDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.pulltorefresh.PullToRefreshBox
+import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -42,6 +47,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.tooling.preview.PreviewParameter
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -65,6 +71,8 @@ import sv.edu.unicaes.hospital.ui.components.BotonPrimario
 import sv.edu.unicaes.hospital.ui.components.BotonSecundario
 import sv.edu.unicaes.hospital.ui.components.CampoTexto
 import sv.edu.unicaes.hospital.ui.components.Chevron
+import sv.edu.unicaes.hospital.ui.components.ChipDesplegable
+import sv.edu.unicaes.hospital.ui.components.ChipOpcion
 import sv.edu.unicaes.hospital.ui.components.ChipsFiltro
 import sv.edu.unicaes.hospital.ui.components.ContenidoConEstado
 import sv.edu.unicaes.hospital.ui.components.DialogoConfirmacion
@@ -73,6 +81,7 @@ import sv.edu.unicaes.hospital.ui.components.EstadoPreview
 import sv.edu.unicaes.hospital.ui.components.EstadoVacio
 import sv.edu.unicaes.hospital.ui.components.EstadosPreviewProvider
 import sv.edu.unicaes.hospital.ui.components.EstiloFilaSoporte
+import sv.edu.unicaes.hospital.ui.components.FilaChips
 import sv.edu.unicaes.hospital.ui.components.FilaDato
 import sv.edu.unicaes.hospital.ui.components.FilaLista
 import sv.edu.unicaes.hospital.ui.components.IconoAccion
@@ -591,53 +600,141 @@ fun CargarResultadoScreen(
     }
 }
 
+/**
+ * Unidad del resultado (HUNI-100): chips con las frecuentes, un toque elige y otro la quita; el
+ * resto del catálogo se busca en una hoja inferior para no tapar el formulario ni abrir el teclado.
+ */
 @Composable
 private fun SelectorUnidad(
     valor: String,
     editable: Boolean,
     onValor: (String) -> Unit,
 ) {
-    var abierto by rememberSaveable { mutableStateOf(false) }
-    val opciones = UnidadesLaboratorio.coincidencias(valor)
-    val elegida = UnidadesLaboratorio.canonica(valor) != null
-    val ayuda =
-        when {
-            !editable || valor.isBlank() || elegida -> null
-            opciones.isEmpty() -> stringResource(R.string.lab_unidad_sin_coincidencias)
-            else -> stringResource(R.string.lab_unidad_elige)
+    var hojaAbierta by rememberSaveable { mutableStateOf(false) }
+    val elegida = UnidadesLaboratorio.canonica(valor)
+    // Una unidad elegida desde la hoja también se ve como chip, al inicio de la fila.
+    val chips =
+        if (elegida != null && elegida !in UnidadesLaboratorio.frecuentes) {
+            listOf(elegida) + UnidadesLaboratorio.frecuentes
+        } else {
+            UnidadesLaboratorio.frecuentes
         }
-    ExposedDropdownMenuBox(
-        expanded = abierto && editable && opciones.isNotEmpty(),
-        onExpandedChange = { abierto = editable && it },
-    ) {
-        CampoTexto(
-            etiqueta = stringResource(R.string.lab_unidad),
-            valor = valor,
-            onValor = {
-                onValor(it)
-                abierto = true
-            },
-            placeholder = stringResource(R.string.lab_unidad_ejemplo),
-            ayuda = ayuda,
-            soloLectura = !editable,
-            onEnfoque = { if (it) abierto = true },
-            modifier = Modifier.menuAnchor(ExposedDropdownMenuAnchorType.PrimaryEditable, editable),
-            final = { if (editable) ExposedDropdownMenuDefaults.TrailingIcon(expanded = abierto) },
+
+    Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
+        Text(
+            text = stringResource(R.string.lab_unidad),
+            style = MaterialTheme.typography.bodySmall.copy(letterSpacing = 0.sp),
+            color = Texto2,
         )
-        ExposedDropdownMenu(
-            expanded = abierto && editable && opciones.isNotEmpty(),
-            onDismissRequest = { abierto = false },
-            modifier = Modifier.heightIn(max = 280.dp),
-        ) {
-            opciones.forEach { unidad ->
-                DropdownMenuItem(
-                    text = { Text(unidad) },
-                    onClick = {
-                        onValor(unidad)
-                        abierto = false
-                    },
+        if (!editable) {
+            Text(
+                text = elegida ?: stringResource(R.string.lab_unidad_ninguna),
+                style = MaterialTheme.typography.bodyLarge,
+                color = if (elegida != null) MaterialTheme.colorScheme.onSurface else Texto2,
+            )
+            return@Column
+        }
+        FilaChips {
+            chips.forEach { unidad ->
+                ChipOpcion(
+                    texto = unidad,
+                    elegida = unidad == elegida,
+                    onClick = { onValor(if (unidad == elegida) "" else unidad) },
                 )
             }
+            ChipDesplegable(
+                texto = stringResource(R.string.lab_unidad_mas),
+                onClick = { hojaAbierta = true },
+            )
+        }
+        Text(
+            text = stringResource(R.string.lab_unidad_ayuda),
+            style = MaterialTheme.typography.bodySmall.copy(letterSpacing = 0.sp),
+            color = Texto2,
+        )
+    }
+
+    if (hojaAbierta) {
+        HojaUnidades(
+            elegida = elegida,
+            onElegir = {
+                onValor(it)
+                hojaAbierta = false
+            },
+            onCerrar = { hojaAbierta = false },
+        )
+    }
+}
+
+/** Catálogo completo con buscador; ignora mayúsculas, tildes y µ/u. */
+@Composable
+private fun HojaUnidades(
+    elegida: String?,
+    onElegir: (String) -> Unit,
+    onCerrar: () -> Unit,
+) {
+    var busqueda by rememberSaveable { mutableStateOf("") }
+    val opciones = UnidadesLaboratorio.coincidencias(busqueda)
+    ModalBottomSheet(
+        onDismissRequest = onCerrar,
+        sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true),
+    ) {
+        Column(
+            modifier = Modifier.padding(horizontal = Espacio.md).navigationBarsPadding().imePadding(),
+            verticalArrangement = Arrangement.spacedBy(Espacio.xs),
+        ) {
+            Text(stringResource(R.string.lab_unidad_titulo_hoja), style = MaterialTheme.typography.titleLarge)
+            CampoTexto(
+                etiqueta = null,
+                valor = busqueda,
+                onValor = { busqueda = it },
+                placeholder = stringResource(R.string.lab_unidad_buscar),
+                keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
+                keyboardActions =
+                    KeyboardActions(onDone = { UnidadesLaboratorio.canonica(busqueda)?.let(onElegir) }),
+            )
+            if (opciones.isEmpty()) {
+                Text(
+                    text = stringResource(R.string.lab_unidad_sin_coincidencias),
+                    style = EstiloFilaSoporte,
+                    color = Texto2,
+                    modifier = Modifier.padding(vertical = Espacio.sm),
+                )
+            }
+            LazyColumn(modifier = Modifier.fillMaxWidth().heightIn(max = 360.dp)) {
+                items(opciones, key = { it }) { unidad ->
+                    val actual = unidad == elegida
+                    Row(
+                        modifier =
+                            Modifier
+                                .fillMaxWidth()
+                                .clip(RoundedCornerShape(8.dp))
+                                .clickable { onElegir(unidad) }
+                                .heightIn(min = 48.dp)
+                                .padding(horizontal = Espacio.xs),
+                        verticalAlignment = Alignment.CenterVertically,
+                    ) {
+                        Text(
+                            text = unidad,
+                            style =
+                                MaterialTheme.typography.bodyLarge.copy(
+                                    fontWeight = if (actual) FontWeight.Bold else FontWeight.Normal,
+                                ),
+                            color = if (actual) Primario700 else MaterialTheme.colorScheme.onSurface,
+                            modifier = Modifier.weight(1f),
+                        )
+                        if (actual) {
+                            Icon(
+                                painterResource(R.drawable.ic_check),
+                                contentDescription = null,
+                                tint = Primario700,
+                                modifier = Modifier.size(20.dp),
+                            )
+                        }
+                    }
+                }
+            }
+            Spacer(Modifier.height(Espacio.sm))
         }
     }
 }

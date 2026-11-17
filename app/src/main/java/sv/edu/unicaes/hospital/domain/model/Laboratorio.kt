@@ -89,6 +89,9 @@ object UnidadesLaboratorio {
             "mL/min",
         )
 
+    /** Las que más se usan: van como chips a la vista; el resto se busca en la hoja. */
+    val frecuentes: List<String> = listOf("mg/dL", "g/dL", "%", "mmol/L", "UI/L", "10^3/µL")
+
     /** Coincidencias de [consulta]: primero las que empiezan igual, luego las que la contienen. */
     fun coincidencias(consulta: String): List<String> {
         val busqueda = normalizar(consulta)

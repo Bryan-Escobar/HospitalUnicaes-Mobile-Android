@@ -48,7 +48,6 @@ import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
@@ -615,12 +614,10 @@ fun CampoTexto(
     keyboardActions: KeyboardActions = KeyboardActions.Default,
     /** Tipo para el autocompletado del sistema (correos y contraseñas guardados). */
     tipoContenido: ContentType? = null,
-    onEnfoque: (Boolean) -> Unit = {},
     final: (@Composable () -> Unit)? = null,
 ) {
     val interaccion = remember { MutableInteractionSource() }
     val enfocado by interaccion.collectIsFocusedAsState()
-    LaunchedEffect(enfocado) { onEnfoque(enfocado) }
     val forma = MaterialTheme.shapes.medium
     val (anchoBorde, colorBorde) =
         when {
