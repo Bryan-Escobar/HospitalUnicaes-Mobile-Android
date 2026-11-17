@@ -24,6 +24,7 @@ import sv.edu.unicaes.hospital.domain.model.DatosResultado
 import sv.edu.unicaes.hospital.domain.model.EstadoLaboratorio
 import sv.edu.unicaes.hospital.domain.model.ExamenOrden
 import sv.edu.unicaes.hospital.domain.model.OrdenLaboratorio
+import sv.edu.unicaes.hospital.domain.model.UnidadesLaboratorio
 import javax.inject.Inject
 
 // Laboratorio de Recepción/Asistente (HUNI-63): cola filtrable por estado, detalle con el avance de cada
@@ -341,7 +342,10 @@ class CargarResultadoViewModel
 
         fun cambiarValor(texto: String) = _uiState.update { it.copy(valor = texto, error = null) }
 
-        fun cambiarUnidad(texto: String) = _uiState.update { it.copy(unidad = texto) }
+        fun cambiarUnidad(texto: String) {
+            val canonica = UnidadesLaboratorio.canonica(texto)
+            _uiState.update { it.copy(unidad = canonica ?: texto) }
+        }
 
         fun cambiarObservaciones(texto: String) = _uiState.update { it.copy(observaciones = texto) }
 
@@ -376,7 +380,7 @@ class CargarResultadoViewModel
                 val datos =
                     DatosResultado(
                         valor = estado.valor,
-                        unidad = estado.unidad,
+                        unidad = UnidadesLaboratorio.canonica(estado.unidad),
                         observaciones = estado.observaciones,
                     )
                 when (val r = repositorio.registrarResultado(ordenId, examenId, datos, estado.archivo)) {

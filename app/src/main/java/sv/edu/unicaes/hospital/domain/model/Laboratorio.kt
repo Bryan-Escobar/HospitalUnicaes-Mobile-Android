@@ -1,5 +1,7 @@
 package sv.edu.unicaes.hospital.domain.model
 
+import java.text.Normalizer
+
 /** Prioridad de una orden de laboratorio (`prioridad` de la API). */
 enum class PrioridadLaboratorio(
     val valorApi: String,
@@ -55,6 +57,72 @@ data class ResultadoExamen(
     val validadoPor: String? = null,
     val fecha: String,
 )
+
+/**
+ * Unidades que se pueden adjuntar a un resultado (HUNI-100). El formulario filtra esta lista;
+ * lo que se envía tiene que ser una entrada, nunca un texto suelto. La API la deja opcional.
+ */
+object UnidadesLaboratorio {
+    val catalogo: List<String> =
+        listOf(
+            "%",
+            "g/dL",
+            "g/L",
+            "mg/dL",
+            "mg/L",
+            "µg/dL",
+            "µg/mL",
+            "ng/mL",
+            "mmol/L",
+            "µmol/L",
+            "mEq/L",
+            "UI/L",
+            "mUI/L",
+            "U/L",
+            "células/µL",
+            "10^3/µL",
+            "10^6/µL",
+            "fL",
+            "pg",
+            "mm/h",
+            "mL",
+            "mL/min",
+        )
+
+    /** Coincidencias de [consulta]: primero las que empiezan igual, luego las que la contienen. */
+    fun coincidencias(consulta: String): List<String> {
+        val busqueda = normalizar(consulta)
+        if (busqueda.isEmpty()) return catalogo
+        return catalogo
+            .mapNotNull { unidad ->
+                val normal = normalizar(unidad)
+                when {
+                    normal.startsWith(busqueda) -> 0 to unidad
+                    normal.contains(busqueda) -> 1 to unidad
+                    else -> null
+                }
+            }.sortedBy { it.first }
+            .map { it.second }
+    }
+
+    /** La unidad del catálogo que escribe [texto], o null si no es una entrada. */
+    fun canonica(texto: String): String? {
+        val busqueda = normalizar(texto)
+        if (busqueda.isEmpty()) return null
+        return catalogo.firstOrNull { normalizar(it) == busqueda }
+    }
+
+    private fun normalizar(texto: String): String =
+        Normalizer
+            .normalize(texto, Normalizer.Form.NFD)
+            .replace(MARCAS, "")
+            .lowercase()
+            .replace('µ', 'u')
+            .replace('μ', 'u')
+            .filterNot { it.isWhitespace() }
+
+    private val MARCAS = "\\p{Mn}+".toRegex()
+}
 
 /** Lo que Recepción escribe al registrar el resultado. La API exige valor o archivo. */
 data class DatosResultado(

@@ -12,13 +12,18 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.ExposedDropdownMenuAnchorType
+import androidx.compose.material3.ExposedDropdownMenuBox
+import androidx.compose.material3.ExposedDropdownMenuDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
@@ -51,6 +56,7 @@ import sv.edu.unicaes.hospital.domain.model.OrdenLaboratorio
 import sv.edu.unicaes.hospital.domain.model.PrioridadLaboratorio
 import sv.edu.unicaes.hospital.domain.model.ResultadoExamen
 import sv.edu.unicaes.hospital.domain.model.TipoArchivoResultado
+import sv.edu.unicaes.hospital.domain.model.UnidadesLaboratorio
 import sv.edu.unicaes.hospital.ui.components.AccionTexto
 import sv.edu.unicaes.hospital.ui.components.BadgeEstado
 import sv.edu.unicaes.hospital.ui.components.BadgeLaboratorio
@@ -518,12 +524,7 @@ fun CargarResultadoScreen(
                     minLines = 3,
                     soloLectura = !editable,
                 )
-                CampoTexto(
-                    etiqueta = stringResource(R.string.lab_unidad),
-                    valor = estado.unidad,
-                    onValor = onUnidad,
-                    soloLectura = !editable,
-                )
+                SelectorUnidad(valor = estado.unidad, editable = editable, onValor = onUnidad)
                 CampoTexto(
                     etiqueta = stringResource(R.string.lab_observaciones),
                     valor = estado.observaciones,
@@ -584,6 +585,57 @@ fun CargarResultadoScreen(
                         ),
                     onClick = onGuardar,
                     habilitado = estado.puedeGuardar,
+                )
+            }
+        }
+    }
+}
+
+@Composable
+private fun SelectorUnidad(
+    valor: String,
+    editable: Boolean,
+    onValor: (String) -> Unit,
+) {
+    var abierto by rememberSaveable { mutableStateOf(false) }
+    val opciones = UnidadesLaboratorio.coincidencias(valor)
+    val elegida = UnidadesLaboratorio.canonica(valor) != null
+    val ayuda =
+        when {
+            !editable || valor.isBlank() || elegida -> null
+            opciones.isEmpty() -> stringResource(R.string.lab_unidad_sin_coincidencias)
+            else -> stringResource(R.string.lab_unidad_elige)
+        }
+    ExposedDropdownMenuBox(
+        expanded = abierto && editable && opciones.isNotEmpty(),
+        onExpandedChange = { abierto = editable && it },
+    ) {
+        CampoTexto(
+            etiqueta = stringResource(R.string.lab_unidad),
+            valor = valor,
+            onValor = {
+                onValor(it)
+                abierto = true
+            },
+            placeholder = stringResource(R.string.lab_unidad_ejemplo),
+            ayuda = ayuda,
+            soloLectura = !editable,
+            onEnfoque = { if (it) abierto = true },
+            modifier = Modifier.menuAnchor(ExposedDropdownMenuAnchorType.PrimaryEditable, editable),
+            final = { if (editable) ExposedDropdownMenuDefaults.TrailingIcon(expanded = abierto) },
+        )
+        ExposedDropdownMenu(
+            expanded = abierto && editable && opciones.isNotEmpty(),
+            onDismissRequest = { abierto = false },
+            modifier = Modifier.heightIn(max = 280.dp),
+        ) {
+            opciones.forEach { unidad ->
+                DropdownMenuItem(
+                    text = { Text(unidad) },
+                    onClick = {
+                        onValor(unidad)
+                        abierto = false
+                    },
                 )
             }
         }
@@ -739,6 +791,7 @@ private fun CargarResultadoPreview() {
                 CargarResultadoUi(
                     carga = UiState.Exito(ContextoResultado(ordenPreview, examenPreview)),
                     valor = "Densidad 1.020, pH 6.0. Sin leucocitos ni nitritos.",
+                    unidad = "mg/dL",
                     archivo = ArchivoAdjunto("content://x", "ego-luis-martinez.pdf", ArchivoAdjunto.MIME_PDF, 317_440),
                 ),
             onCerrar = {},

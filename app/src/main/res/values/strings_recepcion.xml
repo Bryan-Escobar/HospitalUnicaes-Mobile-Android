@@ -220,6 +220,9 @@
     <string name="lab_resultado_texto">Resultado</string>
     <string name="lab_resultado_ayuda">Escribe el resultado, adjunta un archivo o ambos.</string>
     <string name="lab_unidad">Unidad</string>
+    <string name="lab_unidad_ejemplo">mg/dL</string>
+    <string name="lab_unidad_elige">Elige una unidad de la lista.</string>
+    <string name="lab_unidad_sin_coincidencias">Ninguna unidad coincide. Sin elegir, el resultado se guarda sin unidad.</string>
     <string name="lab_observaciones">Observaciones</string>
     <string name="lab_archivo">Archivo (PDF o imagen, máx. 10 MB)</string>
     <string name="lab_elegir_imagen">Elegir imagen</string>
