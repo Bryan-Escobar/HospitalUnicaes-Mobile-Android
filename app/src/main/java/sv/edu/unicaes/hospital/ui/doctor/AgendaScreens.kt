@@ -138,7 +138,12 @@ fun DetalleCitaScreen(
     onIniciarConsulta: () -> Unit,
     onReintentar: () -> Unit = {},
 ) {
-    val hora = (estado as? UiState.Exito)?.datos?.cita?.hora?.let(::hora12)
+    val hora =
+        (estado as? UiState.Exito)
+            ?.datos
+            ?.cita
+            ?.hora
+            ?.let(::hora12)
     Scaffold(
         topBar = {
             TopBarHospital(

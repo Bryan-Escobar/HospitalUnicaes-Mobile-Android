@@ -59,8 +59,7 @@ fun agruparAgenda(
             doctorId = doctorId,
             doctor = susTurnos.firstOrNull()?.doctor ?: referencia?.doctor.orEmpty(),
             especialidad = susTurnos.firstNotNullOfOrNull { it.especialidad } ?: referencia?.especialidad.orEmpty(),
-            horario =
-                susTurnos.joinToString(" · ") { "${hora12(horaHospital(it.inicio))} – ${hora12(horaHospital(it.fin))}" },
+            horario = susTurnos.joinToString(" · ") { it.rango() },
             citas = susCitas.map { it.aAgendaUi() },
             horasLibres = huecosLibres(susTurnos, susCitas, desde, hasta, ahora).map { horaClave(it, ZONA_HOSPITAL) },
         )
@@ -73,6 +72,9 @@ fun horasDisponibles(agendas: List<AgendaDoctorUi>): List<String> =
 
 /** `HH:mm` (24 h) de [iso] en la zona del hospital; las vistas la muestran con [hora12]. */
 private fun horaHospital(iso: String): String = fechaDesdeIso(iso)?.let { horaClave(it, ZONA_HOSPITAL) }.orEmpty()
+
+/** `8:00 a. m. – 2:00 p. m.` */
+private fun TurnoMedico.rango(): String = "${hora12(horaHospital(inicio))} – ${hora12(horaHospital(fin))}"
 
 private fun Cita.aAgendaUi(): CitaUi =
     CitaUi(

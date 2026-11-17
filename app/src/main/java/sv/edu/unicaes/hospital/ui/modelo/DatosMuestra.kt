@@ -14,7 +14,13 @@ object DatosMuestra {
     // Recepción ------------------------------------------------------------------------------
 
     val turnoRecepcion =
-        TurnoUi(dia = "Hoy", horario = "7:00 a. m. – 3:00 p. m.", area = "Recepción", tipo = "Recepcionista", enCurso = true)
+        TurnoUi(
+            dia = "Hoy",
+            horario = "7:00 a. m. – 3:00 p. m.",
+            area = "Recepción",
+            tipo = "Recepcionista",
+            enCurso = true,
+        )
 
     val solicitudAmbulancia =
         SolicitudAmbulanciaUi(
@@ -168,13 +174,22 @@ object DatosMuestra {
         listOf(
             AreaTurnosUi(
                 area = "Consulta externa",
-                turnos = listOf(TurnoPersonalUi("Dra. Ana Rivas", "Consulta externa", "8:00 a. m. – 2:00 p. m.", "Alergista")),
+                turnos =
+                    listOf(
+                        TurnoPersonalUi("Dra. Ana Rivas", "Consulta externa", "8:00 a. m. – 2:00 p. m.", "Alergista"),
+                    ),
             ),
             AreaTurnosUi(
                 area = "Emergencia",
                 turnos =
                     listOf(
-                        TurnoPersonalUi("Dr. Jorge Peña", "Emergencia", "6:00 a. m. – 6:00 p. m.", "Emergencia", enCurso = true),
+                        TurnoPersonalUi(
+                            "Dr. Jorge Peña",
+                            "Emergencia",
+                            "6:00 a. m. – 6:00 p. m.",
+                            "Emergencia",
+                            enCurso = true,
+                        ),
                         TurnoPersonalUi("María Gómez", "Emergencia", "3:00 p. m. – 11:00 p. m.", "Enfermería"),
                     ),
             ),
@@ -201,7 +216,13 @@ object DatosMuestra {
                 duracion = "55 min",
                 estado = EstadoServicio.FINALIZADO,
             ),
-            ServicioBitacoraUi("b-3", "18 oct", "7:10 a. m.", "Dificultad respiratoria", estado = EstadoServicio.RECHAZADA),
+            ServicioBitacoraUi(
+                "b-3",
+                "18 oct",
+                "7:10 a. m.",
+                "Dificultad respiratoria",
+                estado = EstadoServicio.RECHAZADA,
+            ),
             ServicioBitacoraUi(
                 "b-4",
                 "15 oct",
@@ -223,7 +244,13 @@ object DatosMuestra {
     // Doctor ---------------------------------------------------------------------------------
 
     val turnoDoctor =
-        TurnoUi(dia = "Hoy", horario = "6:00 a. m. – 6:00 p. m.", area = "Emergencias", tipo = "Emergencia", enCurso = true)
+        TurnoUi(
+            dia = "Hoy",
+            horario = "6:00 a. m. – 6:00 p. m.",
+            area = "Emergencias",
+            tipo = "Emergencia",
+            enCurso = true,
+        )
 
     val agendaDoctor =
         AgendaUi(

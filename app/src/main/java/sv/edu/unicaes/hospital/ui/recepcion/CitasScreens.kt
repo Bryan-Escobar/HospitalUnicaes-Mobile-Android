@@ -426,7 +426,15 @@ private fun SeccionHoras(
                 horas.datos.forEach { opcion ->
                     val conCita = opcion in uiState.horasConCitaPaciente
                     ChipOpcion(
-                        texto = if (conCita) stringResource(R.string.citas_hora_con_cita, hora12(opcion)) else hora12(opcion),
+                        texto =
+                            if (conCita) {
+                                stringResource(
+                                    R.string.citas_hora_con_cita,
+                                    hora12(opcion),
+                                )
+                            } else {
+                                hora12(opcion)
+                            },
                         elegida = opcion == uiState.hora,
                         habilitada = !conCita,
                         onClick = { acciones.onHora(opcion) },
