@@ -134,6 +134,7 @@ private val CODIGOS_CON_CODIGO = CODIGOS_CAMAS + CODIGO_AMBULANCIA_NO_DISPONIBLE
 /** Códigos con los que las funciones y triggers de Supabase anteponen un mensaje legible. */
 private val CODIGOS_RECHAZO =
     setOf(
+        CODIGO_AREA_INVALIDA,
         "CITA_DUPLICADA",
         "CITA_FUERA_DE_TURNO",
         "REGLA_DE_NEGOCIO",
@@ -141,12 +142,17 @@ private val CODIGOS_RECHAZO =
         "TURNO_SOLAPADO",
     )
 
+/** Rechazos de la base cuyo código necesita la pantalla (p. ej. recargar las áreas tras `AREA_INVALIDA`). */
+private val CODIGOS_RECHAZO_CON_CODIGO = setOf(CODIGO_AREA_INVALIDA)
+
 /** `CITA_DUPLICADA: el doctor ya tiene una cita…` → [AppError.Rechazada] con el texto después del código. */
 fun rechazoDesdeMensaje(mensaje: String): AppError.Rechazada? {
     val codigo = mensaje.substringBefore(':', missingDelimiterValue = "").trim()
     if (codigo !in CODIGOS_RECHAZO) return null
     val detalle = mensaje.substringAfter(':').trim()
-    return detalle.takeIf { it.isNotEmpty() }?.let { AppError.Rechazada(it.replaceFirstChar(Char::uppercase)) }
+    return detalle.takeIf { it.isNotEmpty() }?.let {
+        AppError.Rechazada(it.replaceFirstChar(Char::uppercase), codigo.takeIf { c -> c in CODIGOS_RECHAZO_CON_CODIGO })
+    }
 }
 
 fun errorDesdeCodigo(codigo: Int): AppError =

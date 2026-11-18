@@ -2,6 +2,7 @@ package sv.edu.unicaes.hospital.ui
 
 import sv.edu.unicaes.hospital.core.Resultado
 import sv.edu.unicaes.hospital.data.repository.TurnosRepository
+import sv.edu.unicaes.hospital.domain.model.AreaHospital
 import sv.edu.unicaes.hospital.domain.model.DatosTurno
 import sv.edu.unicaes.hospital.domain.model.Empleado
 import sv.edu.unicaes.hospital.domain.model.TipoTurno
@@ -12,9 +13,13 @@ class FakeTurnosRepository(
     var turnos: Resultado<List<Turno>> = Resultado.Exito(emptyList()),
     var mios: Resultado<List<Turno>> = Resultado.Exito(emptyList()),
     var empleados: Resultado<List<Empleado>> = Resultado.Exito(emptyList()),
+    var areas: Resultado<List<AreaHospital>> = Resultado.Exito(areasCatalogo),
     var escritura: Resultado<Unit> = Resultado.Exito(Unit),
 ) : TurnosRepository {
     val consultas = mutableListOf<Pair<String, String>>()
+
+    /** Veces que se pidió el catálogo de áreas. */
+    var consultasAreas = 0
     val creados = mutableListOf<DatosTurno>()
     val actualizados = mutableListOf<Pair<String, DatosTurno>>()
 
@@ -33,6 +38,11 @@ class FakeTurnosRepository(
 
     override suspend fun empleados() = empleados
 
+    override suspend fun areas(): Resultado<List<AreaHospital>> {
+        consultasAreas++
+        return areas
+    }
+
     override suspend fun crear(datos: DatosTurno): Resultado<Unit> {
         creados += datos
         return escritura
@@ -46,6 +56,11 @@ class FakeTurnosRepository(
         return escritura
     }
 }
+
+/** Catálogo `areas_hospital` de prueba (activas, en el orden del seed). */
+val areasCatalogo =
+    listOf("Consulta externa", "Emergencia", "Hospitalización", "Pediatría", "Recepción")
+        .mapIndexed { i, nombre -> AreaHospital("a$i", nombre) }
 
 fun turno(
     id: String,

@@ -44,7 +44,19 @@ data class Empleado(
     val tipoPersonal: String,
 )
 
-/** Lo que recepción manda al crear o ajustar un turno; el trigger `validar_turno` rechaza los solapes. */
+/**
+ * Área activa del catálogo `areas_hospital` (HUNI-102). El turno guarda su [nombre] en `turnos_personal.area`;
+ * el catálogo lo amplía la administración, quien registra el turno solo elige de la lista.
+ */
+data class AreaHospital(
+    val id: String,
+    val nombre: String,
+)
+
+/**
+ * Lo que recepción manda al crear o ajustar un turno; el trigger `validar_turno` rechaza los solapes y
+ * `validar_area_turno` un [area] que no esté activa en el catálogo (`AREA_INVALIDA`).
+ */
 data class DatosTurno(
     val personalId: String,
     val area: String,

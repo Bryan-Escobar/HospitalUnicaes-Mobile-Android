@@ -102,6 +102,19 @@ class ResultadoTest {
     }
 
     @Test
+    fun `el area fuera del catalogo se muestra sin el codigo y lo conserva para recargar la lista`() {
+        assertEquals(
+            AppError.Rechazada(
+                "El área \"Urgencias\" no está en el catálogo de áreas activas; elige una de la lista",
+                CODIGO_AREA_INVALIDA,
+            ),
+            rechazoDesdeMensaje(
+                "AREA_INVALIDA: el área \"Urgencias\" no está en el catálogo de áreas activas; elige una de la lista",
+            ),
+        )
+    }
+
+    @Test
     fun `otros mensajes de Supabase no son rechazos`() {
         assertEquals(null, rechazoDesdeMensaje("ACCESO_DENEGADO: solo recepción"))
         assertEquals(null, rechazoDesdeMensaje("JWT expired"))

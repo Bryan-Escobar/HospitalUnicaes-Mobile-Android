@@ -72,6 +72,9 @@ const val CODIGO_AMBULANCIA_NO_DISPONIBLE = "AMBULANCIA_NO_DISPONIBLE"
 /** 409 al modificar una consulta que ya se cerró: al reintentar el cierre cuenta como hecho. */
 const val CODIGO_CONSULTA_CERRADA = "CONSULTA_CERRADA"
 
+/** 422 de la base (HUNI-102): el área del turno ya no está activa en el catálogo; hay que recargar la lista. */
+const val CODIGO_AREA_INVALIDA = "AREA_INVALIDA"
+
 @StringRes
 fun AppError.mensaje(): Int =
     when (this) {
