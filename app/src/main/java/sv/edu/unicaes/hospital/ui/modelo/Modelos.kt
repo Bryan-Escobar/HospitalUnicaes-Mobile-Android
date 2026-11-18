@@ -160,13 +160,11 @@ data class ServicioBitacoraUi(
 data class DetalleServicioUi(
     val fecha: String,
     val despacho: String,
-    val destino: String,
     val observaciones: String,
 )
 
-/** Lo que recepción escribe al cerrar. Destino va en su campo; observaciones, en `descripcion`. */
+/** Lo que recepción escribe al cerrar. La API lo guarda en `descripcion`. */
 data class CierreServicioUi(
-    val destino: String,
     val observaciones: String,
 )
 
@@ -189,6 +187,7 @@ data class OrdenLabUi(
 data class InicioRecepcionUi(
     val turno: TurnoUi,
     val solicitudAmbulancia: SolicitudAmbulanciaUi?,
+    val solicitudesAmbulancia: Int,
     val laboratorioPendiente: Int,
     val ocupacion: List<OcupacionUi>,
     val citasHoyTotal: Int,

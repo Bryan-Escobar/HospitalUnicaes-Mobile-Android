@@ -19,7 +19,6 @@ import kotlinx.coroutines.withContext
 import sv.edu.unicaes.hospital.core.Resultado
 import sv.edu.unicaes.hospital.core.safeApiCall
 import sv.edu.unicaes.hospital.data.remote.HospitalApi
-import sv.edu.unicaes.hospital.data.remote.dto.ActualizarSolicitudAmbulanciaBody
 import sv.edu.unicaes.hospital.data.remote.dto.CancelarSolicitudBody
 import sv.edu.unicaes.hospital.data.remote.dto.CerrarSolicitudBody
 import sv.edu.unicaes.hospital.data.remote.dto.aDominio
@@ -45,12 +44,6 @@ interface AmbulanciaRepository {
     suspend fun obtener(id: String): Resultado<SolicitudAmbulancia>
 
     suspend fun despachar(id: String): Resultado<Unit>
-
-    /** Completa el destino antes de cerrar, para que la bitácora lo guarde en la solicitud. */
-    suspend fun actualizarDestino(
-        id: String,
-        destino: String,
-    ): Resultado<Unit>
 
     suspend fun cerrar(
         id: String,
@@ -86,12 +79,6 @@ class AmbulanciaRepositoryImpl
             safeApiCall { api.obtenerSolicitudAmbulancia(id).data.aDominio() }
 
         override suspend fun despachar(id: String): Resultado<Unit> = safeApiCall { api.despacharAmbulancia(id) }
-
-        override suspend fun actualizarDestino(
-            id: String,
-            destino: String,
-        ): Resultado<Unit> =
-            safeApiCall { api.actualizarSolicitudAmbulancia(id, ActualizarSolicitudAmbulanciaBody(destino)) }
 
         override suspend fun cerrar(
             id: String,

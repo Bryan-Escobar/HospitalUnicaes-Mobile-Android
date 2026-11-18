@@ -11,7 +11,6 @@ import retrofit2.http.PUT
 import retrofit2.http.Part
 import retrofit2.http.Path
 import retrofit2.http.Query
-import sv.edu.unicaes.hospital.data.remote.dto.ActualizarSolicitudAmbulanciaBody
 import sv.edu.unicaes.hospital.data.remote.dto.AltaBody
 import sv.edu.unicaes.hospital.data.remote.dto.AmbulanciaDto
 import sv.edu.unicaes.hospital.data.remote.dto.ApiRespuesta
@@ -169,13 +168,6 @@ interface HospitalApi {
     suspend fun obtenerSolicitudAmbulancia(
         @Path("id") id: String,
     ): ApiRespuesta<SolicitudAmbulanciaDto>
-
-    /** Agrega el destino mientras la solicitud sigue abierta. 409 SOLICITUD_CERRADA si ya terminó. */
-    @PATCH("ambulancia/solicitudes/{id}")
-    suspend fun actualizarSolicitudAmbulancia(
-        @Path("id") id: String,
-        @Body body: ActualizarSolicitudAmbulanciaBody,
-    )
 
     /**
      * Pasa la ambulancia a `en_servicio`. 409 AMBULANCIA_NO_DISPONIBLE si otro la despachó primero o está

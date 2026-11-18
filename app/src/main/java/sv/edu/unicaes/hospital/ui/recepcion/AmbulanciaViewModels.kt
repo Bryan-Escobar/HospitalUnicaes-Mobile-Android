@@ -120,21 +120,13 @@ class AmbulanciaViewModel
             }
         }
 
-        /** Destino por PATCH (si lo escribió) y el resto dentro de `descripcion`, que es lo que la API guarda. */
+        /** La API cierra con `descripcion`. */
         fun cerrar(cierre: CierreServicioUi) {
             val id = servicioId ?: return
             if (_uiState.value.enviando) return
             _uiState.update { it.copy(enviando = true, error = null) }
             viewModelScope.launch {
                 try {
-                    val destino = cierre.destino.trim().take(MAX_DESTINO)
-                    if (destino.isNotEmpty()) {
-                        val actualizado = repositorio.actualizarDestino(id, destino)
-                        if (actualizado is Resultado.Fallo) {
-                            _uiState.update { it.copy(error = actualizado.error) }
-                            return@launch
-                        }
-                    }
                     when (val resultado = repositorio.cerrar(id, descripcionDeCierre(cierre))) {
                         is Resultado.Exito -> {
                             _uiState.update { it.copy(conflicto = false) }
@@ -330,7 +322,10 @@ internal fun fechasDe(
 
 /** La API cierra con `descripcion`. Vacío se manda como null. */
 internal fun descripcionDeCierre(cierre: CierreServicioUi): String? =
-    cierre.observaciones.trim().take(MAX_DESCRIPCION).ifEmpty { null }
+    cierre.observaciones
+        .trim()
+        .take(MAX_DESCRIPCION)
+        .ifEmpty { null }
 
 internal fun Ambulancia.aUi(
     pendientes: List<SolicitudAmbulancia>,
@@ -433,7 +428,6 @@ internal fun EntradaBitacora.aDetalle(): DetalleServicioUi {
     return DetalleServicioUi(
         fecha = creada?.let { diaMes(it, ZONA_HOSPITAL) }.orEmpty(),
         despacho = registradoPor.orEmpty(),
-        destino = solicitud?.destino.orEmpty(),
         observaciones = descripcion?.ifBlank { null } ?: solicitud?.descripcion.orEmpty(),
     )
 }
@@ -495,7 +489,6 @@ private fun textoHace(
     }
 }
 
-private const val MAX_DESTINO = 300
 private const val MAX_DESCRIPCION = 2000
 private const val DIAS_ATRAS = 6
 private const val MINUTOS_HORA = 60

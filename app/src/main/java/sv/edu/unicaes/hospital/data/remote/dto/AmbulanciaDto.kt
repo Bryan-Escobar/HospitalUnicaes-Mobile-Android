@@ -58,12 +58,6 @@ data class BitacoraAmbulanciaDto(
     @SerialName("created_at") val createdAt: String,
 )
 
-/** Body de PATCH /ambulancia/solicitudes/{id}. Solo viaja el destino que recepción escribió. */
-@Serializable
-data class ActualizarSolicitudAmbulanciaBody(
-    val destino: String,
-)
-
 /** Body de POST /ambulancia/solicitudes/{id}/cerrar. */
 @Serializable
 data class CerrarSolicitudBody(

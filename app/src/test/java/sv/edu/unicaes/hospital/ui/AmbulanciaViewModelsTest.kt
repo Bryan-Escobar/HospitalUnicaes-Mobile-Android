@@ -70,11 +70,9 @@ class AmbulanciaViewModelsTest {
         var alDespachar: Resultado<Unit> = Resultado.Exito(Unit),
         var alCerrar: Resultado<Unit> = Resultado.Exito(Unit),
         var alCancelar: Resultado<Unit> = Resultado.Exito(Unit),
-        var alActualizar: Resultado<Unit> = Resultado.Exito(Unit),
         var bitacoraActual: Resultado<List<EntradaBitacora>> = Resultado.Exito(emptyList()),
     ) : AmbulanciaRepository {
         val despachadas = mutableListOf<String>()
-        val destinos = mutableListOf<Pair<String, String>>()
         val cierres = mutableListOf<Pair<String, String?>>()
         val canceladas = mutableListOf<String>()
         val filtros = mutableListOf<FiltroBitacora>()
@@ -88,14 +86,6 @@ class AmbulanciaViewModelsTest {
         override suspend fun despachar(id: String): Resultado<Unit> {
             despachadas += id
             return alDespachar
-        }
-
-        override suspend fun actualizarDestino(
-            id: String,
-            destino: String,
-        ): Resultado<Unit> {
-            destinos += id to destino
-            return alActualizar
         }
 
         override suspend fun cerrar(
@@ -211,7 +201,7 @@ class AmbulanciaViewModelsTest {
     }
 
     @Test
-    fun `cerrar manda el destino aparte y el resto en la descripcion`() {
+    fun `cerrar manda las observaciones como descripcion`() {
         val activa = SolicitudActiva("s1", "urgente", "despachada")
         val fake =
             FakeAmbulancia(
@@ -221,29 +211,9 @@ class AmbulanciaViewModelsTest {
             )
         val viewModel = AmbulanciaViewModel(fake)
 
-        viewModel.cerrar(CierreServicioUi("Emergencias", "paciente estable"))
+        viewModel.cerrar(CierreServicioUi("paciente estable"))
 
-        assertEquals("s1" to "Emergencias", fake.destinos.single())
-        assertEquals("paciente estable", fake.cierres.single().second)
-    }
-
-    @Test
-    fun `cerrar sin destino no actualiza la solicitud`() {
-        val fake =
-            FakeAmbulancia(
-                estadoActual =
-                    Resultado.Exito(
-                        unidad(EstadoAmbulancia.EN_SERVICIO, SolicitudActiva("s1", "urgente", "despachada")),
-                    ),
-                pendientesActual = Resultado.Exito(emptyList()),
-                detalle = Resultado.Exito(solicitud(estado = "despachada")),
-            )
-        val viewModel = AmbulanciaViewModel(fake)
-
-        viewModel.cerrar(CierreServicioUi("  ", "listo"))
-
-        assertTrue(fake.destinos.isEmpty())
-        assertEquals("listo", fake.cierres.single().second)
+        assertEquals("s1" to "paciente estable", fake.cierres.single())
     }
 
     @Test
@@ -273,7 +243,7 @@ class AmbulanciaViewModelsTest {
                         estado = "finalizada",
                         fechaDespacho = "2026-11-17T16:14:00.000Z",
                         fechaCierre = "2026-11-17T17:02:00.000Z",
-                    ).copy(destino = "Emergencias"),
+                    ),
                 creadaEn = "2026-11-17T17:02:00.000Z",
             )
         val fake =
@@ -293,11 +263,6 @@ class AmbulanciaViewModelsTest {
             "Karla",
             viewModel.uiState.value.detalle
                 ?.despacho,
-        )
-        assertEquals(
-            "Emergencias",
-            viewModel.uiState.value.detalle
-                ?.destino,
         )
         assertEquals(
             "paciente estable",

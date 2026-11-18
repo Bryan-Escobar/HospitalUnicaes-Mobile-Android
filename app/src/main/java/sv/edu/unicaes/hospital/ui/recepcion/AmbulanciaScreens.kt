@@ -327,14 +327,13 @@ private fun coloresAmbulancia(estado: EstadoAmbulancia) =
         }
     }
 
-/** Hoja de cierre. La API guarda el destino en la solicitud y el texto en `descripcion`. */
+/** Hoja de cierre. Lo escrito se guarda en `descripcion`. */
 @Composable
 private fun HojaCerrarServicio(
     enviando: Boolean,
     onCerrar: () -> Unit,
     onConfirmar: (CierreServicioUi) -> Unit,
 ) {
-    var destino by rememberSaveable { mutableStateOf("") }
     var observaciones by rememberSaveable { mutableStateOf("") }
     ModalBottomSheet(onDismissRequest = onCerrar) {
         Column(
@@ -342,12 +341,6 @@ private fun HojaCerrarServicio(
             verticalArrangement = Arrangement.spacedBy(Espacio.xs),
         ) {
             Text(stringResource(R.string.ambulancia_cerrar_servicio), style = MaterialTheme.typography.titleLarge)
-            CampoTexto(
-                etiqueta = stringResource(R.string.ambulancia_destino),
-                valor = destino,
-                onValor = { destino = it },
-                ayuda = stringResource(R.string.ambulancia_destino_ayuda),
-            )
             CampoTexto(
                 etiqueta = stringResource(R.string.ambulancia_observaciones),
                 valor = observaciones,
@@ -358,7 +351,7 @@ private fun HojaCerrarServicio(
             BotonPrimario(
                 texto = stringResource(R.string.ambulancia_cerrar_servicio),
                 onClick = {
-                    onConfirmar(CierreServicioUi(destino = destino, observaciones = observaciones))
+                    onConfirmar(CierreServicioUi(observaciones))
                     onCerrar()
                 },
                 habilitado = !enviando,
@@ -479,10 +472,9 @@ fun BitacoraScreen(
                                     style = EstiloTituloTarjeta,
                                 )
                                 Column {
-                                    FilaDato(stringResource(R.string.bitacora_despacho), detalle.despacho)
                                     FilaDato(
-                                        stringResource(R.string.ambulancia_destino),
-                                        detalle.destino.ifBlank { stringResource(R.string.ambulancia_sin_destino) },
+                                        stringResource(R.string.bitacora_despacho),
+                                        detalle.despacho,
                                         divisor = false,
                                     )
                                 }

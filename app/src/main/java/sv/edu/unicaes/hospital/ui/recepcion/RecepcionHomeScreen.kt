@@ -2,6 +2,7 @@ package sv.edu.unicaes.hospital.ui.recepcion
 
 import androidx.activity.compose.BackHandler
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
@@ -11,6 +12,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.PreviewScreenSizes
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleEventObserver
+import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavBackStackEntry
 import androidx.navigation.NavHostController
@@ -75,6 +79,15 @@ private fun RecepcionNavHost(
         composable<InicioRuta> {
             val viewModel: InicioRecepcionViewModel = hiltViewModel()
             val estado by viewModel.uiState.collectAsStateWithLifecycle()
+            val ciclo = LocalLifecycleOwner.current
+            DisposableEffect(ciclo, viewModel) {
+                val observador =
+                    LifecycleEventObserver { _, evento ->
+                        if (evento == Lifecycle.Event.ON_RESUME) viewModel.cargar()
+                    }
+                ciclo.lifecycle.addObserver(observador)
+                onDispose { ciclo.lifecycle.removeObserver(observador) }
+            }
             InicioRecepcionScreen(
                 estado = estado,
                 onAmbulancia = { navController.navigate(AmbulanciaRuta) },
