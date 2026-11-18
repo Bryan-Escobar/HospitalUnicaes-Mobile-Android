@@ -2,6 +2,7 @@ package sv.edu.unicaes.hospital.data.remote.dto
 
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
+import sv.edu.unicaes.hospital.domain.model.AreaHospital
 import sv.edu.unicaes.hospital.domain.model.DatosTurno
 import sv.edu.unicaes.hospital.domain.model.Empleado
 import sv.edu.unicaes.hospital.domain.model.TipoTurno
@@ -33,6 +34,13 @@ data class EmpleadoDto(
     val nombres: String,
     val apellidos: String,
     @SerialName("tipos_personal") val tipoPersonal: TipoPersonalDto? = null,
+)
+
+/** Fila de `areas_hospital` (catálogo de áreas de los turnos, HUNI-102). */
+@Serializable
+data class AreaHospitalDto(
+    val id: String,
+    val nombre: String,
 )
 
 /** Cuerpo de insert/update de `turnos_personal`; las horas van como `HH:mm`. */
@@ -71,6 +79,8 @@ fun TurnoPersonalDto.aDominio(): Turno =
 
 fun EmpleadoDto.aDominio(): Empleado =
     Empleado(id = id, nombre = "$nombres $apellidos".trim(), tipoPersonal = tipoPersonal?.nombre.orEmpty())
+
+fun AreaHospitalDto.aDominio(): AreaHospital = AreaHospital(id = id, nombre = nombre)
 
 fun DatosTurno.aBody(): TurnoBodyDto =
     TurnoBodyDto(
