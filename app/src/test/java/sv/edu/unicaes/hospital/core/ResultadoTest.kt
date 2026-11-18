@@ -141,4 +141,32 @@ class ResultadoTest {
             val error = httpError(409, """{"statusCode":409,"success":false,"code":"PACIENTE_YA_HOSPITALIZADO"}""")
             assertEquals(Resultado.Fallo(AppError.Conflicto), safeApiCall { throw error })
         }
+
+    @Test
+    fun `409 CONSULTA_CERRADA conserva el codigo para dar el cierre por hecho`() =
+        runTest {
+            val error =
+                httpError(
+                    409,
+                    """{"statusCode":409,"success":false,"code":"CONSULTA_CERRADA","message":"La consulta ya está cerrada"}""",
+                )
+            assertEquals(
+                Resultado.Fallo(AppError.Rechazada("La consulta ya está cerrada", CODIGO_CONSULTA_CERRADA)),
+                safeApiCall { throw error },
+            )
+        }
+
+    @Test
+    fun `422 REGLA_DE_NEGOCIO muestra el mensaje de la API`() =
+        runTest {
+            val error =
+                httpError(
+                    422,
+                    """{"statusCode":422,"success":false,"code":"REGLA_DE_NEGOCIO","message":"El paciente está desactivado"}""",
+                )
+            assertEquals(
+                Resultado.Fallo(AppError.Rechazada("El paciente está desactivado")),
+                safeApiCall { throw error },
+            )
+        }
 }

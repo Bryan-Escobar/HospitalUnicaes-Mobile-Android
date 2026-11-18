@@ -30,4 +30,4 @@ class DetalleCitaViewModel
                 ?: DatosMuestra.detalleCita
         })
 
-internal fun citaDeMuestra(id: String): CitaUi? = DatosMuestra.agendaDoctor.citas.firstOrNull { it.id == id }
+private fun citaDeMuestra(id: String): CitaUi? = DatosMuestra.agendaDoctor.citas.firstOrNull { it.id == id }

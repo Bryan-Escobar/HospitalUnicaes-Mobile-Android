@@ -17,6 +17,12 @@ interface PacientesRepository {
         pagina: Int,
     ): Resultado<Pagina<Paciente>>
 
+    /**
+     * Todos los pacientes activos que la API deja ver. Para el doctor son solo los que atiende (cita no
+     * cancelada, consulta u hospitalización): "Mis pacientes", HUNI-61.
+     */
+    suspend fun atendidos(): Resultado<List<Paciente>>
+
     suspend fun obtener(id: String): Resultado<Paciente>
 
     suspend fun crear(datos: DatosPaciente): Resultado<Paciente>
@@ -41,6 +47,18 @@ class PacientesRepositoryImpl
                 api.listarPacientes(buscar, pagina, POR_PAGINA).data.aDominio { it.aDominio() }
             }
 
+        override suspend fun atendidos(): Resultado<List<Paciente>> =
+            safeApiCall {
+                val pacientes = mutableListOf<Paciente>()
+                var pagina = 1
+                do {
+                    val respuesta = api.listarPacientes(null, pagina, MAXIMO_POR_PAGINA).data
+                    pacientes += respuesta.items.map { it.aDominio() }
+                    pagina++
+                } while (pagina <= respuesta.paginacion.totalPaginas && pagina <= MAXIMO_PAGINAS)
+                pacientes
+            }
+
         override suspend fun obtener(id: String): Resultado<Paciente> =
             safeApiCall { api.obtenerPaciente(id).data.aDominio() }
 
@@ -54,5 +72,11 @@ class PacientesRepositoryImpl
 
         private companion object {
             const val POR_PAGINA = 20
+
+            /** Límite de `por_pagina` en la API. */
+            const val MAXIMO_POR_PAGINA = 100
+
+            /** Tope de seguridad: un doctor no atiende a más de 500 pacientes activos a la vez. */
+            const val MAXIMO_PAGINAS = 5
         }
     }

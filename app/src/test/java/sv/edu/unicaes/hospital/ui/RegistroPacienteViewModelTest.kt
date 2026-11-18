@@ -59,6 +59,8 @@ class RegistroPacienteViewModelTest {
         ): Resultado<Pagina<Paciente>> =
             Resultado.Exito(Pagina(pacientes.filter { buscar == null || it.documento == buscar }, 1, 1))
 
+        override suspend fun atendidos(): Resultado<List<Paciente>> = error("no se usa")
+
         override suspend fun obtener(id: String): Resultado<Paciente> =
             pacientes.firstOrNull { it.id == id }?.let { Resultado.Exito(it) } ?: Resultado.Fallo(AppError.NoEncontrado)
 

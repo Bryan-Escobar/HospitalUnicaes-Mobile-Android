@@ -2,7 +2,6 @@ package sv.edu.unicaes.hospital.ui.modelo
 
 import sv.edu.unicaes.hospital.domain.model.EstadoAmbulancia
 import sv.edu.unicaes.hospital.domain.model.EstadoCita
-import sv.edu.unicaes.hospital.domain.model.EstadoLaboratorio
 import sv.edu.unicaes.hospital.domain.model.TipoHabitacion
 
 /**
@@ -271,68 +270,8 @@ object DatosMuestra {
             edad = 41,
             dui = "04512378-9",
             alergias = null,
-        )
-
-    val misPacientes =
-        listOf(
-            PacienteUi("p-2", "María López", "04512378-9", etiqueta = "Emergencia", ultimaVisita = "Hoy"),
-            PacienteUi(
-                "p-6",
-                "Tomás Mora",
-                "06677889-3",
-                etiqueta = "HAB-206 · A",
-                hospitalizado = true,
-                ultimaVisita = "20 oct",
-            ),
-            PacienteUi("p-7", "Ana Vega", "07788990-4", ultimaVisita = "Hoy"),
-            PacienteUi("p-8", "Carla Ríos", "08899001-5", ultimaVisita = "15 oct"),
-        )
-
-    val expedienteTomas =
-        ExpedienteUi(
-            paciente = misPacientes[1],
-            edad = 52,
-            alergias = "Ibuprofeno",
-            hospitalizacion = "HAB-206 · Cama A · desde 20 oct",
-            consultas =
-                listOf(
-                    ConsultaUi("20 oct", "Apendicitis aguda", "Dr. Jorge Peña", recetas = 1, ordenes = 2),
-                    ConsultaUi("3 jun", "Gastritis", "Dr. Carlos Molina", recetas = 0, ordenes = 0),
-                ),
-            laboratorio =
-                listOf(
-                    OrdenLabUi(
-                        "o-1030",
-                        1030,
-                        "Hemograma completo",
-                        "Tomás Mora",
-                        "06677889-3",
-                        "Dr. Peña",
-                        "20 oct",
-                        EstadoLaboratorio.COMPLETADO,
-                    ),
-                    OrdenLabUi(
-                        "o-1036",
-                        1036,
-                        "Química sanguínea",
-                        "Tomás Mora",
-                        "06677889-3",
-                        "Dr. Peña",
-                        "21 oct",
-                        EstadoLaboratorio.EN_PROCESO,
-                    ),
-                ),
-            telefono = "7000-4444",
-            contactoEmergencia = "Lucía Mora · 7000-5555",
-        )
-
-    val tiposExamen =
-        listOf(
-            "Química sanguínea",
-            "Hemograma completo",
-            "Examen general de orina",
-            "Perfil lipídico",
-            "Prueba cutánea",
+            // La agenda aún es de muestra: este id no existe en la API.
+            pacienteId = "p-2",
         )
 
     val turnosDoctorSemana =

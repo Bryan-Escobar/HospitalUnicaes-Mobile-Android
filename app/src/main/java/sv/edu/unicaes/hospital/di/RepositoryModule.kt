@@ -14,6 +14,8 @@ import sv.edu.unicaes.hospital.data.repository.CamasRepository
 import sv.edu.unicaes.hospital.data.repository.CamasRepositoryImpl
 import sv.edu.unicaes.hospital.data.repository.CitasRepository
 import sv.edu.unicaes.hospital.data.repository.CitasRepositoryImpl
+import sv.edu.unicaes.hospital.data.repository.ConsultasRepository
+import sv.edu.unicaes.hospital.data.repository.ConsultasRepositoryImpl
 import sv.edu.unicaes.hospital.data.repository.HospitalizacionesRepository
 import sv.edu.unicaes.hospital.data.repository.HospitalizacionesRepositoryImpl
 import sv.edu.unicaes.hospital.data.repository.LaboratorioRepository
@@ -42,6 +44,10 @@ abstract class RepositoryModule {
     @Binds
     @Singleton
     abstract fun bindCitasRepository(impl: CitasRepositoryImpl): CitasRepository
+
+    @Binds
+    @Singleton
+    abstract fun bindConsultasRepository(impl: ConsultasRepositoryImpl): ConsultasRepository
 
     @Binds
     @Singleton

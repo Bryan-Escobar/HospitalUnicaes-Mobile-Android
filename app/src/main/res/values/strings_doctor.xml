@@ -28,13 +28,18 @@
     <string name="expediente_alergias">Alergias</string>
     <string name="expediente_alergias_valor">Alergias: %1$s</string>
     <string name="expediente_hospitalizacion">Hospitalización</string>
+    <string name="expediente_hospitalizacion_valor">%1$s · desde %2$s</string>
     <string name="expediente_dato_dui">Documento (DUI)</string>
     <string name="expediente_dato_edad">Edad</string>
     <string name="expediente_edad_valor">%1$d años</string>
+    <string name="expediente_dato_sin_registro">No registrado</string>
+    <string name="expediente_consulta_sin_diagnostico">Sin diagnóstico</string>
     <string name="expediente_consulta_resumen">%1$s · %2$d receta(s) · %3$d orden(es)</string>
     <string name="expediente_lab_preview">Laboratorio (vista previa)</string>
     <string name="expediente_vacio_titulo">Sin consultas registradas</string>
-    <string name="expediente_vacio_detalle">Inicia una consulta desde una cita.</string>
+    <string name="expediente_vacio_detalle">Registra la primera con “Nueva consulta”.</string>
+    <string name="expediente_sin_ordenes_titulo">Sin órdenes de laboratorio</string>
+    <string name="expediente_sin_ordenes_detalle">Las órdenes se piden desde una consulta.</string>
     <string name="expediente_error">No se pudo cargar el expediente.</string>
 
     <!-- AND-D5 y D6 · Consulta, receta y orden -->
@@ -49,9 +54,21 @@
     <string name="consulta_ordenes">Órdenes de laboratorio (%1$d)</string>
     <string name="consulta_agregar_orden">+ Orden</string>
     <string name="consulta_guardar">Guardar consulta</string>
+    <string name="consulta_guardando">Guardando…</string>
+    <string name="consulta_sin_ordenes">Sin órdenes</string>
+    <string name="consulta_quitar">Quitar</string>
+    <string name="consulta_enviado">Guardado</string>
+    <string name="consulta_error_paciente">No se pudo cargar al paciente.</string>
+    <string name="consulta_error_guardar">No se pudo guardar la consulta.</string>
+    <string name="consulta_parcial">La consulta ya se registró. Al guardar de nuevo se envía solo lo que falta.</string>
     <string name="orden_titulo">Orden de laboratorio</string>
     <string name="orden_tipo_examen">Tipo de examen *</string>
     <string name="orden_indicaciones">Indicaciones</string>
+    <string name="orden_indicaciones_placeholder">Ej.: ayuno de 8 horas</string>
+    <string name="orden_elige_examen">Elige un examen</string>
+    <string name="orden_cargando_catalogo">Cargando exámenes…</string>
+    <string name="orden_catalogo_error">No se pudo cargar el catálogo de exámenes.</string>
+    <string name="orden_catalogo_vacio">No hay exámenes activos en el catálogo.</string>
     <string name="orden_se_crea_en">Se crea en</string>
     <string name="orden_agregar">Agregar orden</string>
     <string name="receta_titulo">Receta</string>
@@ -59,6 +76,7 @@
     <string name="receta_dosis">Dosis</string>
     <string name="receta_frecuencia">Frecuencia</string>
     <string name="receta_agregar">Agregar receta</string>
+    <string name="receta_alerta_alergia">El paciente tiene alergia registrada a: %1$s. Revísalo antes de agregar.</string>
 
     <!-- AND-D7 · Mis turnos -->
     <string name="turnos_mis_turnos">Mis turnos</string>

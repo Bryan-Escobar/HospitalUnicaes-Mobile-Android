@@ -54,6 +54,8 @@ class FichaPacienteViewModelTest {
             pagina: Int,
         ): Resultado<Pagina<Paciente>> = error("no se usa")
 
+        override suspend fun atendidos(): Resultado<List<Paciente>> = error("no se usa")
+
         override suspend fun obtener(id: String) = resultado
 
         override suspend fun crear(datos: DatosPaciente): Resultado<Paciente> = error("no se usa")
@@ -79,6 +81,8 @@ class FichaPacienteViewModelTest {
         FakePacientes(pacienteRes),
         object : HospitalizacionesRepository {
             override suspend fun activaDe(pacienteId: String) = hospRes
+
+            override suspend fun activas(): Resultado<List<Hospitalizacion>> = error("no se usa")
         },
         FakeCitasRepository(dePaciente = citasRes),
     )

@@ -72,6 +72,8 @@ class NuevaCitaViewModelTest {
             return Resultado.Exito(Pagina(encontrados, pagina, 1))
         }
 
+        override suspend fun atendidos(): Resultado<List<Paciente>> = error("no se usa")
+
         override suspend fun obtener(id: String): Resultado<Paciente> =
             paciente?.let { Resultado.Exito(it) } ?: Resultado.Fallo(AppError.NoEncontrado)
 

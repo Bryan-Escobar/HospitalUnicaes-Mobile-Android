@@ -19,8 +19,15 @@ import sv.edu.unicaes.hospital.data.remote.dto.CambiarEstadoCamaBody
 import sv.edu.unicaes.hospital.data.remote.dto.CambiarEstadoExamenDto
 import sv.edu.unicaes.hospital.data.remote.dto.CancelarSolicitudBody
 import sv.edu.unicaes.hospital.data.remote.dto.CerrarSolicitudBody
+import sv.edu.unicaes.hospital.data.remote.dto.ConsultaCreadaDto
+import sv.edu.unicaes.hospital.data.remote.dto.CrearConsultaBody
+import sv.edu.unicaes.hospital.data.remote.dto.CrearDiagnosticoBody
 import sv.edu.unicaes.hospital.data.remote.dto.CrearHospitalizacionBody
+import sv.edu.unicaes.hospital.data.remote.dto.CrearOrdenBody
+import sv.edu.unicaes.hospital.data.remote.dto.CrearRecetaBody
+import sv.edu.unicaes.hospital.data.remote.dto.ExamenCatalogoDto
 import sv.edu.unicaes.hospital.data.remote.dto.HabitacionMapaDto
+import sv.edu.unicaes.hospital.data.remote.dto.HistorialClinicoDto
 import sv.edu.unicaes.hospital.data.remote.dto.HospitalizacionDto
 import sv.edu.unicaes.hospital.data.remote.dto.OrdenExamenDto
 import sv.edu.unicaes.hospital.data.remote.dto.OrdenLaboratorioDto
@@ -28,6 +35,7 @@ import sv.edu.unicaes.hospital.data.remote.dto.PacienteBodyDto
 import sv.edu.unicaes.hospital.data.remote.dto.PacienteDto
 import sv.edu.unicaes.hospital.data.remote.dto.PaginaDto
 import sv.edu.unicaes.hospital.data.remote.dto.PersonalDto
+import sv.edu.unicaes.hospital.data.remote.dto.RegistroCreadoDto
 import sv.edu.unicaes.hospital.data.remote.dto.SolicitudAmbulanciaDto
 import sv.edu.unicaes.hospital.data.remote.dto.TrasladoBody
 import sv.edu.unicaes.hospital.data.remote.dto.UsuarioDto
@@ -63,10 +71,13 @@ interface HospitalApi {
         @Body body: PacienteBodyDto,
     ): ApiRespuesta<PacienteDto>
 
-    /** Hospitalizaciones filtradas por paciente y estado (`activa` o `alta`). */
+    /**
+     * Hospitalizaciones filtradas por paciente y estado (`activa` o `alta`). Sin `paciente_id`, el doctor
+     * recibe solo las de los pacientes que atiende.
+     */
     @GET("hospitalizaciones")
     suspend fun listarHospitalizaciones(
-        @Query("paciente_id") pacienteId: String,
+        @Query("paciente_id") pacienteId: String?,
         @Query("estado") estado: String,
         @Query("por_pagina") porPagina: Int,
     ): ApiRespuesta<PaginaDto<HospitalizacionDto>>
@@ -106,6 +117,41 @@ interface HospitalApi {
         @Body body: CambiarEstadoCamaBody,
     )
 
+    // Registro clínico del doctor (HUNI-57, HUNI-61). Recepción no entra (403).
+
+    /** Ficha, expediente y consultas (diagnósticos, recetas y órdenes). 403 si el doctor no es tratante. */
+    @GET("pacientes/{id}/historial")
+    suspend fun historialPaciente(
+        @Path("id") pacienteId: String,
+    ): ApiRespuesta<HistorialClinicoDto>
+
+    /**
+     * Abre la consulta; desde ahí el doctor es médico tratante. Con `cita_id`, la cita pasa a `atendida`
+     * (409 REGISTRO_DUPLICADO si la cita ya tiene consulta, 422 TRANSICION_INVALIDA si no está activa).
+     */
+    @POST("consultas")
+    suspend fun crearConsulta(
+        @Body body: CrearConsultaBody,
+    ): ApiRespuesta<ConsultaCreadaDto>
+
+    @POST("consultas/{id}/diagnosticos")
+    suspend fun agregarDiagnostico(
+        @Path("id") consultaId: String,
+        @Body body: CrearDiagnosticoBody,
+    ): ApiRespuesta<RegistroCreadoDto>
+
+    @POST("consultas/{id}/recetas")
+    suspend fun emitirReceta(
+        @Path("id") consultaId: String,
+        @Body body: CrearRecetaBody,
+    ): ApiRespuesta<RegistroCreadoDto>
+
+    /** Una consulta cerrada ya no se modifica. 409 CONSULTA_CERRADA si ya lo estaba. */
+    @POST("consultas/{id}/cerrar")
+    suspend fun cerrarConsulta(
+        @Path("id") consultaId: String,
+    ): ApiRespuesta<ConsultaCreadaDto>
+
     @GET("personal")
     suspend fun listarPersonal(
         @Query("activo") activo: String,
@@ -113,13 +159,30 @@ interface HospitalApi {
     ): ApiRespuesta<PaginaDto<PersonalDto>>
     // Laboratorio (HUNI-62, HUNI-63). Recepción ve todas las órdenes y procesa sus exámenes.
 
-    /** Órdenes de la más reciente a la más antigua; `estado` filtra por el estado derivado de la orden. */
+    /**
+     * Órdenes de la más reciente a la más antigua; `estado` filtra por el estado derivado de la orden.
+     * El doctor solo recibe las de los pacientes que atiende.
+     */
     @GET("laboratorio/ordenes")
     suspend fun listarOrdenesLaboratorio(
         @Query("estado") estado: String?,
+        @Query("paciente_id") pacienteId: String?,
         @Query("pagina") pagina: Int,
         @Query("por_pagina") porPagina: Int,
     ): ApiRespuesta<PaginaDto<OrdenLaboratorioDto>>
+
+    /** Catálogo de exámenes activos, para pedir una orden (doctor). */
+    @GET("laboratorio/examenes")
+    suspend fun examenesLaboratorio(): ApiRespuesta<List<ExamenCatalogoDto>>
+
+    /**
+     * La orden nace con todos sus exámenes en `pendiente` y Recepción la ve en su cola. Solo el doctor que
+     * registró la consulta, y mientras siga abierta (409 CONSULTA_CERRADA).
+     */
+    @POST("laboratorio/ordenes")
+    suspend fun crearOrdenLaboratorio(
+        @Body body: CrearOrdenBody,
+    ): ApiRespuesta<OrdenLaboratorioDto>
 
     @GET("laboratorio/ordenes/{id}")
     suspend fun obtenerOrdenLaboratorio(

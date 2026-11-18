@@ -24,11 +24,14 @@ import sv.edu.unicaes.hospital.core.safeApiCall
 import sv.edu.unicaes.hospital.data.local.ArchivosLocales
 import sv.edu.unicaes.hospital.data.remote.HospitalApi
 import sv.edu.unicaes.hospital.data.remote.dto.CambiarEstadoExamenDto
+import sv.edu.unicaes.hospital.data.remote.dto.aBody
 import sv.edu.unicaes.hospital.data.remote.dto.aDominio
 import sv.edu.unicaes.hospital.domain.model.ArchivoAdjunto
 import sv.edu.unicaes.hospital.domain.model.DatosResultado
 import sv.edu.unicaes.hospital.domain.model.EstadoLaboratorio
+import sv.edu.unicaes.hospital.domain.model.ExamenCatalogo
 import sv.edu.unicaes.hospital.domain.model.ExamenOrden
+import sv.edu.unicaes.hospital.domain.model.NuevaOrden
 import sv.edu.unicaes.hospital.domain.model.OrdenLaboratorio
 import sv.edu.unicaes.hospital.domain.model.Pagina
 import java.io.IOException
@@ -37,9 +40,10 @@ import javax.inject.Inject
 import javax.inject.Singleton
 
 /**
- * Órdenes y resultados de laboratorio (HUNI-63). La API es la fuente de verdad: valida que cada examen
- * solo avance (pendiente → en_proceso → completado) y que dos usuarios no lo hagan a la vez. Los avisos
- * en tiempo real llegan por Supabase Realtime y solo dicen "algo cambió": el detalle se vuelve a pedir a la API.
+ * Órdenes y resultados de laboratorio. El doctor las pide desde su consulta (HUNI-61) y Recepción las procesa
+ * (HUNI-63). La API es la fuente de verdad: valida que cada examen solo avance (pendiente → en_proceso →
+ * completado) y que dos usuarios no lo hagan a la vez. Los avisos en tiempo real llegan por Supabase Realtime
+ * y solo dicen "algo cambió": el detalle se vuelve a pedir a la API.
  */
 interface LaboratorioRepository {
     /** Una página de órdenes; [estado] null las trae todas. */
@@ -47,6 +51,18 @@ interface LaboratorioRepository {
         estado: EstadoLaboratorio?,
         pagina: Int,
     ): Resultado<Pagina<OrdenLaboratorio>>
+
+    /** Las órdenes más recientes de un paciente (expediente del doctor), de la más nueva a la más antigua. */
+    suspend fun dePaciente(pacienteId: String): Resultado<List<OrdenLaboratorio>>
+
+    /** Catálogo de exámenes activos, por nombre. */
+    suspend fun examenes(): Resultado<List<ExamenCatalogo>>
+
+    /** El doctor pide exámenes dentro de su consulta abierta; la orden nace Pendiente. */
+    suspend fun crearOrden(
+        consultaId: String,
+        orden: NuevaOrden,
+    ): Resultado<OrdenLaboratorio>
 
     /** Cuántas órdenes hay en [estado] (para los conteos de las pestañas). */
     suspend fun contar(estado: EstadoLaboratorio): Resultado<Int>
@@ -84,13 +100,40 @@ class LaboratorioRepositoryImpl
             pagina: Int,
         ): Resultado<Pagina<OrdenLaboratorio>> =
             safeApiCall {
-                api.listarOrdenesLaboratorio(estado?.valorApi, pagina, POR_PAGINA).data.aDominio { it.aDominio() }
+                api
+                    .listarOrdenesLaboratorio(estado?.valorApi, null, pagina, POR_PAGINA)
+                    .data
+                    .aDominio { it.aDominio() }
             }
+
+        override suspend fun dePaciente(pacienteId: String): Resultado<List<OrdenLaboratorio>> =
+            safeApiCall {
+                api
+                    .listarOrdenesLaboratorio(null, pacienteId, 1, MAXIMO_POR_PAGINA)
+                    .data.items
+                    .map { it.aDominio() }
+            }
+
+        override suspend fun examenes(): Resultado<List<ExamenCatalogo>> =
+            safeApiCall {
+                api
+                    .examenesLaboratorio()
+                    .data
+                    .filter { it.activo }
+                    .map { it.aDominio() }
+                    .sortedBy { it.nombre.lowercase() }
+            }
+
+        override suspend fun crearOrden(
+            consultaId: String,
+            orden: NuevaOrden,
+        ): Resultado<OrdenLaboratorio> =
+            safeApiCall { api.crearOrdenLaboratorio(orden.aBody(consultaId)).data.aDominio() }
 
         override suspend fun contar(estado: EstadoLaboratorio): Resultado<Int> =
             safeApiCall {
                 api
-                    .listarOrdenesLaboratorio(estado.valorApi, 1, 1)
+                    .listarOrdenesLaboratorio(estado.valorApi, null, 1, 1)
                     .data.paginacion.total
             }
 
@@ -149,6 +192,9 @@ class LaboratorioRepositoryImpl
 
         private companion object {
             const val POR_PAGINA = 20
+
+            /** Límite de `por_pagina` en la API. */
+            const val MAXIMO_POR_PAGINA = 100
             val TEXTO_PLANO = "text/plain; charset=utf-8".toMediaType()
 
             fun String?.comoParte(): RequestBody? = this?.trim()?.takeIf { it.isNotEmpty() }?.toRequestBody(TEXTO_PLANO)

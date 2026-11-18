@@ -6,8 +6,6 @@ import org.junit.Assert.assertTrue
 import org.junit.Test
 import sv.edu.unicaes.hospital.core.UiState
 import sv.edu.unicaes.hospital.ui.doctor.DetalleCitaViewModel
-import sv.edu.unicaes.hospital.ui.doctor.ExpedienteViewModel
-import sv.edu.unicaes.hospital.ui.doctor.NuevaConsultaViewModel
 import sv.edu.unicaes.hospital.ui.modelo.DatosMuestra
 import sv.edu.unicaes.hospital.ui.modelo.MuestraViewModel
 import sv.edu.unicaes.hospital.ui.modelo.hora12
@@ -15,7 +13,10 @@ import sv.edu.unicaes.hospital.ui.recepcion.ColaLaboratorioViewModel
 import sv.edu.unicaes.hospital.ui.recepcion.DetalleOrdenViewModel
 import sv.edu.unicaes.hospital.ui.recepcion.MapaCamasViewModel
 
-/** ViewModels con datos de ejemplo de la navegación principal (HUNI-43). Las camas ya usan la API (HUNI-67). */
+/**
+ * ViewModels con datos de ejemplo de la navegación principal (HUNI-43). Las camas (HUNI-67) y los pacientes,
+ * expediente y consulta del doctor (HUNI-61) ya usan la API.
+ */
 class MuestraViewModelsTest {
     private fun <T> MuestraViewModel<T>.datos(): T = (uiState.value as UiState.Exito).datos
 
@@ -28,24 +29,12 @@ class MuestraViewModelsTest {
     }
 
     @Test
-    fun detalleDeCitaYNuevaConsultaUsanLaCitaElegida() {
+    fun detalleDeCitaUsaLaCitaElegida() {
         val cita = DatosMuestra.agendaDoctor.citas[2]
-        val ruta = SavedStateHandle(mapOf("citaId" to cita.id))
 
-        val detalle = DetalleCitaViewModel(ruta).datos()
-        val consulta = NuevaConsultaViewModel(ruta).datos()
+        val detalle = DetalleCitaViewModel(SavedStateHandle(mapOf("citaId" to cita.id))).datos()
 
         assertEquals(cita.id, detalle.cita.id)
         assertTrue(detalle.cita.fecha.endsWith(hora12(cita.hora)))
-        assertEquals(cita, consulta)
-    }
-
-    @Test
-    fun expedienteMuestraAlPacienteElegido() {
-        val paciente = DatosMuestra.misPacientes.first()
-
-        val expediente = ExpedienteViewModel(SavedStateHandle(mapOf("pacienteId" to paciente.id))).datos()
-
-        assertEquals(paciente, expediente.paciente)
     }
 }
