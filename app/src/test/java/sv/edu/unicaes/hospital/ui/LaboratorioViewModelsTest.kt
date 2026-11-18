@@ -23,7 +23,9 @@ import sv.edu.unicaes.hospital.data.repository.LaboratorioRepository
 import sv.edu.unicaes.hospital.domain.model.ArchivoAdjunto
 import sv.edu.unicaes.hospital.domain.model.DatosResultado
 import sv.edu.unicaes.hospital.domain.model.EstadoLaboratorio
+import sv.edu.unicaes.hospital.domain.model.ExamenCatalogo
 import sv.edu.unicaes.hospital.domain.model.ExamenOrden
+import sv.edu.unicaes.hospital.domain.model.NuevaOrden
 import sv.edu.unicaes.hospital.domain.model.OrdenLaboratorio
 import sv.edu.unicaes.hospital.domain.model.Pagina
 import sv.edu.unicaes.hospital.domain.model.PrioridadLaboratorio
@@ -88,6 +90,15 @@ class LaboratorioViewModelsTest {
             listados += estado to pagina
             return paginas(estado, pagina)
         }
+
+        override suspend fun dePaciente(pacienteId: String): Resultado<List<OrdenLaboratorio>> = error("no se usa")
+
+        override suspend fun examenes(): Resultado<List<ExamenCatalogo>> = error("no se usa")
+
+        override suspend fun crearOrden(
+            consultaId: String,
+            orden: NuevaOrden,
+        ): Resultado<OrdenLaboratorio> = error("no se usa")
 
         override suspend fun contar(estado: EstadoLaboratorio): Resultado<Int> = Resultado.Exito(conteos[estado] ?: 0)
 

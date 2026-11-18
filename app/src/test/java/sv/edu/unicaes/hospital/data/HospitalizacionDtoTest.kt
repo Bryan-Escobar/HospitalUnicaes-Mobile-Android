@@ -39,6 +39,7 @@ class HospitalizacionDtoTest {
         assertEquals("A", hospitalizacion.cama)
         assertEquals(TipoHabitacion.SEMIPRIVADA, hospitalizacion.tipo)
         assertEquals("Carlos Molina", hospitalizacion.medicoTratante)
+        assertEquals("p1", hospitalizacion.pacienteId)
     }
 
     @Test
@@ -51,6 +52,8 @@ class HospitalizacionDtoTest {
         val hospitalizacion = json.decodeFromString<HospitalizacionDto>(respuesta).aDominio()
         assertEquals(TipoHabitacion.VIP, hospitalizacion.tipo)
         assertEquals("A", hospitalizacion.cama)
+        // Sin `paciente` (respuesta antigua) el id queda vacío en lugar de fallar.
+        assertEquals("", hospitalizacion.pacienteId)
     }
 
     @Test

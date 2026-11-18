@@ -94,6 +94,8 @@ class CamasViewModelsTest {
             pagina: Int,
         ): Resultado<Pagina<Paciente>> = error("no se usa")
 
+        override suspend fun atendidos(): Resultado<List<Paciente>> = error("no se usa")
+
         override suspend fun obtener(id: String) = resultado
 
         override suspend fun crear(datos: DatosPaciente): Resultado<Paciente> = error("no se usa")
@@ -107,6 +109,8 @@ class CamasViewModelsTest {
     private fun hospitalizaciones(activa: Hospitalizacion?) =
         object : HospitalizacionesRepository {
             override suspend fun activaDe(pacienteId: String): Resultado<Hospitalizacion?> = Resultado.Exito(activa)
+
+            override suspend fun activas(): Resultado<List<Hospitalizacion>> = error("no se usa")
         }
 
     private val ruta get() = SavedStateHandle(mapOf("pacienteId" to "p1"))
