@@ -69,6 +69,9 @@ val CODIGOS_CAMA_PERDIDA = setOf("CAMA_OCUPADA", "CAMA_NO_DISPONIBLE")
 /** 409 al despachar: otro usuario ganó la ambulancia, o está en mantenimiento. */
 const val CODIGO_AMBULANCIA_NO_DISPONIBLE = "AMBULANCIA_NO_DISPONIBLE"
 
+/** 422 de la base (HUNI-102): el área del turno ya no está activa en el catálogo; hay que recargar la lista. */
+const val CODIGO_AREA_INVALIDA = "AREA_INVALIDA"
+
 @StringRes
 fun AppError.mensaje(): Int =
     when (this) {

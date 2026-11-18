@@ -8,10 +8,12 @@ import kotlinx.serialization.json.JsonObject
 import sv.edu.unicaes.hospital.core.AppError
 import sv.edu.unicaes.hospital.core.Resultado
 import sv.edu.unicaes.hospital.core.safeSupabaseCall
+import sv.edu.unicaes.hospital.data.remote.dto.AreaHospitalDto
 import sv.edu.unicaes.hospital.data.remote.dto.EmpleadoDto
 import sv.edu.unicaes.hospital.data.remote.dto.TurnoPersonalDto
 import sv.edu.unicaes.hospital.data.remote.dto.aBody
 import sv.edu.unicaes.hospital.data.remote.dto.aDominio
+import sv.edu.unicaes.hospital.domain.model.AreaHospital
 import sv.edu.unicaes.hospital.domain.model.DatosTurno
 import sv.edu.unicaes.hospital.domain.model.Empleado
 import sv.edu.unicaes.hospital.domain.model.Turno
@@ -22,6 +24,8 @@ import javax.inject.Singleton
  * Turnos del personal directo desde Supabase (HUNI-51). Todos los usuarios con sesión leen `v_turnos`;
  * recepción y administración crean y ajustan en `turnos_personal`. El trigger `validar_turno` rechaza el
  * solape con `TURNO_SOLAPADO: el empleado ya tiene un turno el …`, que llega como [AppError.Rechazada].
+ * El área sale del catálogo `areas_hospital` (HUNI-102); una que no esté activa la rechaza
+ * `validar_area_turno` con `AREA_INVALIDA`.
  */
 interface TurnosRepository {
     /** Turnos de todo el personal que empiezan entre [desde] y [hasta] (días `2026-10-29`, ambos incluidos). */
@@ -38,6 +42,9 @@ interface TurnosRepository {
 
     /** Personal activo, por apellido. */
     suspend fun empleados(): Resultado<List<Empleado>>
+
+    /** Áreas activas del catálogo `areas_hospital`, en el orden que define la administración. */
+    suspend fun areas(): Resultado<List<AreaHospital>>
 
     suspend fun crear(datos: DatosTurno): Resultado<Unit>
 
@@ -96,6 +103,18 @@ class TurnosRepositoryImpl
                         order("apellidos", Order.ASCENDING)
                         order("nombres", Order.ASCENDING)
                     }.decodeList<EmpleadoDto>()
+                    .map { it.aDominio() }
+            }
+
+        override suspend fun areas(): Resultado<List<AreaHospital>> =
+            safeSupabaseCall {
+                supabase.postgrest
+                    .from("areas_hospital")
+                    .select(Columns.raw("id, nombre")) {
+                        filter { eq("activo", true) }
+                        order("orden", Order.ASCENDING)
+                        order("nombre", Order.ASCENDING)
+                    }.decodeList<AreaHospitalDto>()
                     .map { it.aDominio() }
             }
 

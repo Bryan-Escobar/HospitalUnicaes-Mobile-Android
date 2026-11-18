@@ -142,7 +142,11 @@
     <string name="turnos_vacio_detalle">Registra el primer turno.</string>
     <string name="turnos_tipo_todos">Todos</string>
     <string name="turnos_ajustar">Ajustar turno</string>
-    <string name="turnos_area_ejemplo">Consulta externa, Emergencia…</string>
+    <string name="turnos_elige_area">Elige el área</string>
+    <string name="turnos_cargando_areas">Cargando áreas…</string>
+    <string name="turnos_error_areas">No se pudieron cargar las áreas.</string>
+    <string name="turnos_sin_areas">No hay áreas activas. Pide a administración que agregue una.</string>
+    <string name="turnos_area_fuera_de_lista">Esta área ya no está en la lista; elige otra.</string>
     <string name="turnos_tipo_turno">Tipo de turno</string>
     <string name="turnos_termina_dia_siguiente">El turno termina al día siguiente.</string>
     <string name="turnos_notas">Notas (opcional)</string>
