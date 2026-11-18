@@ -9,6 +9,7 @@ import sv.edu.unicaes.hospital.domain.model.TipoHabitacion
 @Serializable
 data class HospitalizacionDto(
     val id: String,
+    val paciente: PersonaResumenDto? = null,
     val cama: CamaDto,
     @SerialName("doctor_tratante") val doctorTratante: PersonaResumenDto,
     @SerialName("fecha_ingreso") val fechaIngreso: String,
@@ -32,6 +33,7 @@ data class HabitacionDto(
 fun HospitalizacionDto.aDominio(): Hospitalizacion =
     Hospitalizacion(
         id = id,
+        pacienteId = paciente?.id.orEmpty(),
         habitacion = cama.habitacion.codigo,
         cama = cama.codigo.removePrefix(cama.habitacion.codigo).removePrefix("-"),
         tipo = if (cama.habitacion.tipo == "vip") TipoHabitacion.VIP else TipoHabitacion.SEMIPRIVADA,

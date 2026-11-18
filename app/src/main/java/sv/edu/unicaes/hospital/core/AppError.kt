@@ -69,6 +69,9 @@ val CODIGOS_CAMA_PERDIDA = setOf("CAMA_OCUPADA", "CAMA_NO_DISPONIBLE")
 /** 409 al despachar: otro usuario ganó la ambulancia, o está en mantenimiento. */
 const val CODIGO_AMBULANCIA_NO_DISPONIBLE = "AMBULANCIA_NO_DISPONIBLE"
 
+/** 409 al modificar una consulta que ya se cerró: al reintentar el cierre cuenta como hecho. */
+const val CODIGO_CONSULTA_CERRADA = "CONSULTA_CERRADA"
+
 @StringRes
 fun AppError.mensaje(): Int =
     when (this) {

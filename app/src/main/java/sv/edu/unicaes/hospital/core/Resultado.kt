@@ -108,7 +108,15 @@ private fun errorDesdeRespuesta(e: HttpException): AppError {
  * Códigos de la API cuyo `message` ya está redactado para el usuario (p. ej. "Otro usuario ya inició
  * este examen; actualiza la orden"): se muestran tal cual como [AppError.Rechazada].
  */
-private val CODIGOS_CON_MENSAJE = setOf("TRANSICION_INVALIDA", "RESULTADO_REQUERIDO", "SOLICITUD_INVALIDA")
+private val CODIGOS_CON_MENSAJE =
+    setOf(
+        "TRANSICION_INVALIDA",
+        "RESULTADO_REQUERIDO",
+        "SOLICITUD_INVALIDA",
+        // Consulta del doctor (HUNI-61): "El paciente está desactivado", "Uno o más exámenes no existen…".
+        "REGLA_DE_NEGOCIO",
+        "REFERENCIA_INVALIDA",
+    )
 
 /**
  * 409 de camas con `message` para el usuario. Se conserva el código en [AppError.Rechazada.codigo]
@@ -118,10 +126,10 @@ private val CODIGOS_CAMAS =
     setOf("CAMA_OCUPADA", "CAMA_NO_DISPONIBLE", "PACIENTE_YA_HOSPITALIZADO", "SIN_CAMAS_DISPONIBLES")
 
 /**
- * 409 cuyo `message` se muestra y cuyo `code` la pantalla necesita (recargar el mapa, o avisar que la
- * ambulancia ya no se puede despachar).
+ * 409 cuyo `message` se muestra y cuyo `code` la pantalla necesita (recargar el mapa, avisar que la
+ * ambulancia ya no se puede despachar, o dar por cerrada una consulta al reintentar).
  */
-private val CODIGOS_CON_CODIGO = CODIGOS_CAMAS + CODIGO_AMBULANCIA_NO_DISPONIBLE
+private val CODIGOS_CON_CODIGO = CODIGOS_CAMAS + CODIGO_AMBULANCIA_NO_DISPONIBLE + CODIGO_CONSULTA_CERRADA
 
 /** Códigos con los que las funciones y triggers de Supabase anteponen un mensaje legible. */
 private val CODIGOS_RECHAZO =

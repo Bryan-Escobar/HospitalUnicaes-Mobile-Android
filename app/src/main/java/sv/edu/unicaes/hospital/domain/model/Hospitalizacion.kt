@@ -12,4 +12,5 @@ data class Hospitalizacion(
     /** Fecha y hora ISO 8601 con zona, como la API. */
     val fechaIngreso: String,
     val medicoTratante: String,
+    val pacienteId: String = "",
 )
