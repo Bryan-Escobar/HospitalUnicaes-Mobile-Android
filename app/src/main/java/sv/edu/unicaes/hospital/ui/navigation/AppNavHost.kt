@@ -4,7 +4,10 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.lifecycle.repeatOnLifecycle
 import androidx.navigation.NavDestination.Companion.hasRoute
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
@@ -24,6 +27,13 @@ fun AppNavHost(
     sesionViewModel: SesionViewModel = hiltViewModel(),
 ) {
     val estadoSesion by sesionViewModel.estadoSesion.collectAsStateWithLifecycle()
+    val lifecycle = LocalLifecycleOwner.current.lifecycle
+
+    LaunchedEffect(lifecycle, sesionViewModel) {
+        lifecycle.repeatOnLifecycle(Lifecycle.State.STARTED) {
+            sesionViewModel.registrarConexionesEnPrimerPlano()
+        }
+    }
 
     // Si la sesión se cierra o no se puede refrescar estando dentro, volver al login.
     LaunchedEffect(estadoSesion) {

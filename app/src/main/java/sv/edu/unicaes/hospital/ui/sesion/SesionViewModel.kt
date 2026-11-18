@@ -5,6 +5,8 @@ import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import sv.edu.unicaes.hospital.data.repository.AuthRepository
@@ -20,6 +22,12 @@ class SesionViewModel
         val estadoSesion: StateFlow<EstadoSesion> =
             authRepository.estadoSesion
                 .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), EstadoSesion.CARGANDO)
+
+        suspend fun registrarConexionesEnPrimerPlano() {
+            authRepository.estadoSesion.distinctUntilChanged().collectLatest { estado ->
+                if (estado == EstadoSesion.ACTIVA) authRepository.registrarConexionApp()
+            }
+        }
 
         fun cerrarSesion() {
             viewModelScope.launch { authRepository.cerrarSesion() }

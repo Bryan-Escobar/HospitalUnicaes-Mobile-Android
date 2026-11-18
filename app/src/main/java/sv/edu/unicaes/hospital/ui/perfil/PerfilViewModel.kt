@@ -22,6 +22,7 @@ class PerfilViewModel
     ) : ViewModel() {
         private val _uiState = MutableStateFlow<UiState<Usuario>>(UiState.Cargando)
         val uiState: StateFlow<UiState<Usuario>> = _uiState.asStateFlow()
+        val ultimaConexionApp = authRepository.ultimaConexionApp
 
         init {
             cargar()

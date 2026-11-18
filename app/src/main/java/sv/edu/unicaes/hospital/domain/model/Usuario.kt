@@ -9,4 +9,5 @@ data class Usuario(
     /** Tipo de personal del catálogo (Doctor, Recepcionista, Enfermero/a…). */
     val tipoPersonal: String? = null,
     val especialidad: String? = null,
+    val ultimaConexionAppAt: String? = null,
 )

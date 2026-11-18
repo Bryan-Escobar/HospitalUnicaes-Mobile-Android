@@ -4,6 +4,7 @@ import okhttp3.MultipartBody
 import okhttp3.RequestBody
 import retrofit2.http.Body
 import retrofit2.http.GET
+import retrofit2.http.Header
 import retrofit2.http.Multipart
 import retrofit2.http.PATCH
 import retrofit2.http.POST
@@ -19,6 +20,7 @@ import sv.edu.unicaes.hospital.data.remote.dto.CambiarEstadoCamaBody
 import sv.edu.unicaes.hospital.data.remote.dto.CambiarEstadoExamenDto
 import sv.edu.unicaes.hospital.data.remote.dto.CancelarSolicitudBody
 import sv.edu.unicaes.hospital.data.remote.dto.CerrarSolicitudBody
+import sv.edu.unicaes.hospital.data.remote.dto.ConexionAppDto
 import sv.edu.unicaes.hospital.data.remote.dto.ConsultaCreadaDto
 import sv.edu.unicaes.hospital.data.remote.dto.CrearConsultaBody
 import sv.edu.unicaes.hospital.data.remote.dto.CrearDiagnosticoBody
@@ -45,6 +47,11 @@ interface HospitalApi {
     /** Perfil y rol del usuario autenticado (403 CUENTA_INACTIVA / PERFIL_INCOMPLETO). */
     @GET("auth/me")
     suspend fun me(): ApiRespuesta<UsuarioDto>
+
+    @POST("auth/me/conexion-app")
+    suspend fun registrarConexionApp(
+        @Header("Authorization") autorizacion: String,
+    ): ApiRespuesta<ConexionAppDto>
 
     /** Pacientes activos; `buscar` (mín. 2 caracteres) filtra por nombre, apellido o documento. */
     @GET("pacientes")

@@ -33,6 +33,10 @@ import sv.edu.unicaes.hospital.ui.components.TopBarHospital
 import sv.edu.unicaes.hospital.ui.components.iniciales
 import sv.edu.unicaes.hospital.ui.modelo.DatosMuestra
 import sv.edu.unicaes.hospital.ui.modelo.PerfilUi
+import sv.edu.unicaes.hospital.ui.modelo.ZONA_HOSPITAL
+import sv.edu.unicaes.hospital.ui.modelo.diaMesNumerico
+import sv.edu.unicaes.hospital.ui.modelo.fechaDesdeIso
+import sv.edu.unicaes.hospital.ui.modelo.hora
 import sv.edu.unicaes.hospital.ui.theme.Espacio
 import sv.edu.unicaes.hospital.ui.theme.HospitalUnicaesTheme
 
@@ -44,10 +48,17 @@ fun PerfilScreen(
     viewModel: PerfilViewModel = hiltViewModel(),
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+    val ultimaConexionApp by viewModel.ultimaConexionApp.collectAsStateWithLifecycle()
 
     when (val estado = uiState) {
         is UiState.Exito -> {
-            PerfilContenido(perfil = estado.datos.aPerfilUi(), onCerrarSesion = onCerrarSesion, onVolver = onVolver)
+            val usuario = estado.datos
+            val reciente = ultimaConexionApp?.takeIf { it.perfilId == usuario.id }?.instante
+            PerfilContenido(
+                perfil = usuario.aPerfilUi(reciente),
+                onCerrarSesion = onCerrarSesion,
+                onVolver = onVolver,
+            )
         }
 
         else -> {
@@ -67,7 +78,7 @@ fun PerfilScreen(
 
 /** "Doctor · Medicina interna": el rol y, si dice algo más, la especialidad o el tipo de personal. */
 @Composable
-private fun Usuario.aPerfilUi(): PerfilUi {
+private fun Usuario.aPerfilUi(conexionReciente: String?): PerfilUi {
     val rolTexto =
         stringResource(
             when {
@@ -79,11 +90,20 @@ private fun Usuario.aPerfilUi(): PerfilUi {
         )
     val detalle = (especialidad ?: tipoPersonal)?.takeUnless { it.equals(rolTexto, ignoreCase = true) }
     val sinRegistrar = stringResource(R.string.perfil_sin_registrar)
+    val fecha = listOfNotNull(ultimaConexionAppAt, conexionReciente).mapNotNull(::fechaDesdeIso).maxOrNull()
     return PerfilUi(
         nombre = nombre,
         rolYTipo = listOfNotNull(rolTexto, detalle).joinToString(" · "),
         correo = correo ?: sinRegistrar,
         telefono = telefono ?: sinRegistrar,
+        ultimaConexion =
+            fecha?.let {
+                stringResource(
+                    R.string.perfil_fecha_conexion,
+                    diaMesNumerico(it, ZONA_HOSPITAL),
+                    hora(it, ZONA_HOSPITAL),
+                )
+            },
     )
 }
 
@@ -114,6 +134,10 @@ private fun PerfilContenido(
             FilaLista(titulo = stringResource(R.string.login_correo), soporte = perfil.correo)
             FilaLista(titulo = stringResource(R.string.campo_telefono_simple), soporte = perfil.telefono)
             FilaLista(titulo = stringResource(R.string.perfil_rol_tipo), soporte = perfil.rolYTipo)
+            FilaLista(
+                titulo = stringResource(R.string.perfil_ultima_conexion),
+                soporte = perfil.ultimaConexion ?: stringResource(R.string.perfil_sin_registrar),
+            )
             BotonPrimario(
                 texto = stringResource(R.string.sesion_cerrar),
                 onClick = { confirmar = true },
