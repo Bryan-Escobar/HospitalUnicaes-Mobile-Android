@@ -233,4 +233,5 @@ data class PerfilUi(
     val rolYTipo: String,
     val correo: String?,
     val telefono: String?,
+    val ultimaConexion: String? = null,
 )

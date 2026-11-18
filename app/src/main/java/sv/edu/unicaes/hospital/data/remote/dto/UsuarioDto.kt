@@ -21,6 +21,12 @@ data class UsuarioDto(
     val telefono: String? = null,
     val rol: String,
     val personal: PersonalResumenDto? = null,
+    @SerialName("ultima_conexion_app_at") val ultimaConexionAppAt: String? = null,
+)
+
+@Serializable
+data class ConexionAppDto(
+    @SerialName("ultima_conexion_app_at") val ultimaConexionAppAt: String,
 )
 
 @Serializable
@@ -45,4 +51,5 @@ fun UsuarioDto.aDominio(): Usuario =
         telefono = telefono,
         tipoPersonal = personal?.tipo?.nombre,
         especialidad = personal?.especialidad,
+        ultimaConexionAppAt = ultimaConexionAppAt,
     )

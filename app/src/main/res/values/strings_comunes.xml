@@ -90,6 +90,8 @@
     <!-- Perfil -->
     <string name="perfil_rol_tipo">Rol y tipo</string>
     <string name="perfil_sin_registrar">Sin registrar</string>
+    <string name="perfil_ultima_conexion">Última conexión</string>
+    <string name="perfil_fecha_conexion">%1$s · %2$s</string>
     <string name="perfil_error">No se pudo cargar tu perfil.</string>
     <string name="rol_recepcion">Recepcionista/Asistente</string>
     <string name="rol_doctor">Doctor</string>
