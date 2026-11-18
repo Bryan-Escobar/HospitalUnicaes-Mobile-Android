@@ -13,6 +13,7 @@ import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
 import sv.edu.unicaes.hospital.core.AppError
+import sv.edu.unicaes.hospital.core.CODIGO_AREA_INVALIDA
 import sv.edu.unicaes.hospital.core.Resultado
 import sv.edu.unicaes.hospital.core.UiState
 import sv.edu.unicaes.hospital.domain.model.TipoTurno
@@ -111,7 +112,7 @@ class TurnosPersonalViewModelTest {
         val vm = vmEnLunes(repo)
         vm.abrirNuevo()
         vm.onPersona("p-9")
-        vm.onArea(" Recepción ")
+        vm.onArea("Recepción")
         vm.onTipoTurno(TipoTurno.NOCHE)
         assertTrue(
             vm.uiState.value.hoja!!
@@ -189,5 +190,131 @@ class TurnosPersonalViewModelTest {
         assertEquals("1", id)
         assertEquals("08:00" to "16:00", datos.horaInicio to datos.horaFin)
         assertEquals(TipoTurno.GUARDIA, datos.tipoTurno)
+    }
+
+    // HUNI-102: el área sale del catálogo, no se escribe
+
+    @Test
+    fun `al abrir el formulario carga las areas activas del catalogo una sola vez`() {
+        val repo = FakeTurnosRepository()
+        val vm = vmEnLunes(repo)
+        vm.abrirNuevo()
+
+        assertEquals(UiState.Exito(areasCatalogo), vm.uiState.value.areas)
+        assertEquals(
+            areasCatalogo.map { it.nombre },
+            vm.uiState.value.hoja!!
+                .areasCatalogo,
+        )
+        vm.cerrarHoja()
+        vm.abrirNuevo()
+        assertEquals(1, repo.consultasAreas)
+    }
+
+    @Test
+    fun `un area que no esta en la lista no se acepta ni deja guardar`() {
+        val repo = FakeTurnosRepository()
+        val vm = vmEnLunes(repo)
+        vm.abrirNuevo()
+        vm.onPersona("p-1")
+        vm.onArea("Urgencias")
+
+        val hoja = vm.uiState.value.hoja!!
+        assertEquals("", hoja.area)
+        assertFalse(hoja.puedeGuardar)
+        vm.guardar()
+        assertTrue(repo.creados.isEmpty())
+    }
+
+    @Test
+    fun `sin catalogo de areas no se puede guardar y el error se reintenta`() {
+        val repo = FakeTurnosRepository(areas = Resultado.Fallo(AppError.SinConexion))
+        val vm = vmEnLunes(repo)
+        vm.abrirNuevo()
+        vm.onPersona("p-1")
+        vm.onArea("Emergencia")
+
+        assertEquals(UiState.Error(AppError.SinConexion), vm.uiState.value.areas)
+        assertFalse(
+            vm.uiState.value.hoja!!
+                .puedeGuardar,
+        )
+
+        repo.areas = Resultado.Exito(areasCatalogo)
+        vm.cargarAreas()
+        vm.onArea("Emergencia")
+        assertTrue(
+            vm.uiState.value.hoja!!
+                .puedeGuardar,
+        )
+    }
+
+    @Test
+    fun `catalogo vacio queda en estado vacio`() {
+        val vm = vmEnLunes(FakeTurnosRepository(areas = Resultado.Exito(emptyList())))
+        vm.abrirNuevo()
+        assertEquals(UiState.Vacio, vm.uiState.value.areas)
+    }
+
+    @Test
+    fun `ajustar un turno con un area que ya no esta en la lista obliga a elegir otra`() {
+        val repo = FakeTurnosRepository(turnos = Resultado.Exito(listOf(turno("1", lunes, area = "Sala vieja"))))
+        val vm = vmEnLunes(repo)
+        vm.abrirAjuste("1")
+
+        val hoja = vm.uiState.value.hoja!!
+        assertEquals("se muestra el área guardada", "Sala vieja", hoja.area)
+        assertTrue(hoja.areaFueraDeLista)
+        assertFalse(hoja.puedeGuardar)
+
+        vm.onArea("Hospitalización")
+        assertFalse(
+            vm.uiState.value.hoja!!
+                .areaFueraDeLista,
+        )
+        vm.guardar()
+        assertEquals(
+            "Hospitalización",
+            repo.actualizados
+                .single()
+                .second.area,
+        )
+    }
+
+    @Test
+    fun `AREA_INVALIDA de la base muestra el mensaje y recarga las areas`() {
+        val rechazo =
+            AppError.Rechazada("El área \"Pediatría\" no está en el catálogo de áreas activas", CODIGO_AREA_INVALIDA)
+        val repo = FakeTurnosRepository(escritura = Resultado.Fallo(rechazo))
+        val vm = vmEnLunes(repo)
+        vm.abrirNuevo()
+        vm.onPersona("p-1")
+        vm.onArea("Pediatría")
+        // Mientras se llenaba el formulario, la administración desactivó Pediatría.
+        repo.areas = Resultado.Exito(areasCatalogo.filterNot { it.nombre == "Pediatría" })
+
+        vm.guardar()
+
+        val hoja = vm.uiState.value.hoja!!
+        assertEquals(rechazo, hoja.error)
+        assertEquals(2, repo.consultasAreas)
+        assertTrue(hoja.areaFueraDeLista)
+        assertFalse(hoja.puedeGuardar)
+    }
+
+    @Test
+    fun `el turno guardado se agrupa bajo el area elegida`() {
+        val repo = FakeTurnosRepository()
+        val vm = vmEnLunes(repo)
+        vm.abrirNuevo()
+        vm.onPersona("p-1")
+        vm.onArea("Pediatría")
+        vm.guardar()
+        val guardado = repo.creados.single()
+        repo.turnos = Resultado.Exito(listOf(turno("9", guardado.fecha, area = guardado.area)))
+        vm.cargar()
+
+        val areas = (vm.uiState.value.estado as UiState.Exito<List<AreaTurnosUi>>).datos
+        assertEquals(listOf("Pediatría"), areas.map { it.area })
     }
 }
