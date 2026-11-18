@@ -63,7 +63,12 @@ fun TarjetaTurno(
     ) {
         Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(Espacio.xs)) {
             TextosFila(
-                titulo = "${turno.horario} · ${turno.area}",
+                titulo =
+                    if (turno.sinTurno) {
+                        stringResource(R.string.turno_sin_turno)
+                    } else {
+                        "${turno.horario} · ${turno.area}"
+                    },
                 soporte = titulo,
                 etiquetaArriba = true,
                 modifier = Modifier.weight(1f),

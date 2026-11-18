@@ -74,13 +74,33 @@ private fun errorDesdeRespuesta(e: HttpException): AppError {
                 ?.let { jsonError.decodeFromString<CuerpoError>(it) }
         }.getOrNull()
     return when (cuerpo?.code) {
-        "CUENTA_INACTIVA" -> AppError.CuentaInactiva
-        "PERFIL_INCOMPLETO" -> AppError.PerfilIncompleto
-        "REGISTRO_DUPLICADO" -> AppError.Duplicado
-        "VALIDACION" -> AppError.CamposInvalidos(cuerpo.errors.associate { it.field to it.message })
-        in CODIGOS_CON_MENSAJE -> cuerpo?.message?.takeIf { it.isNotBlank() }?.let { AppError.Rechazada(it) }
-        in CODIGOS_CAMAS -> cuerpo?.message?.takeIf { it.isNotBlank() }?.let { AppError.Rechazada(it, cuerpo.code) }
-        else -> null
+        "CUENTA_INACTIVA" -> {
+            AppError.CuentaInactiva
+        }
+
+        "PERFIL_INCOMPLETO" -> {
+            AppError.PerfilIncompleto
+        }
+
+        "REGISTRO_DUPLICADO" -> {
+            AppError.Duplicado
+        }
+
+        "VALIDACION" -> {
+            AppError.CamposInvalidos(cuerpo.errors.associate { it.field to it.message })
+        }
+
+        in CODIGOS_CON_MENSAJE -> {
+            cuerpo?.message?.takeIf { it.isNotBlank() }?.let { AppError.Rechazada(it) }
+        }
+
+        in CODIGOS_CON_CODIGO -> {
+            cuerpo?.message?.takeIf { it.isNotBlank() }?.let { AppError.Rechazada(it, cuerpo.code) }
+        }
+
+        else -> {
+            null
+        }
     } ?: errorDesdeCodigo(e.code())
 }
 
@@ -96,6 +116,12 @@ private val CODIGOS_CON_MENSAJE = setOf("TRANSICION_INVALIDA", "RESULTADO_REQUER
  */
 private val CODIGOS_CAMAS =
     setOf("CAMA_OCUPADA", "CAMA_NO_DISPONIBLE", "PACIENTE_YA_HOSPITALIZADO", "SIN_CAMAS_DISPONIBLES")
+
+/**
+ * 409 cuyo `message` se muestra y cuyo `code` la pantalla necesita (recargar el mapa, o avisar que la
+ * ambulancia ya no se puede despachar).
+ */
+private val CODIGOS_CON_CODIGO = CODIGOS_CAMAS + CODIGO_AMBULANCIA_NO_DISPONIBLE
 
 /** Códigos con los que las funciones y triggers de Supabase anteponen un mensaje legible. */
 private val CODIGOS_RECHAZO =

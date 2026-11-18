@@ -48,6 +48,7 @@ object DatosMuestra {
         InicioRecepcionUi(
             turno = turnoRecepcion,
             solicitudAmbulancia = solicitudAmbulancia,
+            solicitudesAmbulancia = 1,
             laboratorioPendiente = 7,
             ocupacion = ocupacion,
             citasHoyTotal = 18,
@@ -236,8 +237,6 @@ object DatosMuestra {
         DetalleServicioUi(
             fecha = "21 oct",
             despacho = "Recepción (Karla)",
-            destino = "Emergencias HUC",
-            kilometraje = 12,
             observaciones = "paciente estable al llegar.",
         )
 

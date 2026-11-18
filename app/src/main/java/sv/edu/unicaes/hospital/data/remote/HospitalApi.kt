@@ -12,9 +12,13 @@ import retrofit2.http.Part
 import retrofit2.http.Path
 import retrofit2.http.Query
 import sv.edu.unicaes.hospital.data.remote.dto.AltaBody
+import sv.edu.unicaes.hospital.data.remote.dto.AmbulanciaDto
 import sv.edu.unicaes.hospital.data.remote.dto.ApiRespuesta
+import sv.edu.unicaes.hospital.data.remote.dto.BitacoraAmbulanciaDto
 import sv.edu.unicaes.hospital.data.remote.dto.CambiarEstadoCamaBody
 import sv.edu.unicaes.hospital.data.remote.dto.CambiarEstadoExamenDto
+import sv.edu.unicaes.hospital.data.remote.dto.CancelarSolicitudBody
+import sv.edu.unicaes.hospital.data.remote.dto.CerrarSolicitudBody
 import sv.edu.unicaes.hospital.data.remote.dto.CrearHospitalizacionBody
 import sv.edu.unicaes.hospital.data.remote.dto.HabitacionMapaDto
 import sv.edu.unicaes.hospital.data.remote.dto.HospitalizacionDto
@@ -24,6 +28,7 @@ import sv.edu.unicaes.hospital.data.remote.dto.PacienteBodyDto
 import sv.edu.unicaes.hospital.data.remote.dto.PacienteDto
 import sv.edu.unicaes.hospital.data.remote.dto.PaginaDto
 import sv.edu.unicaes.hospital.data.remote.dto.PersonalDto
+import sv.edu.unicaes.hospital.data.remote.dto.SolicitudAmbulanciaDto
 import sv.edu.unicaes.hospital.data.remote.dto.TrasladoBody
 import sv.edu.unicaes.hospital.data.remote.dto.UsuarioDto
 
@@ -144,4 +149,57 @@ interface HospitalApi {
         @Part("observaciones") observaciones: RequestBody?,
         @Part archivo: MultipartBody.Part?,
     ): ApiRespuesta<OrdenExamenDto>
+
+    // Ambulancia (HUNI-70, HUNI-71). Recepción despacha, cierra y cancela; el estado llega por Realtime.
+
+    /** La única ambulancia y, si va en camino, el resumen del servicio abierto. */
+    @GET("ambulancia")
+    suspend fun ambulancia(): ApiRespuesta<AmbulanciaDto>
+
+    /** Solicitudes, de la más reciente a la más antigua. `estado=pendiente` son las que faltan por atender. */
+    @GET("ambulancia/solicitudes")
+    suspend fun listarSolicitudesAmbulancia(
+        @Query("estado") estado: String?,
+        @Query("pagina") pagina: Int,
+        @Query("por_pagina") porPagina: Int,
+    ): ApiRespuesta<PaginaDto<SolicitudAmbulanciaDto>>
+
+    @GET("ambulancia/solicitudes/{id}")
+    suspend fun obtenerSolicitudAmbulancia(
+        @Path("id") id: String,
+    ): ApiRespuesta<SolicitudAmbulanciaDto>
+
+    /**
+     * Pasa la ambulancia a `en_servicio`. 409 AMBULANCIA_NO_DISPONIBLE si otro la despachó primero o está
+     * en mantenimiento; 422 TRANSICION_INVALIDA si la solicitud ya no está pendiente.
+     */
+    @POST("ambulancia/solicitudes/{id}/despachar")
+    suspend fun despacharAmbulancia(
+        @Path("id") id: String,
+    )
+
+    /** Vuelve a `disponible` y deja la emergencia en la bitácora. 422 TRANSICION_INVALIDA si no iba en camino. */
+    @POST("ambulancia/solicitudes/{id}/cerrar")
+    suspend fun cerrarSolicitudAmbulancia(
+        @Path("id") id: String,
+        @Body body: CerrarSolicitudBody,
+    )
+
+    /** Cancela una pendiente (rechazo de recepción). 422 TRANSICION_INVALIDA si ya está cerrada. */
+    @POST("ambulancia/solicitudes/{id}/cancelar")
+    suspend fun cancelarSolicitudAmbulancia(
+        @Path("id") id: String,
+        @Body body: CancelarSolicitudBody,
+    )
+
+    /** Cada cambio de estado. `estado` filtra por el estado nuevo; `desde` y `hasta` son AAAA-MM-DD. */
+    @GET("ambulancia/bitacora")
+    suspend fun bitacoraAmbulancia(
+        @Query("estado") estado: String?,
+        @Query("tipo_emergencia") tipo: String?,
+        @Query("desde") desde: String?,
+        @Query("hasta") hasta: String?,
+        @Query("pagina") pagina: Int,
+        @Query("por_pagina") porPagina: Int,
+    ): ApiRespuesta<PaginaDto<BitacoraAmbulanciaDto>>
 }

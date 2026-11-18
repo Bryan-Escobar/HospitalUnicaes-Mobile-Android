@@ -2,6 +2,7 @@ package sv.edu.unicaes.hospital.ui.recepcion
 
 import androidx.activity.compose.BackHandler
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
@@ -11,6 +12,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.PreviewScreenSizes
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleEventObserver
+import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavBackStackEntry
 import androidx.navigation.NavHostController
@@ -75,6 +79,15 @@ private fun RecepcionNavHost(
         composable<InicioRuta> {
             val viewModel: InicioRecepcionViewModel = hiltViewModel()
             val estado by viewModel.uiState.collectAsStateWithLifecycle()
+            val ciclo = LocalLifecycleOwner.current
+            DisposableEffect(ciclo, viewModel) {
+                val observador =
+                    LifecycleEventObserver { _, evento ->
+                        if (evento == Lifecycle.Event.ON_RESUME) viewModel.cargar()
+                    }
+                ciclo.lifecycle.addObserver(observador)
+                onDispose { ciclo.lifecycle.removeObserver(observador) }
+            }
             InicioRecepcionScreen(
                 estado = estado,
                 onAmbulancia = { navController.navigate(AmbulanciaRuta) },
@@ -329,23 +342,37 @@ private fun RecepcionNavHost(
         }
         composable<AmbulanciaRuta> {
             val viewModel: AmbulanciaViewModel = hiltViewModel()
-            val estado by viewModel.uiState.collectAsStateWithLifecycle()
+            val ui by viewModel.uiState.collectAsStateWithLifecycle()
             AmbulanciaScreen(
-                estado = estado,
+                estado = ui.ambulancia,
                 onVolver = volver,
-                onDespachar = {},
+                onDespachar = viewModel::despachar,
+                onRechazar = viewModel::rechazar,
+                onCerrarServicio = viewModel::cerrar,
                 onBitacora = { navController.navigate(BitacoraRuta) },
                 onReintentar = viewModel::cargar,
+                conflicto = ui.conflicto,
+                error = ui.error,
+                enviando = ui.enviando,
             )
         }
         composable<BitacoraRuta> {
             val viewModel: BitacoraViewModel = hiltViewModel()
-            val estado by viewModel.uiState.collectAsStateWithLifecycle()
+            val ui by viewModel.uiState.collectAsStateWithLifecycle()
             BitacoraScreen(
-                estado = estado,
-                detalle = viewModel.detalle,
+                estado = ui.servicios,
+                detalle = ui.detalle,
                 onVolver = volver,
                 onReintentar = viewModel::cargar,
+                rango = ui.rango,
+                filtroEstado = ui.filtroEstado,
+                filtroTipo = ui.filtroTipo,
+                seleccionado = ui.seleccionado,
+                onRango = viewModel::elegirRango,
+                onFiltroEstado = viewModel::elegirEstado,
+                onFiltroTipo = viewModel::elegirTipo,
+                onSeleccionar = viewModel::seleccionar,
+                onQuitarFiltros = viewModel::quitarFiltros,
             )
         }
         // Turnos (HUNI-53): recepción registra y ajusta; "Mis turnos" son los propios de la semana.
