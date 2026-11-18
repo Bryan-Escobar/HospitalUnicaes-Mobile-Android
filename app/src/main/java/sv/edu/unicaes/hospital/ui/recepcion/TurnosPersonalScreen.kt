@@ -40,6 +40,7 @@ import sv.edu.unicaes.hospital.R
 import sv.edu.unicaes.hospital.core.AppError
 import sv.edu.unicaes.hospital.core.UiState
 import sv.edu.unicaes.hospital.core.mensaje
+import sv.edu.unicaes.hospital.domain.model.AreaHospital
 import sv.edu.unicaes.hospital.domain.model.Empleado
 import sv.edu.unicaes.hospital.domain.model.TipoTurno
 import sv.edu.unicaes.hospital.ui.components.BadgeEstado
@@ -87,6 +88,8 @@ interface AccionesTurnos {
     fun cerrarHoja()
 
     fun cargarEmpleados()
+
+    fun cargarAreas()
 
     fun onPersona(id: String)
 
@@ -167,7 +170,13 @@ fun TurnosPersonalScreen(
     }
 
     estado.hoja?.let { hoja ->
-        HojaTurno(hoja = hoja, dias = estado.dias, empleados = estado.empleados, acciones = acciones)
+        HojaTurno(
+            hoja = hoja,
+            dias = estado.dias,
+            empleados = estado.empleados,
+            areas = estado.areas,
+            acciones = acciones,
+        )
     }
 }
 
@@ -245,12 +254,16 @@ private fun FilaTurnoPersonal(
     )
 }
 
-/** Hoja "Nuevo turno" / "Ajustar turno". Guardar se habilita con persona, área y horas distintas, escritas en 12 horas (`7:00 a. m.`) y enviadas como `HH:mm`. */
+/**
+ * Hoja "Nuevo turno" / "Ajustar turno". Guardar se habilita con persona, un área de la lista y horas distintas,
+ * escritas en 12 horas (`7:00 a. m.`) y enviadas como `HH:mm`.
+ */
 @Composable
 private fun HojaTurno(
     hoja: HojaTurnoUiState,
     dias: List<DiaUi>,
     empleados: UiState<List<Empleado>>,
+    areas: UiState<List<AreaHospital>>,
     acciones: AccionesTurnos,
 ) {
     val tipos = TipoTurno.entries
@@ -277,11 +290,11 @@ private fun HojaTurno(
                 onPersona = acciones::onPersona,
                 onReintentar = acciones::cargarEmpleados,
             )
-            CampoTexto(
-                etiqueta = stringResource(R.string.campo_area),
-                valor = hoja.area,
-                onValor = acciones::onArea,
-                placeholder = stringResource(R.string.turnos_area_ejemplo),
+            SelectorArea(
+                areas = areas,
+                hoja = hoja,
+                onArea = acciones::onArea,
+                onReintentar = acciones::cargarAreas,
             )
             Text(stringResource(R.string.campo_fecha), style = MaterialTheme.typography.bodySmall)
             val fecha = dias.indexOfFirst { it.clave == hoja.fecha }
@@ -381,6 +394,59 @@ private fun SelectorPersona(
     }
 }
 
+/**
+ * Área del turno (HUNI-102): menú de solo lectura con el catálogo `areas_hospital`; no se escribe. Un turno viejo
+ * con un área que ya no está en la lista la muestra marcada en error hasta que se elija otra.
+ */
+@Composable
+private fun SelectorArea(
+    areas: UiState<List<AreaHospital>>,
+    hoja: HojaTurnoUiState,
+    onArea: (String) -> Unit,
+    onReintentar: () -> Unit,
+) {
+    val lista = (areas as? UiState.Exito)?.datos.orEmpty()
+    val habilitado = lista.isNotEmpty()
+    var abierto by remember { mutableStateOf(false) }
+    val texto =
+        hoja.area.ifEmpty {
+            if (areas is UiState.Cargando) stringResource(R.string.turnos_cargando_areas) else ""
+        }
+    ExposedDropdownMenuBox(expanded = abierto, onExpandedChange = { abierto = habilitado && it }) {
+        CampoTexto(
+            etiqueta = stringResource(R.string.campo_area),
+            valor = texto,
+            onValor = {},
+            soloLectura = true,
+            placeholder = stringResource(R.string.turnos_elige_area),
+            error = if (hoja.areaFueraDeLista) stringResource(R.string.turnos_area_fuera_de_lista) else null,
+            modifier = Modifier.menuAnchor(ExposedDropdownMenuAnchorType.PrimaryNotEditable, habilitado),
+            final = { if (habilitado) ExposedDropdownMenuDefaults.TrailingIcon(expanded = abierto) },
+        )
+        ExposedDropdownMenu(expanded = abierto, onDismissRequest = { abierto = false }) {
+            lista.forEach { area ->
+                DropdownMenuItem(
+                    text = { Text(area.nombre) },
+                    onClick = {
+                        onArea(area.nombre)
+                        abierto = false
+                    },
+                )
+            }
+        }
+    }
+    if (areas is UiState.Error) {
+        Banner(
+            tipo = TipoBanner.ERROR,
+            texto = stringResource(R.string.turnos_error_areas),
+            accion = stringResource(R.string.estado_reintentar),
+            onAccion = onReintentar,
+        )
+    } else if (areas is UiState.Vacio) {
+        Banner(tipo = TipoBanner.AVISO, texto = stringResource(R.string.turnos_sin_areas))
+    }
+}
+
 @Composable
 private fun CampoHora(
     etiqueta: String,
@@ -408,7 +474,10 @@ private fun TipoTurno.etiqueta(): Int =
         TipoTurno.GUARDIA -> R.string.turno_tipo_guardia
     }
 
-/** El solape (`TURNO_SOLAPADO`) ya viene redactado por la base; los demás errores usan su texto genérico. */
+/**
+ * El solape (`TURNO_SOLAPADO`) y el área fuera del catálogo (`AREA_INVALIDA`) ya vienen redactados por la base;
+ * los demás errores usan su texto genérico.
+ */
 @Composable
 private fun textoError(error: AppError): String =
     (error as? AppError.Rechazada)?.detalle ?: stringResource(error.mensaje())
@@ -431,6 +500,8 @@ object SinAccionesTurnos : AccionesTurnos {
 
     override fun cargarEmpleados() = Unit
 
+    override fun cargarAreas() = Unit
+
     override fun onPersona(id: String) = Unit
 
     override fun onArea(valor: String) = Unit
@@ -451,6 +522,10 @@ object SinAccionesTurnos : AccionesTurnos {
 private val diasMuestra =
     listOf("Lun 19", "Mar 20", "Mié 21", "Jue 22", "Vie 23", "Sáb 24", "Dom 25")
         .mapIndexed { i, etiqueta -> DiaUi("2026-10-${19 + i}", etiqueta) }
+
+private val areasMuestra =
+    listOf("Consulta externa", "Emergencia", "Hospitalización", "Pediatría", "Recepción")
+        .mapIndexed { i, nombre -> AreaHospital("a$i", nombre) }
 
 @PreviewPantalla
 @Composable
@@ -485,11 +560,13 @@ private fun HojaTurnoSolapePreview() {
                     dia = 3,
                     estado = UiState.Exito(DatosMuestra.turnosPersonal),
                     empleados = UiState.Exito(listOf(Empleado("e1", "Sofía Hernández", "Doctor"))),
+                    areas = UiState.Exito(areasMuestra),
                     hoja =
                         HojaTurnoUiState(
                             fecha = "2026-10-22",
                             personalId = "e1",
                             area = "Consulta externa",
+                            areasCatalogo = areasMuestra.map { it.nombre },
                             inicio = "12:00 p. m.",
                             fin = "8:00 p. m.",
                             error =

@@ -10,9 +10,11 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import sv.edu.unicaes.hospital.core.AppError
+import sv.edu.unicaes.hospital.core.CODIGO_AREA_INVALIDA
 import sv.edu.unicaes.hospital.core.Resultado
 import sv.edu.unicaes.hospital.core.UiState
 import sv.edu.unicaes.hospital.data.repository.TurnosRepository
+import sv.edu.unicaes.hospital.domain.model.AreaHospital
 import sv.edu.unicaes.hospital.domain.model.DatosTurno
 import sv.edu.unicaes.hospital.domain.model.Empleado
 import sv.edu.unicaes.hospital.domain.model.TipoTurno
@@ -36,7 +38,13 @@ data class HojaTurnoUiState(
     val fecha: String,
     val turnoId: String? = null,
     val personalId: String? = null,
+    /**
+     * Nombre del área tal como está en el catálogo. Al ajustar un turno viejo puede traer un área que ya no
+     * está en [areasCatalogo]: se muestra, pero no se guarda hasta elegir una de la lista (HUNI-102).
+     */
     val area: String = "",
+    /** Nombres de las áreas activas que ofrece el selector; vacío mientras el catálogo carga o si falló. */
+    val areasCatalogo: List<String> = emptyList(),
     /** Lo que se ve en el campo, en 12 horas (`7:00 a. m.`); [inicio24] y [fin24] son lo que va a la API. */
     val inicio: String = hora12(horarioSugerido(TipoTurno.MANANA).first),
     val fin: String = hora12(horarioSugerido(TipoTurno.MANANA).second),
@@ -47,6 +55,12 @@ data class HojaTurnoUiState(
     val error: AppError? = null,
 ) {
     val ajustando: Boolean get() = turnoId != null
+
+    /** El área elegida es una de la lista; solo así se puede guardar (la base rechaza las demás). */
+    val areaValida: Boolean get() = area in areasCatalogo
+
+    /** Turno guardado con un área que ya no está en el catálogo cargado: hay que elegir otra. */
+    val areaFueraDeLista: Boolean get() = area.isNotBlank() && areasCatalogo.isNotEmpty() && !areaValida
 
     /** `HH:mm` de [inicio], o null si no es una hora de 12 horas válida. */
     val inicio24: String? get() = hora24Desde12(inicio)
@@ -66,7 +80,7 @@ data class HojaTurnoUiState(
         }
 
     val puedeGuardar: Boolean
-        get() = personalId != null && area.isNotBlank() && inicioValido && finValido && !guardando
+        get() = personalId != null && areaValida && inicioValido && finValido && !guardando
 }
 
 data class TurnosPersonalUiState(
@@ -80,13 +94,16 @@ data class TurnosPersonalUiState(
     val tipo: Int = 0,
     val estado: UiState<List<AreaTurnosUi>> = UiState.Cargando,
     val empleados: UiState<List<Empleado>> = UiState.Cargando,
+    /** Catálogo `areas_hospital` para el selector de área del formulario. */
+    val areas: UiState<List<AreaHospital>> = UiState.Cargando,
     val hoja: HojaTurnoUiState? = null,
 )
 
 /**
  * AND-R12 · Control de turnos (HUNI-53). Lee de `v_turnos` la semana elegida y muestra los del día agrupados
  * por área y tipo de personal. Recepción registra o ajusta un turno; la regla de no solape la valida el
- * trigger de la base y el mensaje se muestra en el formulario sin cerrarlo.
+ * trigger de la base y el mensaje se muestra en el formulario sin cerrarlo. El área se elige del catálogo
+ * `areas_hospital` (HUNI-102), nunca se escribe.
  */
 @HiltViewModel
 class TurnosPersonalViewModel
@@ -182,8 +199,9 @@ class TurnosPersonalViewModel
         override fun abrirNuevo() {
             val estado = _uiState.value
             val fecha = estado.dias.getOrNull(estado.dia)?.clave ?: return
-            _uiState.update { it.copy(hoja = HojaTurnoUiState(fecha = fecha)) }
+            _uiState.update { it.copy(hoja = HojaTurnoUiState(fecha = fecha, areasCatalogo = nombresAreas())) }
             cargarEmpleados()
+            cargarAreas()
         }
 
         override fun abrirAjuste(turnoId: String) {
@@ -196,6 +214,7 @@ class TurnosPersonalViewModel
                             turnoId = turno.id,
                             personalId = turno.personalId,
                             area = turno.area,
+                            areasCatalogo = nombresAreas(),
                             inicio = hora12(turno.horaInicio),
                             fin = hora12(turno.horaFin),
                             tipoTurno = turno.tipoTurno,
@@ -204,6 +223,7 @@ class TurnosPersonalViewModel
                 )
             }
             cargarEmpleados()
+            cargarAreas()
         }
 
         override fun cerrarHoja() = _uiState.update { it.copy(hoja = null) }
@@ -226,12 +246,44 @@ class TurnosPersonalViewModel
             }
         }
 
+        override fun cargarAreas() = cargarAreas(forzar = false)
+
+        /** Con [forzar] se vuelve a pedir aunque ya esté cargado (p. ej. tras `AREA_INVALIDA`). */
+        private fun cargarAreas(forzar: Boolean) {
+            if (!forzar && _uiState.value.areas is UiState.Exito) return
+            _uiState.update { it.copy(areas = UiState.Cargando) }
+            viewModelScope.launch {
+                val areas =
+                    when (val resultado = turnosRepository.areas()) {
+                        is Resultado.Exito -> {
+                            if (resultado.datos.isEmpty()) UiState.Vacio else UiState.Exito(resultado.datos)
+                        }
+
+                        is Resultado.Fallo -> {
+                            UiState.Error(resultado.error)
+                        }
+                    }
+                _uiState.update { estado ->
+                    val nombres = (areas as? UiState.Exito)?.datos.orEmpty().map { it.nombre }
+                    estado.copy(areas = areas, hoja = estado.hoja?.copy(areasCatalogo = nombres))
+                }
+            }
+        }
+
+        private fun nombresAreas(): List<String> =
+            (_uiState.value.areas as? UiState.Exito)
+                ?.datos
+                .orEmpty()
+                .map { it.nombre }
+
         private fun editarHoja(cambio: (HojaTurnoUiState) -> HojaTurnoUiState) =
             _uiState.update { estado -> estado.copy(hoja = estado.hoja?.let { cambio(it).copy(error = null) }) }
 
         override fun onPersona(id: String) = editarHoja { it.copy(personalId = id) }
 
-        override fun onArea(valor: String) = editarHoja { it.copy(area = valor) }
+        /** Solo se aceptan áreas de la lista; el selector no ofrece otras. */
+        override fun onArea(valor: String) =
+            editarHoja { hoja -> if (valor in hoja.areasCatalogo) hoja.copy(area = valor) else hoja }
 
         override fun onFecha(clave: String) = editarHoja { it.copy(fecha = clave) }
 
@@ -261,7 +313,7 @@ class TurnosPersonalViewModel
             val datos =
                 DatosTurno(
                     personalId = personalId,
-                    area = hoja.area.trim(),
+                    area = hoja.area,
                     fecha = hoja.fecha,
                     horaInicio = horaInicio,
                     horaFin = horaFin,
@@ -285,6 +337,10 @@ class TurnosPersonalViewModel
                     is Resultado.Fallo -> {
                         _uiState.update {
                             it.copy(hoja = it.hoja?.copy(guardando = false, error = resultado.error))
+                        }
+                        // El área se desactivó mientras se llenaba el formulario: la lista se actualiza.
+                        if ((resultado.error as? AppError.Rechazada)?.codigo == CODIGO_AREA_INVALIDA) {
+                            cargarAreas(forzar = true)
                         }
                     }
                 }
