@@ -1,12 +1,12 @@
 package sv.edu.unicaes.hospital.ui.doctor
 
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.PreviewScreenSizes
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -21,10 +21,9 @@ import sv.edu.unicaes.hospital.ui.components.HomeConPestanas
 import sv.edu.unicaes.hospital.ui.components.Pestana
 import sv.edu.unicaes.hospital.ui.components.SincronizarPestana
 import sv.edu.unicaes.hospital.ui.components.irAPestana
-import sv.edu.unicaes.hospital.ui.modelo.ConDatos
-import sv.edu.unicaes.hospital.ui.modelo.DatosMuestra
-import sv.edu.unicaes.hospital.ui.modelo.hora12
 import sv.edu.unicaes.hospital.ui.perfil.PerfilScreen
+import sv.edu.unicaes.hospital.ui.recepcion.RecargarAlVolver
+import sv.edu.unicaes.hospital.ui.recepcion.avisarGuardado
 import sv.edu.unicaes.hospital.ui.theme.HospitalUnicaesTheme
 import sv.edu.unicaes.hospital.ui.turnos.MisTurnosViewModel
 
@@ -52,9 +51,12 @@ data class ExpedienteRuta(
     val pacienteId: String,
 )
 
+/** Desde el expediente va sin cita; desde la agenda, con la cita que se atiende y su hora (`HH:mm`). */
 @Serializable
 data class NuevaConsultaRuta(
-    val citaId: String,
+    val pacienteId: String,
+    val citaId: String? = null,
+    val citaHora: String? = null,
 )
 
 // Doctor · Alergista · Médico de emergencia (AND-D1 a AND-D7)
@@ -84,7 +86,10 @@ fun DoctorHomeScreen(onCerrarSesion: () -> Unit) {
     }
 }
 
-/** Grafo del Doctor. Cada pantalla tiene su ViewModel con [DatosMuestra] hasta conectar la API. */
+/**
+ * Grafo del Doctor. Mis pacientes, Expediente y Nueva consulta usan la API (HUNI-61); la agenda y el detalle
+ * de cita todavía muestran [sv.edu.unicaes.hospital.ui.modelo.DatosMuestra].
+ */
 @Composable
 private fun DoctorNavHost(
     navController: NavHostController,
@@ -106,24 +111,39 @@ private fun DoctorNavHost(
         composable<DetalleCitaRuta> {
             val viewModel: DetalleCitaViewModel = hiltViewModel()
             val estado by viewModel.uiState.collectAsStateWithLifecycle()
-            val citaId = (estado as? UiState.Exito)?.datos?.cita?.id
+            val detalle = (estado as? UiState.Exito)?.datos
             DetalleCitaScreen(
                 estado = estado,
                 onVolver = volver,
-                onVerExpediente = { navController.navigate(ExpedienteRuta("p-6")) },
-                onIniciarConsulta = { citaId?.let { navController.navigate(NuevaConsultaRuta(it)) } },
+                onVerExpediente = { detalle?.let { navController.navigate(ExpedienteRuta(it.pacienteId)) } },
+                onIniciarConsulta = {
+                    detalle?.let { navController.navigate(NuevaConsultaRuta(it.pacienteId, it.cita.id, it.cita.hora)) }
+                },
                 onReintentar = viewModel::cargar,
             )
         }
         composable<NuevaConsultaRuta> {
-            ConDatos(hiltViewModel<NuevaConsultaViewModel>()) { cita ->
-                NuevaConsultaScreen(
-                    paciente = cita.paciente,
-                    contexto = stringResource(R.string.cita_titulo, hora12(cita.hora)),
-                    onCerrar = volver,
-                    onGuardar = volver,
-                )
+            val viewModel: NuevaConsultaViewModel = hiltViewModel()
+            val estado by viewModel.uiState.collectAsStateWithLifecycle()
+            LaunchedEffect(estado.guardada) {
+                if (estado.guardada) {
+                    avisarGuardado(navController)
+                    volver()
+                }
             }
+            NuevaConsultaScreen(
+                estado = estado,
+                onCerrar = volver,
+                onReintentar = viewModel::cargar,
+                onDiagnostico = viewModel::onDiagnostico,
+                onNotas = viewModel::onNotas,
+                onAgregarReceta = viewModel::agregarReceta,
+                onQuitarReceta = viewModel::quitarReceta,
+                onAgregarOrden = viewModel::agregarOrden,
+                onQuitarOrden = viewModel::quitarOrden,
+                onReintentarCatalogo = viewModel::cargarCatalogo,
+                onGuardar = viewModel::guardar,
+            )
         }
         composable<MisPacientesRuta> {
             val viewModel: MisPacientesViewModel = hiltViewModel()
@@ -134,13 +154,15 @@ private fun DoctorNavHost(
                 onReintentar = viewModel::cargar,
             )
         }
-        composable<ExpedienteRuta> {
+        // Al volver de una consulta guardada se recarga para ver la consulta y sus órdenes en Pendiente.
+        composable<ExpedienteRuta> { entrada ->
             val viewModel: ExpedienteViewModel = hiltViewModel()
+            RecargarAlVolver(entrada, viewModel::cargar)
             val estado by viewModel.uiState.collectAsStateWithLifecycle()
             ExpedienteScreen(
                 estado = estado,
                 onVolver = volver,
-                onNuevaConsulta = { navController.navigate(NuevaConsultaRuta(DatosMuestra.detalleCita.cita.id)) },
+                onNuevaConsulta = { navController.navigate(NuevaConsultaRuta(viewModel.pacienteId)) },
                 onReintentar = viewModel::cargar,
             )
         }

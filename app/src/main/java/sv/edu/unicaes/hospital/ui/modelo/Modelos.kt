@@ -8,7 +8,7 @@ import sv.edu.unicaes.hospital.domain.model.Sexo
 import sv.edu.unicaes.hospital.domain.model.TipoHabitacion
 
 // Modelos de presentación: lo que cada pantalla necesita ya formateado para mostrar.
-// Los ViewModels los construirán a partir de los DTO de la API; por ahora salen de DatosMuestra.
+// Los ViewModels los construyen a partir del dominio; las pantallas aún sin API, desde DatosMuestra.
 
 data class TurnoUi(
     val dia: String,
@@ -168,22 +168,6 @@ data class CierreServicioUi(
     val observaciones: String,
 )
 
-data class OrdenLabUi(
-    val id: String,
-    val numero: Int,
-    val examen: String,
-    val paciente: String,
-    val dui: String,
-    val doctor: String,
-    val hora: String,
-    val estado: EstadoLaboratorio,
-    val indicaciones: String = "",
-    val ordenada: String = "",
-    val enProcesoDesde: String? = null,
-    val resultado: String? = null,
-    val nueva: Boolean = false,
-)
-
 data class InicioRecepcionUi(
     val turno: TurnoUi,
     val solicitudAmbulancia: SolicitudAmbulanciaUi?,
@@ -206,23 +190,40 @@ data class DetalleCitaUi(
     val edad: Int,
     val dui: String,
     val alergias: String?,
+    /** Para "Ver expediente" e "Iniciar consulta". */
+    val pacienteId: String = "",
 )
 
+/** Una consulta del expediente: `20 oct · Apendicitis aguda` y cuántas recetas y órdenes tuvo. */
 data class ConsultaUi(
+    val id: String,
     val fecha: String,
+    /** Vacío si la consulta no tiene diagnóstico ni motivo. */
     val diagnostico: String,
     val doctor: String,
     val recetas: Int,
     val ordenes: Int,
 )
 
+/** Orden de laboratorio en el expediente: sus exámenes, quién la pidió, cuándo y su estado. */
+data class OrdenExpedienteUi(
+    val id: String,
+    /** Nombres de los exámenes: `Hemograma completo, Glucosa`. */
+    val examen: String,
+    val doctor: String,
+    /** `20 oct`. */
+    val fecha: String,
+    val estado: EstadoLaboratorio,
+)
+
 data class ExpedienteUi(
     val paciente: PacienteUi,
-    val edad: Int,
+    /** Null si el paciente no tiene fecha de nacimiento. */
+    val edad: Int?,
     val alergias: String?,
-    val hospitalizacion: String?,
+    val hospitalizacion: AsignacionCamaUi?,
     val consultas: List<ConsultaUi>,
-    val laboratorio: List<OrdenLabUi>,
+    val laboratorio: List<OrdenExpedienteUi>,
     val telefono: String,
     val contactoEmergencia: String,
 )

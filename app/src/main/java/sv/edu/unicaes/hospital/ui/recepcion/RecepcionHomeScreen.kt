@@ -404,15 +404,15 @@ private fun RecepcionHomePreview() {
 }
 
 /** Clave del savedStateHandle con la que un formulario avisa a la pantalla anterior que guardó. */
-private const val CLAVE_GUARDADO = "formulario_guardado"
+internal const val CLAVE_GUARDADO = "formulario_guardado"
 
-private fun avisarGuardado(navController: NavHostController) {
+internal fun avisarGuardado(navController: NavHostController) {
     navController.previousBackStackEntry?.savedStateHandle?.set(CLAVE_GUARDADO, true)
 }
 
 /** Vuelve a cargar la pantalla cuando el formulario que se abrió desde ella guardó cambios. */
 @Composable
-private fun RecargarAlVolver(
+internal fun RecargarAlVolver(
     entrada: NavBackStackEntry,
     recargar: () -> Unit,
 ) {
